@@ -58,7 +58,7 @@
 - **AND** 客户端字段不能覆盖服务端 actor 或卡片关联
 
 ### Requirement: 前端不得接触外部服务 Secret
-浏览器端 MUST 只调用同源私有 API，并 MUST NOT 包含 X Token、AI Key、Webhook、Cookie 内容或账户信息。
+浏览器端 MUST 只调用同源私有 API，并 MUST NOT 包含 X Token、AI Key、Webhook、第三方/金融 Cookie、管理员凭据、可复用会话 Token 或证券账户信息。系统 MAY 通过认证响应设置符合安全属性的本站 HttpOnly 会话 Cookie，并 MAY 展示公开 X 来源标识和内部 actor ID。
 
 #### Scenario: 构建前端产物
 - **WHEN** 执行生产构建和 Secret 扫描

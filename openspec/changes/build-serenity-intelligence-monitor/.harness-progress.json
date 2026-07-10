@@ -2,9 +2,9 @@
   "schema_version": "1.1",
   "change_name": "build-serenity-intelligence-monitor",
   "scenario": "A",
-  "current_step": "council_review",
+  "current_step": "debate",
   "created_at": "2026-07-10T16:53:32+08:00",
-  "updated_at": "2026-07-10T17:44:57+08:00",
+  "updated_at": "2026-07-10T18:17:59+08:00",
   "fast_forward": false,
   "driving_mode": {
     "mode": "L2",
@@ -71,10 +71,11 @@
       "completed_at": "2026-07-10T17:44:57+08:00"
     },
     "council_review": {
-      "status": "in_progress"
+      "status": "done",
+      "completed_at": "2026-07-10T18:17:59+08:00"
     },
     "debate": {
-      "status": "blocked"
+      "status": "in_progress"
     },
     "user_confirm": {
       "status": "blocked"
@@ -95,11 +96,11 @@
   "artifacts": {
     "proposal.md": {
       "exists": true,
-      "hash": "2b7ef1f0"
+      "hash": "89693da1"
     },
     "design.md": {
       "exists": true,
-      "hash": "cb553e6b"
+      "hash": "b4be7973"
     },
     ".cheap-search-report.md": {
       "exists": true,
@@ -107,15 +108,15 @@
     },
     "test-checklist.md": {
       "exists": true,
-      "hash": "f849ae4a"
+      "hash": "034eedce"
     },
     "tasks.md": {
       "exists": true,
-      "hash": "e08626d4"
+      "hash": "80cc062f"
     },
     ".council-review.log": {
-      "exists": false,
-      "hash": ""
+      "exists": true,
+      "hash": "8155082a"
     },
     ".review-debate.log": {
       "exists": false,

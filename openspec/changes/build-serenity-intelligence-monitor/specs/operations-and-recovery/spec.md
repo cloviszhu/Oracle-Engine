@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: 每个流水线阶段必须有可审计状态
-系统 MUST 为获取、上下文补全、AI 分析、评分和通知记录 pending、processing、成功、可重试失败或终态失败，以及 attempt、lease、错误分类和版本信息。
+系统 MUST 为获取、上下文补全、AI 分析、评分和通知记录 pending、processing、成功、可重试失败、阻断、结果未知或死信，以及 attempt、lease owner/fencing、错误分类、人工重试资格和版本信息。
 
 #### Scenario: 流水线正常完成
 - **WHEN** 一条内容依次完成各处理阶段
@@ -19,11 +19,16 @@
 #### Scenario: worker 在处理中退出
 - **WHEN** worker 在持有 lease 时崩溃或重启
 - **THEN** lease 到期后 reconciliation 创建新 attempt 并重新排队
-- **AND** 已完成业务副作用依靠幂等键不重复执行
+- **AND** 已完成业务副作用依靠幂等键不重复执行，旧 worker 的迟到提交因 fencing token 失效而被拒绝
+
+#### Scenario: 数据库提交后入队前崩溃
+- **WHEN** 业务事务已提交下一阶段唯一 pending 工作意图但 BullMQ 尚未收到作业
+- **THEN** dispatcher 或 reconciliation 根据该持久意图重新投递
+- **AND** 重复投递不创建第二个业务副作用
 
 #### Scenario: 达到最大重试次数
 - **WHEN** 暂态错误持续到最大 attempt 或错误被分类为不可恢复
-- **THEN** 任务进入 terminal_failed 或明确死信状态
+- **THEN** 任务进入 `dead_letter` 并记录 `manual_retry_allowed`，或进入不可人工恢复的 `blocked` 状态
 - **AND** 只有管理员显式重试才能创建新的 attempt 链
 
 ### Requirement: 私有状态页必须呈现运行与恢复信息
@@ -49,8 +54,13 @@
 
 #### Scenario: 预算或速率上限触发
 - **WHEN** 新调用会超过配置上限
-- **THEN** 系统阻止 provider 调用并保存明确阻断状态
+- **THEN** 系统通过原子预算 reservation 阻止 provider 调用并保存明确阻断状态
 - **AND** reconciliation 不得绕过上限或静默降级
+
+#### Scenario: 并发调用接近预算边界
+- **WHEN** 多个 worker 同时申请会共同超过剩余额度的调用
+- **THEN** 原子 reservation 只允许不超过预算的调用开始
+- **AND** 完成后按实际用量结算，未开始的调用保持可见阻断状态
 
 ### Requirement: 系统必须维持只读研究边界
 系统 MUST NOT 提供券商、证券账户、持仓、行情、回测、组合、订单、自动交易、浏览器 Cookie 抓取、模拟登录或微信/QQ Hook 能力。
@@ -72,6 +82,16 @@
 - **WHEN** X、AI、飞书、Docker、HTTPS、认证或目标部署缺少真实证据
 - **THEN** 对应验收项保持待人工或 Mock 状态
 - **AND** 不得标记为真实通过
+
+#### Scenario: 同一真实内容完成端到端验收
+- **WHEN** 同一 Serenity external ID 经过真实 X、上下文、选定真实 AI、评分、真实飞书和私有详情页
+- **THEN** 验收报告保存可串联的 run、content version、context、provider request、card、score、delivery 与页面 ID
+- **AND** 用户能够从飞书绝对 HTTPS 链接进入同一详情并完成登录、筛选、反馈与状态核查
+
+#### Scenario: 真实普通内容保持低打扰
+- **WHEN** 用户预先标注的普通或低价值真实内容完成分析
+- **THEN** 内容可在私有时间线检索和回看但不产生飞书提醒
+- **AND** 初始阈值、冷启动历史不足和预算阻断行为由用户人工复核并记录
 
 #### Scenario: 验收发现缺陷
 - **WHEN** 人工反馈属于实现偏差、原目标规范遗漏、范围扩大或环境问题

@@ -28,7 +28,7 @@
 | 决策点 | 选择 | 理由 |
 |---|---|---|
 | X 获取基线 | 官方用户帖子接口周期轮询 + 游标 + 重叠补偿 + 近期内容复核 | 单账号场景简单、可审计；断线不丢失；不依赖 Stream 套餐和长连接稳定性 |
-| Filtered Stream | 第一阶段不实现，保留 `ContentSourceAdapter` 输入边界 | 避免把未验证套餐能力变成闭环前提，同时不阻碍未来增加实时输入 |
+| Filtered Stream | 第一阶段不实现，保留窄化的 `XContentSourceAdapter` 输入边界 | 避免把未验证套餐能力变成闭环前提，也不提前建设假多源框架 |
 | 事实存储 | MySQL/Drizzle 保存内容、关系、卡片、评分、通知、反馈和处理审计 | 与现有技术基线一致，唯一约束和事务可保证幂等 |
 | 异步执行 | BullMQ/Redis 负责调度和重试，MySQL 状态为可审计真相源 | Redis 负责执行效率，MySQL 防止队列丢失后无法判断业务状态 |
 | AI 接入 | `ResearchModelAdapter` + 单一运行时实现 + Zod 结构化输出 | 便于 Mock、替换和严格字段校验；不让模型直接决定通知或调用工具 |
@@ -45,7 +45,7 @@
 
 ```text
 X API
-  │ ContentSourceAdapter
+  │ XContentSourceAdapter
   ▼
 ingest queue ─► 归档/去重 ─► context queue ─► 上下文图
                                       │
@@ -67,7 +67,7 @@ React 私有站点 ─► NestJS API ─► MySQL
                           └────► 运行状态/人工反馈
 ```
 
-所有队列作业只传内部 ID，不传 Token、Webhook 或完整帖子正文。MySQL 中的业务状态先提交，再入队；入队失败由 reconciliation 作业补偿。
+所有队列作业只传内部 ID，不传 Token、Webhook 或完整帖子正文。每次业务事务同时创建唯一的下一阶段 `pending` 工作意图；dispatcher 再把工作意图投递到 BullMQ，reconciliation 只扫描该持久记录补偿“已提交未入队”窗口。lease claim 使用 owner、fencing token 和条件更新，过期 worker 的迟到完成不得覆盖新 owner。
 
 ## 模块划分
 
@@ -108,33 +108,36 @@ React 私有站点 ─► NestJS API ─► MySQL
 | `source_accounts` | `id`、`provider`、`external_user_id`、`username`；唯一 `(provider, external_user_id)` | 本阶段固定一条 Serenity 配置，但不把账号写死到业务逻辑 |
 | `source_sync_states` | `source_account_id` 唯一、`since_id`、`last_success_at`、`last_attempt_at`、`next_poll_at`、`status` | 轮询游标和补偿状态 |
 | `ingestion_runs` | `id`、`mode`、`started_at`、`finished_at`、`status`、`pages`、`items`、`error_code` | 每次轮询/补偿/复核的审计记录 |
-| `content_items` | `provider`、`external_id` 唯一；作者、原文、URL、发布时间、抓取时间、编辑版本、可见状态、`raw_payload`、`payload_hash` | 原始内容及生命周期；受政策约束的字段可被清除 |
+| `content_items` | `provider`、`external_id` 唯一；作者、URL、当前版本 ID、可见状态 | 内容稳定身份与当前可见状态 |
+| `content_versions` | `content_id`、`external_edit_id/payload_hash` 唯一；原文、发布时间、抓取时间、`raw_payload` | 不可变内容版本；受政策约束时正文/载荷可清除但版本号、hash 和时间审计保留 |
+| `content_lifecycle_events` | `content_id`、from/to、provider evidence、confirmed_at | 编辑、待确认、删除、不可访问与恢复的追加式状态历史 |
 | `content_relations` | `from_content_id`、`relation_type`、`to_external_id`；唯一三元组 | reply、quote、edit predecessor、conversation 关系 |
-| `processing_attempts` | `content_id`、`stage`、`status`、`attempt`、lease、错误分类、模型/API 版本 | 各阶段可恢复状态和错误审计 |
+| `processing_attempts` | `content_id`、`stage`、`status`、`attempt`、lease owner/fencing、错误分类、模型/API 版本；下一阶段唯一 pending 约束 | durable work intent、各阶段恢复与错误审计 |
 | `research_cards` | `content_id`、`version` 唯一；翻译、作者判断、他人内容、AI 解释、推断、不确定性、证据、置信度、prompt/model 版本 | 不可混淆的信息分层和版本化研究结论 |
 | `card_entities` | `card_id`、`type`、`normalized_value`、`display_value`、`verification_status` | 公司、Ticker、主题；A 股具体公司默认 `needs_verification` |
 | `importance_scores` | `card_id`、各维度分数、权重快照、总分、阈值、决策、解释 | 可解释的重要性判断 |
 | `notification_deliveries` | `channel`、`dedupe_key` 唯一、`status`、attempt、provider ID、错误、发送时间 | 防重复通知和失败恢复 |
 | `user_feedback` | `card_id`、`actor_id`、`type`、`note`、时间 | 重要、已知、不相关、继续跟踪、翻译有误、分析有误 |
 | `external_usage_records` | provider、operation、resource count、token usage、estimated/actual cost、request ID、时间 | X/AI 用量和预算审计，不保存 Secret |
+| `budget_reservations` | provider、budget window、estimated/actual cost、status；原子额度约束 | 并发调用前预占、完成后结算，防止 worker 共同越过硬预算 |
 
 `raw_payload` 只保存 API 实际返回且业务审计需要的字段，不保存请求 Authorization header。删除或不可访问事件触发受限字段清理；审计日志只能记录内部 ID、provider request ID、错误类别和计数。
 
 ### 枚举与状态机
 
-- 内容：`active → edited | deleted | unavailable`；重新可访问时允许 `unavailable → active` 并创建新版本审计。
+- 内容可见性：`active → verification_pending → deleted | unavailable`，明确 provider 删除事件可直接确认；批量缺项、限流、权限变化或暂态错误只能进入非破坏性的待确认状态。编辑是 `content_versions` 的新增事件，不与可见性状态混用。重新可访问时允许恢复为 `active`。
 - 流水线阶段：`ingest → context → analysis → score → notify`。
-- 处理状态：`pending → processing → succeeded | retryable_failed | terminal_failed`；lease 超时可由 reconciliation 回收。
-- 通知：`pending → sending → sent | retryable_failed | terminal_failed | suppressed`。
+- 处理状态：`pending → processing → succeeded | retryable_failed | blocked | dead_letter`；`blocked` 通过 `block_reason=budget|configuration|policy|permission` 区分，不自动重试；`dead_letter` 只有显式允许时才能创建新 attempt。lease 超时可由 reconciliation 回收，迟到 worker 受 fencing 拒绝。
+- 通知：`pending → sending → sent | retryable_failed | outcome_unknown | blocked | dead_letter | suppressed`；`outcome_unknown` 代表 provider 可能已收但本地无确认，禁止盲目自动重发。
 - 卡片置信度：`low | medium | high`，另保留 0–1 数值；上下文不足时不得标为 `high`。
 
 ## 获取、幂等与补偿
 
 1. BullMQ Job Scheduler 周期创建 `poll-source:{sourceId}`，固定 job ID 防止同一周期重复调度。
 2. worker 读取 `source_sync_states` 并创建 `ingestion_runs`。每页调用官方用户帖子接口，不排除 replies；请求所需 `referenced_tweets`、`conversation_id`、`edit_history_tweet_ids` 等字段与 expansions。
-3. 以 `(provider, external_id)` upsert `content_items`，以内容字段规范化后的 `payload_hash` 判断是否编辑；关系表使用唯一键 upsert。
+3. 以 `(provider, external_id)` upsert `content_items` 稳定身份，以 payload hash/平台 edit ID 幂等追加 `content_versions`；关系表使用唯一键 upsert，X ID 以字符串持久化但所有水位比较使用 `BigInt`/任意精度十进制语义。
 4. 只有本轮所有页面持久化成功后才在同一事务推进 `since_id`。分页中途失败不推进游标，重跑依赖唯一键去重。
-5. 周期补偿使用最后成功游标重新读取并允许重叠；另对近期活跃内容批量 lookup，识别编辑、删除或不可访问状态。
+5. 周期补偿使用最后成功游标重新读取并允许重叠；另对近期活跃内容批量 lookup。只有明确删除证据或连续复核达到配置门槛才执行清理；批量部分响应、429、权限/网络异常先进入 `verification_pending`，保留旧正文但停止下游再使用。
 6. 每次成功 upsert 后以 `context:{contentId}:{payloadHash}` 创建后续 job；卡片和通知使用内容版本参与幂等键。
 7. 服务启动和定时 reconciliation 扫描 `pending`、过期 `processing`、可重试失败以及“数据库已提交但未入队”的记录，重新排队。
 8. 429、5xx、网络超时为可重试错误，采用指数退避和 jitter；认证失败、预算耗尽、无权限为阻断错误，进入可见终态等待人工处理。
@@ -165,8 +168,9 @@ React 私有站点 ─► NestJS API ─► MySQL
 ### 成本与版本
 
 - 输入以 `contentVersion + contextHash + promptVersion + modelVersion` 形成分析幂等键，相同输入不重复付费。
-- 调用前根据预估 token 和 `AI_DAILY_BUDGET_CENTS` 检查硬预算；达到上限后保持 `pending_budget`，不得静默切换低质量模型。
+- 调用前通过原子 reservation 检查并占用 `AI_DAILY_BUDGET_CENTS`；达到上限后保持 `blocked` 且 `block_reason=budget`，不得静默切换低质量模型。
 - 保存模型、prompt 版本、token usage、provider request ID、耗时和成本；不保存 API key。
+- 生产实现 MUST 落地一个经用户确认的具体 AI provider/model；在 `user_confirm` 前保持 `USER_DECISION_REQUIRED`，未选定时可完成 provider-neutral contract 与 Mock，但真实 AI 能力不得标记完成。
 
 ## 重要性评分
 
@@ -179,18 +183,18 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 ## 通知设计
 
-- `NotificationPolicy` 在评分成功后创建 delivery，稳定 `dedupe_key = feishu:{contentId}:{cardVersion}:{policyVersion}`。
-- 飞书消息只包含标题、分层摘要、重要性理由和私有详情页相对链接；不包含 Token、Webhook、完整 raw payload 或未经验证的 A 股公司结论。
+- `NotificationPolicy` 在评分成功后创建 delivery。技术 delivery key 继续包含 card/policy version；另以内容事件 ID + 用户提醒策略维护用户感知去重与 cooldown，单纯模型/prompt/策略重算不得再次打扰，只有正文实质编辑、观点实质变化或管理员明确重发才允许新提醒。
+- 飞书消息使用稳定事件 ID，并只包含保留不确定性标签的分层摘要、重要性理由和由受校验 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；不包含 Token、Webhook、完整 raw payload 或未经验证的 A 股公司结论。
 - Webhook 仅从服务端 `FEISHU_WEBHOOK_URL` 读取；请求和错误日志对 URL 完全脱敏。
-- 成功响应保存 provider message ID；超时、429、5xx 可重试；4xx 配置错误进入可见终态。
-- 未配置 Webhook 时高价值内容标记 `pending_configuration`，普通归档和网页功能继续运行。
+- 成功响应保存 provider message ID；明确拒绝、连接建立前失败、429、5xx 按分类重试；请求已经发送但响应超时/进程在发送后落库前崩溃时进入 `outcome_unknown`，不自动重发，由管理员核对后显式处理。只有真实联调证明 provider 支持幂等/结果查询时才能收紧为自动补偿。
+- 未配置 Webhook 时高价值内容标记 `blocked` 且 `block_reason=configuration`，普通归档和网页功能继续运行。
 
 ## 私有认证与 API
 
 ### 认证
 
 - `/api/auth/login` 校验环境变量中的管理员用户名和 `scrypt` 密码摘要，比较使用恒定时间函数；失败统一返回通用错误并限速。
-- 登录成功后生成 256-bit 随机会话 ID，Redis 保存 actor、创建时间和过期时间；Cookie 使用 `HttpOnly`、`SameSite=Strict`、生产环境 `Secure`，并用 `SESSION_SECRET` 签名。
+- 登录成功后生成 256-bit 随机会话 token，Cookie 使用 `HttpOnly`、`SameSite=Strict`、生产环境 `Secure` 并由 `SESSION_SECRET` 签名；Redis 只保存 token 哈希、actor、创建时间和绝对 TTL。注销、Redis 记录删除或 Secret 轮换后旧 Cookie 必须失效。
 - 除 `/api/health` 和登录接口外，所有 API 由 `SessionGuard` 保护。写请求额外校验 CSRF token 与 Origin。
 - 无公开注册、找回密码、多角色、OAuth 或多租户；凭据缺失时生产启动失败可见。
 
@@ -202,8 +206,9 @@ React 私有站点 ─► NestJS API ─► MySQL
 | `GET /api/intelligence` | 最新/历史分页，支持 keyword、ticker、topic、importance、contentType、date range |
 | `GET /api/intelligence/:id` | 内容、上下文图、卡片、评分、通知状态和反馈 |
 | `POST /api/intelligence/:id/feedback` | 提交固定枚举反馈和可选短备注 |
-| `GET /api/operations/status` | 最近获取、补偿、上下文、AI、通知和失败摘要 |
-| `POST /api/operations/retry/:attemptId` | 仅管理员对可重试/终态任务发起显式重试，生成审计记录 |
+| `GET /api/operations/status` | ingestion run（poll/compensation mode）及 ingest/context/analysis/score/notify 五阶段、worker heartbeat、阻断/失败摘要 |
+| `GET /api/operations/audit/:runId` | 管理员读取脱敏 ingestion/provider/attempt 证据，不返回 raw payload 或 Secret |
+| `POST /api/operations/retry/:attemptId` | 仅管理员对明确 `manual_retry_allowed` 的 blocked/dead-letter 任务创建新 attempt；不可恢复终态拒绝请求 |
 
 列表 API 使用白名单排序、上限 100 的游标分页和转义后的查询条件。响应 DTO 位于 `shared/contracts/`，不返回 `raw_payload`、内部错误栈、Secret 或 provider credentials。
 
@@ -223,7 +228,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 - 结构化日志字段仅包含 correlation ID、内部实体 ID、stage、attempt、duration 和错误分类；建立集中脱敏函数过滤 URL query、Authorization、Cookie 和已知 Secret 形式。
 - `/api/health` 保持当前稳定响应；私有状态页另展示 MySQL/Redis、队列 backlog、最后成功时间和配置状态，不回显配置值。
 - worker 在处理前取得数据库 lease，在完成/失败时更新 attempt；进程崩溃后 lease 到期可恢复。
-- 超过最大重试次数进入 `terminal_failed`，状态页必须可见，管理员显式重试会创建新 attempt，不覆盖历史。
+- 超过最大重试次数进入 `dead_letter`；只有 `manual_retry_allowed=true` 时管理员才能创建新 attempt chain，不覆盖历史。政策/权限等不可恢复 `blocked` 状态不展示虚假重试入口。
 - 数据源、模型和通知分别有断路/预算状态，禁止把失败记作成功。
 
 ## Secret、合规和投资边界
@@ -257,11 +262,14 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 ## 部署与迁移顺序
 
-1. 生成并审查 Drizzle migration，先创建表和唯一约束。
-2. 配置 MySQL、Redis、管理员密码摘要、Session Secret；未配置真实外部服务时可运行 Mock/测试，但生产同步开关保持关闭。
-3. 启动 API 和 worker，验证健康、认证、队列与 reconciliation。
-4. 配置 X 凭据和预算，完成政策复核后启用单账号轮询。
-5. 配置 AI 与飞书，逐项完成真实联调；任何一步失败均保留在状态页，不回滚已归档原始事实。
+1. 先确定服务端可导入 `shared/` 与 `drizzle/` 的 TypeScript/ESM 构建策略，并为 API、worker 分别生成可运行产物与构建后导入测试。
+2. 生成、审查并通过显式 `db:migrate` 在空库应用 Drizzle migration；生产禁止用 `db:push` 代替版本化迁移，执行前记录备份/停用同步步骤，失败时停止 API/worker 并恢复应用版本或向前修复。
+3. 以幂等 bootstrap 将稳定 X user ID 绑定到 `@aleabitoreddit`，handle 变化只更新显示值，身份不随 handle 漂移。
+4. 配置 MySQL、Redis、管理员密码摘要、Session Secret、`APP_BASE_URL`、外部 deadline/并发/lease/最大 attempt/上下文与 payload 上限；未配置真实外部服务时生产同步保持关闭。
+5. 通过独立 `dev:worker`/`start:worker` 与 Compose/process supervisor 启动 API 和 worker，验证 liveness、readiness、worker heartbeat、优雅退出和 reconciliation；API 健康但 worker 缺失时状态页必须告警。
+6. 配置 X 凭据和预算并记录政策确认人、时间、政策版本及允许 tombstone 字段后启用单账号轮询。
+7. 配置经用户确认的 AI provider/model 与飞书（含所选安全签名策略），逐项完成真实联调；任何一步失败均保留在状态页，不回滚已归档事实。
+8. 本地无 Docker 时，单元/Mock 测试可继续；MySQL/Redis 跨进程恢复、Node 20 镜像与目标部署证据保持待 CI/目标环境验证，不得以内存 Mock 替代。
 
 ## Repair lane
 
@@ -327,7 +335,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 - **涉及模块/文件（猜测）**：`server/infrastructure/notifications/feishu.adapter.ts`
 - **关键函数/类（猜测）**：`FeishuNotificationAdapter.send`
 - **数据流**：脱敏消息 → 服务端 Webhook → provider result → 私有详情链接
-- **验证点**：真实发送一条；未配置时 `pending_configuration`
+- **验证点**：真实发送一条；未配置时 `blocked/configuration`
 
 ### AC-10：私有访问和检索
 - **涉及模块/文件（猜测）**：`server/auth/`、`server/content/`、`client/src/pages/`
@@ -383,6 +391,12 @@ React 私有站点 ─► NestJS API ─► MySQL
 - **数据流**：每条 TC 结果 → 自动化/Mock/真实 API/待人工分类 → 验收汇总
 - **验证点**：Docker、部署、认证和外部凭据未验证项不得标记通过
 
+### AC-19：同一真实内容端到端闭环
+- **涉及模块/文件（猜测）**：全部业务模块、真实 X/AI/飞书适配器、`client/src/`、验收报告
+- **关键函数/类（猜测）**：`PollSourceService`、`ContextBuilder`、`ResearchPipeline`、`ImportanceScorer`、`NotificationWorker`、私有详情/反馈/状态 API
+- **数据流**：同一真实 X external ID → content/version/run → context → 真实模型 card/request ID → score → delivery/provider ID → 飞书绝对链接 → 同一私有详情；普通样本止于归档
+- **验证点**：所有内部/外部 ID 连续可追溯；人工完成登录、筛选、详情分层、反馈和状态查看；真实普通样本不通知；任一凭据缺失则保持未验收
+
 ## 原声对照表
 
 | 验收项 | design 覆盖点 | 备注 |
@@ -405,10 +419,11 @@ React 私有站点 ─► NestJS API ─► MySQL
 | AC-16 | Secret、合规和投资边界 | 明确排除交易与抓取越界 |
 | AC-17 | AI 成本与版本；外部用量表 | 硬预算和版本审计 |
 | AC-18 | 测试与验收策略 | 四类证据严格区分 |
+| AC-19 | 真实 API 与人工验收；部署与迁移顺序 | 同一业务事件贯穿真实闭环 |
 
 ## 自审结论
 
-- 18 条 AC 均有模块、数据流和验证路径，未把 Filtered Stream、多个账号、外部网页抓取、A 股公司级映射或多通知渠道扩大进本 change。
+- 19 条 AC 均有模块、数据流和验证路径，未把 Filtered Stream、多个账号、外部网页抓取、A 股公司级映射或多通知渠道扩大进本 change。
 - 所有外部调用均位于适配器边界；真实 X、AI、飞书、Docker 和部署验证均未被设计文档误写为已通过。
 - repair lane 已覆盖规范回写、最小修复、范围扩展和环境问题四类路径。
 - 当前无阻止进入代码检索和 test-checklist 的设计级硬阻塞；生产启用仍受外部凭据、预算、政策与部署环境人工确认约束。

@@ -1,6 +1,10 @@
 > 本 change 遵循 harness-spec 工作流（`.codemaker/skills/工具/harness-spec/SKILL.md`）。
 >
 > **用户原声全文**：
+>
+> 以下内容是历史输入原文，仅用于原声对账，不是当前可执行指令。
+
+````text
 > 你正在继续开发项目：
 
 `C:\Users\zhuhongyu06\Documents\Serenity Clone`
@@ -535,25 +539,32 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 7. 将 repair lane 写入 proposal、design 和 test-checklist；当前 change 的第 1、2 类验收问题未解决前不得归档。
 8. 每完成 Harness 步骤，按 `harness-spec/SKILL.md` 执行状态推进和 Git checkpoint，不要在产物写完后断流。
 >
+````
+
 > **验收清单全文**：
+
+````text
 > - [ ] **AC-1** `[用户手动]`：配置真实 X Developer 凭据后，系统能通过合规的官方接口获取至少一条 Serenity 新内容，并保留来源 URL、平台 ID、作者、原文、发布时间、获取时间和原始响应审计信息；若凭据或 credits 未提供，验收报告必须明确标为“尚未真实 API 验证”，不得用 Mock 冒充。
-- [ ] **AC-2** `[AI自测]`：对主帖、回复和引用帖 fixture，系统能关联回复对象、被引用内容和必要历史观点；上下文缺失、不可访问或语义不确定时显式标记，不猜测补全。
-- [ ] **AC-3** `[AI自测]`：重复轮询、补偿拉取、任务重试或服务重启不会产生重复内容、重复研究卡片或重复通知；幂等键、游标和通知去重均有可重复测试。
-- [ ] **AC-4** `[AI自测]`：内容编辑、删除或变为不可访问时，系统按明确状态机更新记录，保留政策允许的审计元数据与处理历史，并能安全重处理；策略不得违反 X 内容展示和开发者政策。
-- [ ] **AC-5** `[AI自测]`：中文研究卡片至少包含原文、忠实翻译、内容类型、Serenity 核心判断、历史观点变化、公司/Ticker/主题、明确证据、不确定性、AI 置信度和即时提醒结论，并以结构化字段区分 Serenity 原话、他人内容、AI 解释和未验证推断。
-- [ ] **AC-6** `[用户手动]`：抽查真实内容的研究卡片时，翻译未把猜测写成事实，AI 未声称读取未实际获取的外链，未擅自生成未经证据验证的 A 股受益公司名单，观点变化证据不足时明确说明无法判断。
-- [ ] **AC-7** `[AI自测]`：重要性由可配置的结构化规则和可解释分项共同决定；高价值 fixture 进入通知队列，普通/低价值 fixture 仅归档，阈值变化可测试且不由模型任意覆盖。
-- [ ] **AC-8** `[AI自测]`：通知具有稳定去重键、发送状态、失败原因和可重试机制；模拟发送失败、超时与重试后不静默丢失，也不会重复提醒。
-- [ ] **AC-9** `[用户手动]`：配置真实飞书机器人后，高价值内容能发送一条不泄露 Secret、可追溯到私有详情页的提醒；未配置 Webhook 时系统明确显示待配置，不影响普通内容归档。
-- [ ] **AC-10** `[回写后测]`：未认证访问被拒绝；认证用户可在私有网页查看最新情报、历史时间线和单条详情及上下文，并按关键词、Ticker、主题、重要性和内容类型搜索或筛选。
-- [ ] **AC-11** `[回写后测]`：用户可对研究卡片提交“重要、已知、不相关、继续跟踪、翻译有误、分析有误”等反馈，反馈可追溯到用户、卡片和时间且不会篡改原始内容。
-- [ ] **AC-12** `[回写后测]`：运行状态页展示最近一次获取、补偿任务、上下文补全、AI 分析和通知发送状态；失败任务包含可理解错误与可恢复入口。
-- [ ] **AC-13** `[AI自测]`：模拟数据源中断、限流、上下文补全失败、模型失败、通知失败和进程重启后，任务状态可恢复或进入明确的终态/死信处理，不存在静默成功或静默丢失。
-- [ ] **AC-14** `[AI自测]`：来自帖子、引用、网页和历史档案的文本被作为不可信数据封装；Prompt Injection fixture 不能改变系统指令、读取 Secret、调用越权工具或把不可信指令写成研究结论。
-- [ ] **AC-15** `[AI自测]`：前端产物、API 响应、日志、错误页、测试快照和 Git 扫描均不包含 Token、Webhook、Cookie 或账户信息；Secret 只从服务端配置读取，缺失时失败可见。
-- [ ] **AC-16** `[AI自测]`：系统不存在券商、证券账户、持仓导入、行情交易、自动买卖指令、浏览器 Cookie/模拟登录抓取或微信/QQ Hook 接口；相关越界输入被拒绝或仅作为不可信研究文本处理。
-- [ ] **AC-17** `[AI自测]`：AI 与 X 调用记录供应商/模型或 API 版本、调用状态和可审计的成本计量；预算或速率上限触发时停止新增外部调用并显示原因，不以静默降质兜底。
-- [ ] **AC-18** `[用户手动]`：最终验收报告逐项区分自动化测试、Mock、真实 X/AI/飞书 API 和待人工配置/验证；Docker、部署、认证或外部凭据未实际验证的部分不得标记为通过。
+> - [ ] **AC-2** `[AI自测]`：对主帖、回复和引用帖 fixture，系统能关联回复对象、被引用内容和必要历史观点；上下文缺失、不可访问或语义不确定时显式标记，不猜测补全。
+> - [ ] **AC-3** `[AI自测]`：重复轮询、补偿拉取、任务重试或服务重启不会产生重复内容、重复研究卡片或重复通知；幂等键、游标和通知去重均有可重复测试。
+> - [ ] **AC-4** `[AI自测]`：内容编辑、删除或变为不可访问时，系统按明确状态机更新记录，保留政策允许的审计元数据与处理历史，并能安全重处理；策略不得违反 X 内容展示和开发者政策。
+> - [ ] **AC-5** `[AI自测]`：中文研究卡片至少包含原文、忠实翻译、内容类型、Serenity 核心判断、历史观点变化、公司/Ticker/主题、明确证据、不确定性、AI 置信度和即时提醒结论，并以结构化字段区分 Serenity 原话、他人内容、AI 解释和未验证推断。
+> - [ ] **AC-6** `[用户手动]`：抽查真实内容的研究卡片时，翻译未把猜测写成事实，AI 未声称读取未实际获取的外链，未擅自生成未经证据验证的 A 股受益公司名单，观点变化证据不足时明确说明无法判断。
+> - [ ] **AC-7** `[AI自测]`：重要性由可配置的结构化规则和可解释分项共同决定；高价值 fixture 进入通知队列，普通/低价值 fixture 仅归档，阈值变化可测试且不由模型任意覆盖。
+> - [ ] **AC-8** `[AI自测]`：通知具有稳定去重键、发送状态、失败原因和可重试机制；明确区分确认失败与发送结果未知，模拟发送失败、超时与重试后不静默丢失，也不会对结果未知的发送进行盲目自动重发。
+> - [ ] **AC-9** `[用户手动]`：配置真实飞书机器人后，高价值内容能发送一条不泄露 Secret、可追溯到私有详情页的提醒；未配置 Webhook 时系统明确显示待配置，不影响普通内容归档。
+> - [ ] **AC-10** `[回写后测]`：未认证访问被拒绝；认证用户可在私有网页查看最新情报、历史时间线和单条详情及上下文，并按关键词、Ticker、主题、重要性和内容类型搜索或筛选。
+> - [ ] **AC-11** `[回写后测]`：用户可对研究卡片提交“重要、已知、不相关、继续跟踪、翻译有误、分析有误”等反馈，反馈可追溯到用户、卡片和时间且不会篡改原始内容。
+> - [ ] **AC-12** `[回写后测]`：运行状态页区分 ingestion run 的轮询/补偿模式，并展示 ingest、上下文补全、AI 分析、重要性评分、通知发送和 worker heartbeat；失败/阻断/结果未知任务包含可理解原因与符合资格的恢复入口。
+> - [ ] **AC-13** `[AI自测]`：模拟数据源中断、限流、上下文补全失败、模型失败、通知失败和进程重启后，任务状态可恢复或进入明确的终态/死信处理，不存在静默成功或静默丢失。
+> - [ ] **AC-14** `[AI自测]`：来自帖子、引用、网页和历史档案的文本被作为不可信数据封装；Prompt Injection fixture 不能改变系统指令、读取 Secret、调用越权工具或把不可信指令写成研究结论。
+> - [ ] **AC-15** `[AI自测]`：前端产物、普通 API 正文、日志、错误页、测试快照和 Git 扫描均不泄露 Token、Webhook、第三方/金融 Cookie、管理员凭据、可复用会话 Token 或证券账户信息；允许认证接口设置符合安全属性的本站会话 Cookie，允许保存公开 X 来源标识和内部 actor ID；Secret 只从服务端配置读取，缺失时失败可见。
+> - [ ] **AC-16** `[AI自测]`：系统不存在券商、证券账户、持仓导入、行情交易、自动买卖指令、浏览器 Cookie/模拟登录抓取或微信/QQ Hook 接口；相关越界输入被拒绝或仅作为不可信研究文本处理。
+> - [ ] **AC-17** `[AI自测]`：AI 与 X 调用记录供应商/模型或 API 版本、调用状态和可审计的成本计量；预算或速率上限触发时停止新增外部调用并显示原因，不以静默降质兜底。
+> - [ ] **AC-18** `[用户手动]`：最终验收报告逐项区分自动化测试、Mock、真实 X/AI/飞书 API 和待人工配置/验证；Docker、部署、认证或外部凭据未实际验证的部分不得标记为通过。
+> - [ ] **AC-19** `[用户手动]`：使用同一条真实 Serenity 内容贯穿 X 获取、回复/引用上下文、选定真实 AI 模型、研究卡片、重要性评分、飞书提醒和同一私有详情页，所有阶段 ID 可追溯；另用一条真实普通/低价值内容验证其可检索但不发送提醒，并人工走通登录、筛选、反馈与状态查看。缺少任一真实外部凭据或目标环境时，本项保持未验收。
+
+````
 >
 > ⚠️ tasks 完成后审查链路（强制顺序，场景 A 的首个正式顾问团审查点）：
 > 1. 顾问团审查（所有场景）→ 暴露盲区 → 落盘 `.council-review.log`
@@ -577,20 +588,34 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-3, AC-4, AC-8, AC-11, AC-13, AC-15, AC-17
 
-- [ ] **Task 1.1**: 修正 OpenSpec `spec`/`specs` 规则键并建立业务配置契约
-  - 实现细节: 将 `openspec/config.yaml` 的旧 artifact 规则键修正为当前 schema 支持的 `specs`；以 Zod 定义数据库、Redis、管理员会话、X、AI、飞书、预算和阈值配置，区分生产必填、功能待配置与测试注入，不回显实际值。
+### Task 1.1: 建立业务配置、容量和运行时边界契约
+
+- [ ] [完成] Task 1.1
+  - 实现细节: 以 Zod 定义数据库、Redis、管理员会话、`APP_BASE_URL`、X、AI provider/model、飞书签名策略、生产同步/政策确认、预算/阈值、轮询/补偿/lease/最大 attempt、X/AI/飞书 deadline、worker 并发和上下文/输入输出/raw payload 上限；区分生产必填、待配置与测试注入，不回显实际值。
   - **覆盖测试用例**: TC-15.1, TC-15.2, TC-17.2
-- [ ] **Task 1.2**: 定义 Drizzle 业务 schema、唯一约束和迁移
-  - 实现细节: 按 design 创建 source account/sync state、ingestion run、content item/relation、processing attempt、research card/entity、importance score、notification delivery、feedback 与 usage 表；定义生命周期枚举、UTC 时间、字符串外部 ID、版本和幂等唯一键，生成可审查 migration。
+### Task 1.2: 定义 Drizzle 业务 schema、版本历史、状态机和迁移
+
+- [ ] [完成] Task 1.2
+  - 实现细节: 按 design 创建 source/sync、run、content identity、不可变 content version、lifecycle event、relation、processing intent/attempt、card/entity、score、notification、feedback、usage 与 budget reservation；定义完整状态/阻断原因/人工重试资格、fencing、UTC、字符串 ID 与 BigInt 比较、字段类型/size ceiling 和唯一键，生成可审查 additive migration。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-4.1, TC-4.2, TC-8.1, TC-11.1, TC-13.1, TC-17.1
-- [ ] **Task 1.3**: 建立数据库、Redis、BullMQ 和 repository 基础设施
-  - 实现细节: 实现 Drizzle client/事务、Redis connection、队列注册、job scheduler、数据库 lease、稳定 job ID、repository 与 worker 入口；队列只传内部 ID，数据库状态作为审计真相源。
+### Task 1.3: 建立共享构建、迁移、数据库/队列和 worker 运行闭环
+
+- [ ] [完成] Task 1.3
+  - 实现细节: 先解决服务端导入 `shared/`/`drizzle/` 的 TypeScript/ESM 构建边界并保持 API 启动路径；实现显式 `db:migrate`、Drizzle client/事务、Redis/BullMQ、durable pending intent、dispatcher、lease owner/fencing、reconciliation、稳定 job ID、worker heartbeat/优雅退出以及 `dev:worker`/`start:worker`/Compose 启动入口。生产不得用 `db:push` 代替 migration。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-8.2, TC-13.1, TC-13.2
-- [ ] **Task 1.4**: 建立共享 DTO、错误分类和集中日志脱敏
-  - 实现细节: 在 `shared/contracts/` 定义内容、卡片、筛选、反馈、状态 DTO；实现稳定错误码、敏感字段过滤和 correlation ID，确保业务 DTO 不返回 raw payload、内部栈或凭据。
+### Task 1.4: 建立基础共享 DTO、错误分类、状态契约和集中日志脱敏
+
+- [ ] [完成] Task 1.4
+  - 实现细节: Group 1 只在 `shared/contracts/` 定义 ID、分页、错误、pipeline/delivery 状态和 envelope；研究卡片契约由 Group 3 单点拥有。实现稳定错误码与 retryability、敏感字段过滤和 correlation ID，确保业务 DTO 不返回 raw payload、内部栈或凭据。
   - **覆盖测试用例**: TC-11.2, TC-15.1, TC-15.2, TC-17.1
 
-- [ ] [自测] 运行 `pnpm db:generate`，人工审查 migration 不含默认 Secret；运行 `pnpm check && pnpm test && pnpm lint && pnpm audit:secrets`
+### Task 1.5: 建立分层测试环境与可重复清理
+
+- [ ] [完成] Task 1.5
+  - 实现细节: 明确 Node 单元/Mock、DOM/API 集成、真实 MySQL/Redis 跨进程测试三层；增加 DOM 交互与 Nest API 测试工具、测试专用 URL、migration/seed/队列清理命令。当前无 Docker 时第三层保持待 CI/目标环境验证，不以 repository Mock 冒充。
+  - **覆盖测试用例**: TC-3.1, TC-3.2, TC-10.1, TC-10.2, TC-13.1, TC-13.2, TC-18.1
+
+- [ ] [自测] 按顺序运行 `pnpm db:generate`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`；每条命令退出码均为 0，migration 存在且不含默认 Secret，构建后 API/worker 入口可解析
 - [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认本组只建立当前单源闭环所需数据与基础设施，无业务范围扩张
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 1`
 
@@ -598,20 +623,28 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-1, AC-3, AC-4, AC-13, AC-15, AC-17
 
-- [ ] **Task 2.1**: 实现 X 官方 API 适配器与脱敏契约测试
+### Task 2.1: 实现 X 官方 API 适配器与脱敏契约测试
+
+- [ ] [完成] Task 2.1
   - 实现细节: 实现账号解析、用户内容分页和批量 lookup，读取 `since_id`、pagination token、replies、referenced tweets、conversation 与 edit history 字段；对 429、5xx、认证、权限和预算错误分类，禁止模拟登录或 Cookie 抓取。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-13.1, TC-13.2, TC-15.1, TC-17.1, TC-17.2
-- [ ] **Task 2.2**: 实现轮询、分页事务、游标和重叠补偿
-  - 实现细节: 固定单账号 scheduler/job ID；逐页 upsert 内容和关系，只有全部页面成功后推进游标；实现重叠补偿、入队失败补偿与调用用量记录。
+### Task 2.2: 实现 Serenity 身份 bootstrap、轮询、游标和补偿
+
+- [ ] [完成] Task 2.2
+  - 实现细节: 幂等解析并绑定稳定 X user ID 与当前 handle；固定单账号 scheduler/job ID；逐页 upsert 内容和关系，按 source 单写 lease/CAS 和 BigInt 水位比较只在全页成功后单调推进游标；实现重叠补偿、持久工作意图投递与用量记录。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-13.1, TC-17.1
-- [ ] **Task 2.3**: 实现内容编辑、删除、不可访问和政策门禁
-  - 实现细节: 以 payload hash 检测编辑并只重处理新版本；定期复核近期内容；删除/不可访问时隐藏或清理受限正文/raw payload 并保留最小 tombstone；生产同步要求已记录政策人工确认。
+### Task 2.3: 实现内容版本、删除确认和政策门禁
+
+- [ ] [完成] Task 2.3
+  - 实现细节: 以 payload hash/edit ID 幂等追加不可变版本并只重处理新版本；暂态缺项进入 verification pending，只有明确/连续确认才按字段级删除矩阵清理内容版本、派生卡片/索引/通知证据中的受限正文；保留最小 tombstone。生产同步要求记录确认人、时间、政策版本与允许字段。
   - **覆盖测试用例**: TC-4.1, TC-4.2, TC-15.1
-- [ ] **Task 2.4**: 增加 X 获取、幂等和生命周期 fixture 测试
+### Task 2.4: 增加 X 获取、幂等和生命周期 fixture 测试
+
+- [ ] [完成] Task 2.4
   - 实现细节: 覆盖两页中断、重复轮询、补偿、重启、429、认证阻断、编辑重复、删除/不可访问清理和原始响应脱敏；Mock 证据不得标成真实 API。
   - **覆盖测试用例**: TC-1.2, TC-3.1, TC-3.2, TC-4.1, TC-4.2, TC-13.1, TC-13.2
 
-- [ ] [自测] 运行 `pnpm test -- server/ingestion server/infrastructure/x`，再运行 `pnpm check && pnpm lint && pnpm audit:secrets`
+- [ ] [自测] 按顺序运行 `pnpm test -- server/ingestion server/infrastructure/x`、`pnpm check`、`pnpm lint`、`pnpm audit:secrets`；退出码均为 0，重复/并发游标不回退，暂态 lookup 不清理正文，Mock 不被标为真实 API
 - [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认只使用官方服务端接口并覆盖帖子、回复、引用、补偿和生命周期
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 2`
 
@@ -619,16 +652,24 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-2, AC-5, AC-6, AC-14, AC-15, AC-17
 
-- [ ] **Task 3.1**: 实现回复、引用和本地历史观点上下文构造
-  - 实现细节: 优先使用 expansions，再 lookup 缺失引用；以有界图防循环/成本失控；只从已归档 Serenity 卡片中按 ticker/topic 找历史候选，缺失/不可访问/证据不足时保留原因。
+### Task 3.1: 实现回复、引用和冷启动历史观点上下文
+
+- [ ] [完成] Task 3.1
+  - 实现细节: 优先使用 expansions，再 lookup 缺失引用；以有界图防循环/成本失控；只从已归档 Serenity 卡片中按 ticker/topic 找历史候选。冷启动默认从上线日起积累，未获授权不导入参考仓库；历史不足、缺失或不可访问时保留原因和完整性信号。
   - **覆盖测试用例**: TC-2.1, TC-2.2, TC-6.2
-- [ ] **Task 3.2**: 定义研究输入与卡片结构化契约
+### Task 3.2: 定义研究输入与卡片结构化契约
+
+- [ ] [完成] Task 3.2
   - 实现细节: 以 Zod 区分原文、忠实翻译、Serenity statements、other-party statements、AI interpretations、unverified inferences、观点变化、entities、evidence、uncertainties、confidence 和 importance features；校验 source ID 与置信度。
   - **覆盖测试用例**: TC-5.1, TC-5.2, TC-6.1, TC-6.2
-- [ ] **Task 3.3**: 实现无工具 AI 适配器、Prompt Injection 防护和预算守卫
-  - 实现细节: 外部文字进入带来源的 untrusted data envelope；模型无网络/文件/环境变量/工具能力；实现 schema/来源/越权校验、分析幂等键、prompt/model 版本、token/cost 审计和硬预算阻断。
+### Task 3.3: 实现无工具 AI 核心与经用户确认的生产适配器
+
+- [ ] [完成] Task 3.3
+  - 实现细节: 外部文字进入带来源的 untrusted data envelope；模型无网络/文件/环境变量/工具能力；实现 schema/来源/越权校验、分析幂等键、prompt/model 版本、token/cost 审计和原子预算 reservation。具体生产 provider/model 必须先完成 `USER_DECISION_REQUIRED` 裁决；未裁决时只允许完成 provider-neutral contract/Mock，真实 AI 能力保持未验收。
   - **覆盖测试用例**: TC-14.1, TC-14.2, TC-15.1, TC-15.2, TC-17.1, TC-17.2
-- [ ] **Task 3.4**: 增加上下文、信息质量、非法输出和恶意输入测试
+### Task 3.4: 增加上下文、信息质量、非法输出和恶意输入测试
+
+- [ ] [完成] Task 3.4
   - 实现细节: 使用完整/缺失上下文、推测措辞、未读外链、无证据 A 股公司、伪造来源、高置信度越界和 Secret canary fixtures；真实质量抽查项保持待人工。
   - **覆盖测试用例**: TC-2.1, TC-2.2, TC-5.1, TC-5.2, TC-6.1, TC-6.2, TC-14.1, TC-14.2
 
@@ -640,16 +681,24 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-7, AC-8, AC-9, AC-13, AC-15, AC-17
 
-- [ ] **Task 4.1**: 实现版本化重要性评分器和通知策略
+### Task 4.1: 实现版本化重要性评分器和通知策略
+
+- [ ] [完成] Task 4.1
   - 实现细节: 对产业相关性、新颖度、观点变化、证据质量、时效/催化和不确定性执行服务端确定性加权；保存权重/阈值快照、总分和解释；默认高分且置信度合格才通知，低分仅归档。
   - **覆盖测试用例**: TC-7.1, TC-7.2
-- [ ] **Task 4.2**: 实现通知 reservation、稳定去重和失败恢复
-  - 实现细节: 以 channel/content/cardVersion/policyVersion 形成 dedupe key；事务 reservation 后入队；记录 pending/sending/sent/retryable/terminal/suppressed/pending_configuration 与 attempt。
+### Task 4.2: 实现通知 reservation、用户感知去重和结果未知处理
+
+- [ ] [完成] Task 4.2
+  - 实现细节: 以内容事件维护用户感知去重/cooldown，以 channel/content/cardVersion/policyVersion 形成技术 delivery key；事务 reservation 后入队；记录 pending/sending/sent/retryable/outcome_unknown/blocked/dead-letter/suppressed 与 attempt，歧义超时不自动重发。
   - **覆盖测试用例**: TC-8.1, TC-8.2, TC-13.1, TC-13.2
-- [ ] **Task 4.3**: 实现唯一生产渠道飞书适配器
-  - 实现细节: 发送分层摘要、重要性理由和私有详情链接；完全脱敏 Webhook；解析 provider 回执；将超时/429/5xx 与不可恢复 4xx 分类；QQ/邮件不实现。
+### Task 4.3: 实现唯一生产渠道飞书适配器
+
+- [ ] [完成] Task 4.3
+  - 实现细节: 发送保留来源/不确定性标签的分层摘要、重要性理由和由 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；按用户确认的签名策略调用并完全脱敏 Webhook；区分明确失败与结果未知；QQ/邮件不实现。
   - **覆盖测试用例**: TC-9.1, TC-9.2, TC-15.1, TC-17.1
-- [ ] **Task 4.4**: 增加评分、重复通知、超时与配置缺失测试
+### Task 4.4: 增加评分、重复通知、结果未知与配置缺失测试
+
+- [ ] [完成] Task 4.4
   - 实现细节: 参数化高低价值、边界阈值、模型相反建议、并发入队、发送超时、重试成功、4xx 和无 Webhook；真实飞书发送保留人工证据位。
   - **覆盖测试用例**: TC-7.1, TC-7.2, TC-8.1, TC-8.2, TC-9.1, TC-9.2
 
@@ -661,17 +710,25 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-10, AC-11, AC-12, AC-13, AC-15, AC-16
 
-- [ ] **Task 5.1**: 实现单管理员登录和 Redis 服务端会话
-  - 实现细节: 使用环境用户名与 Node `scrypt` 摘要、恒定时间比较、登录限速、随机会话 ID、签名 HttpOnly/SameSite Cookie、生产 Secure、CSRF/Origin 校验；无注册、多角色或 OAuth。
+### Task 5.1: 实现单管理员登录和 Redis 服务端会话
+
+- [ ] [完成] Task 5.1
+  - 实现细节: 使用环境用户名与 Node `scrypt` 摘要、恒定时间比较、登录限速、随机会话 token、签名 HttpOnly/SameSite Cookie、生产 Secure、CSRF/Origin 校验；Redis 只存 token 哈希与绝对 TTL，覆盖注销、过期、记录删除和 Secret 轮换失效；无注册、多角色或 OAuth。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1, TC-15.2
-- [ ] **Task 5.2**: 实现情报列表、时间线、详情和组合筛选 API
-  - 实现细节: 提供受 Guard 保护的列表/详情接口；支持 keyword/ticker/topic/importance/contentType/date range、白名单排序和有界分页；详情返回上下文、卡片、评分、通知状态但不返回 raw payload。
+### Task 5.2: 实现情报列表、时间线、详情和组合筛选 API
+
+- [ ] [完成] Task 5.2
+  - 实现细节: 提供受 Guard 保护的列表/详情接口；支持 keyword/ticker/topic/importance/contentType/date range、白名单排序和有界 cursor 分页，使用 `(published_at, internal_id)` 等稳定复合顺序；详情返回上下文完整性、卡片、评分、通知状态但不返回 raw payload。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1, TC-16.1, TC-16.2
-- [ ] **Task 5.3**: 实现追加式反馈 API
+### Task 5.3: 实现追加式反馈 API
+
+- [ ] [完成] Task 5.3
   - 实现细节: 固定六种反馈枚举，可选短备注；服务端绑定 actor/card/version/time；拒绝未知类型、超长备注、伪造 actor、不存在卡片和无 CSRF 请求。
   - **覆盖测试用例**: TC-11.1, TC-11.2
-- [ ] **Task 5.4**: 实现状态聚合与显式恢复 API
-  - 实现细节: 聚合获取、补偿、上下文、AI、通知、队列、待配置和终态失败；只允许管理员对可恢复 attempt 创建新 attempt，保留旧历史且不回显配置值。
+### Task 5.4: 实现状态、脱敏审计与显式恢复 API
+
+- [ ] [完成] Task 5.4
+  - 实现细节: 将 poll/compensation 作为 ingestion mode，聚合 ingest/context/analysis/score/notify、队列、worker heartbeat、待配置、预算阻断、outcome_unknown 和 dead-letter；提供脱敏 run/attempt/provider 审计视图。仅对 `manual_retry_allowed` 的 blocked/dead-letter 创建新 attempt，不可恢复状态拒绝，保留旧历史且不回显配置值。
   - **覆盖测试用例**: TC-12.1, TC-12.2, TC-13.2, TC-15.2
 
 - [ ] [自测] 运行 `pnpm test -- server/auth server/content server/feedback server/operations`，并对未认证、非法筛选、CSRF、越界动作和 Secret canary 执行负向 API 测试
@@ -682,16 +739,24 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-5, AC-6, AC-10, AC-11, AC-12, AC-15
 
-- [ ] **Task 6.1**: 建立登录、会话恢复和受保护导航
+### Task 6.1: 建立登录、会话恢复和受保护导航
+
+- [ ] [完成] Task 6.1
   - 实现细节: 替换初始化占位页，增加 `/login`、认证状态加载、401 回登录、注销和同源 CSRF 请求封装；页面不读取或展示任何外部 Secret。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1
-- [ ] **Task 6.2**: 实现最新情报、时间线和筛选界面
+### Task 6.2: 实现最新情报、时间线和筛选界面
+
+- [ ] [完成] Task 6.2
   - 实现细节: 展示内容类型、时间、主题、分数、置信度和通知状态；支持 keyword/ticker/topic/importance/contentType/date range 与分页，明确 loading/empty/error 状态。
   - **覆盖测试用例**: TC-10.1, TC-10.2
-- [ ] **Task 6.3**: 实现分层详情和上下文展示
+### Task 6.3: 实现分层详情和上下文展示
+
+- [ ] [完成] Task 6.3
   - 实现细节: 独立展示原文/来源、忠实翻译、Serenity 判断、他人内容、AI 解释、未验证推断、证据、不确定性、观点变化、评分、通知和上下文；tombstone 不展示已清除正文。
   - **覆盖测试用例**: TC-5.1, TC-6.1, TC-6.2, TC-10.1
-- [ ] **Task 6.4**: 实现反馈控件和运行状态页
+### Task 6.4: 实现反馈控件和运行状态页
+
+- [ ] [完成] Task 6.4
   - 实现细节: 六种反馈按钮与回显；状态页展示五阶段、最后成功、失败原因、待配置项、队列与可恢复入口，禁止显示配置值或内部栈。
   - **覆盖测试用例**: TC-11.1, TC-11.2, TC-12.1, TC-12.2
 
@@ -703,40 +768,56 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 [验收映射] AC-3, AC-8, AC-13, AC-14, AC-15, AC-16, AC-17
 
-- [ ] **Task 7.1**: 实现 reconciliation、lease 回收和终态/死信
-  - 实现细节: 扫描 pending、过期 processing、已提交未入队和可重试失败；恢复时创建新 attempt；达到最大重试或永久错误进入终态，显式人工重试不覆盖历史。
+### Task 7.1: 强化 reconciliation、fencing、阻断与死信并发测试
+
+- [ ] [完成] Task 7.1
+  - 实现细节: 在 Group 1 核心恢复上覆盖 pending、过期 processing、durable intent、retryable/blocked/dead-letter/outcome_unknown；验证旧 worker 迟到提交被拒绝、并发预算 reservation 不越线、人工重试资格一致，显式恢复不覆盖历史。
   - **覆盖测试用例**: TC-3.2, TC-8.2, TC-13.1, TC-13.2
-- [ ] **Task 7.2**: 建立从获取到归档/通知的端到端 fixture 测试
+### Task 7.2: 建立从获取到归档/通知的端到端 fixture 测试
+
+- [ ] [完成] Task 7.2
   - 实现细节: 覆盖主帖/回复/引用、高低价值、重复输入、编辑、缺失上下文、模型失败、通知失败和进程重启；断言高价值一次通知、低价值仅归档、无静默丢失。
   - **覆盖测试用例**: TC-3.1, TC-7.1, TC-8.1, TC-13.1
-- [ ] **Task 7.3**: 建立 Prompt Injection、Secret 和只读研究专项测试
+### Task 7.3: 建立 Prompt Injection、Secret 和只读研究专项测试
+
+- [ ] [完成] Task 7.3
   - 实现细节: 扩展 `audit:secrets` 覆盖 bundle、API、日志、错误页和快照；参数化恶意指令、Secret canary、下单/持仓/Cookie/Hook 越界输入，检查路由/依赖和零副作用。
   - **覆盖测试用例**: TC-14.1, TC-14.2, TC-15.1, TC-15.2, TC-16.1, TC-16.2
-- [ ] **Task 7.4**: 建立用量、预算和限流专项测试
+### Task 7.4: 建立用量、原子预算和限流专项测试
+
+- [ ] [完成] Task 7.4
   - 实现细节: 校验 X/AI 版本、request ID、资源/token/cost 汇总、分析幂等；预算/速率耗尽后断言 provider 新调用为 0、状态阻断且不切换低质量模型。
   - **覆盖测试用例**: TC-17.1, TC-17.2
 
-- [ ] [自测] 运行 `pnpm check && pnpm test && pnpm lint && pnpm build && pnpm audit:secrets`，并确认故障注入套件在重复执行时结果一致
+- [ ] [自测] 按顺序运行 `pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；退出码均为 0，故障注入重复执行结果一致，Secret canary 零命中
 - [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认所有失败可见可恢复、外部文本不可信、无交易/Hook/客户端抓取边界突破
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 7`
 
 ## Group 8: 真实联调边界、人工验收资料与交付收敛
 
-[验收映射] AC-1, AC-6, AC-9, AC-18
+[验收映射] AC-1, AC-6, AC-9, AC-10, AC-11, AC-12, AC-18, AC-19
 
-- [ ] **Task 8.1**: 编写外部配置、政策复核和真实联调操作说明
-  - 实现细节: 记录 X Developer/credits/Token、选定 AI 供应商/模型/预算、飞书 Webhook、生产同步开关、X Developer Policy/Display Requirements 人工复核步骤；只写变量名与操作，不写实际 Secret。
+### Task 8.1: 编写外部配置、启动、政策复核和真实联调操作说明
+
+- [ ] [完成] Task 8.1
+  - 实现细节: 固定说明文件路径；记录 migration、Serenity bootstrap、API/worker、管理员摘要生成、`APP_BASE_URL`、X Developer/credits/Token、经用户确认的 AI provider/model/预算、飞书签名/Webhook、生产同步开关，以及 X 政策确认人/时间/版本/允许字段；只写变量名与操作，不写实际 Secret。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2
-- [ ] **Task 8.2**: 建立四类验收证据和结果记录模板
-  - 实现细节: 为每条 TC 提供自动化、Mock、真实 API、待人工配置/验证分类、证据位置、执行时间、provider/request ID、成本和脱敏要求；Docker、HTTPS、部署和认证未实际验证时必须保持待测。
-  - **覆盖测试用例**: TC-18.1, TC-18.2
-- [ ] **Task 8.3**: 执行实现前后完整一致性与范围审计
-  - 实现细节: 校验 proposal/design/specs/test-checklist/tasks/代码的 AC↔TC↔Task 追溯；检查不包含多账号、新闻抓取、A 股公司级映射、多个通知渠道、行情、持仓或交易；记录 `docs/project-pitfalls.md` 缺失和本 change 实际遇到的可复用坑。
-  - **覆盖测试用例**: TC-16.1, TC-16.2, TC-18.1, TC-18.2
-- [ ] **Task 8.4**: 准备真实人工验收但不伪造未提供的外部证据
-  - 实现细节: 若用户提供凭据与目标环境，逐项执行真实 X/AI/飞书、HTTPS/Secure Cookie、重启恢复和视觉抽查；否则明确保留未验收状态，不用 Mock、截图样例或本地非容器运行替代。
-  - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2, TC-18.1, TC-18.2
+### Task 8.2: 建立四类验收证据和结果记录模板
 
-- [ ] [自测] 运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、Harness 追溯检查以及 `pnpm check && pnpm test && pnpm lint && pnpm build && pnpm audit:secrets`
+- [ ] [完成] Task 8.2
+  - 实现细节: 固定验收报告/脱敏附件路径；为每条 TC 分开记录执行方式、唯一实际证明力类别、状态、证据位置、执行时间、provider/request ID、成本与环境；缺关键字段时机械禁止标为真实通过，Docker/HTTPS/部署/认证未验证时保持待测。
+  - **覆盖测试用例**: TC-18.1, TC-18.2
+### Task 8.3: 执行一致性、范围、路由与状态文档审计
+
+- [ ] [完成] Task 8.3
+  - 实现细节: 用绝对脚本路径校验 AC↔TC↔Task；用注册路由、模块依赖、数据表和适配器 allowlist 证明无交易/Hook 能力；检查无多账号/新闻/A 股公司映射/多渠道/行情/持仓；更新 README、STATUS、PROJECT_MAP 和 `.env.example` 为实际状态，不把缺失的 `docs/project-pitfalls.md` 变成产品需求。
+  - **覆盖测试用例**: TC-16.1, TC-16.2, TC-18.1, TC-18.2
+### Task 8.4: 执行同一真实内容闭环和浏览器人工验收
+
+- [ ] [完成] Task 8.4
+  - 实现细节: 若用户提供凭据与目标环境，以同一真实内容追踪 X→context→真实 AI→score→飞书→绝对 HTTPS 详情，另用真实普通内容校准低打扰；人工完成登录、搜索/筛选、反馈、状态、Prompt Injection 语义抽查。否则明确保留未验收，不用 Mock/截图样例/本地非容器运行替代。
+  - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2, TC-10.1, TC-11.1, TC-12.1, TC-18.1, TC-18.2, TC-19.1, TC-19.2
+
+- [ ] [自测] 按顺序运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、`python "C:\Users\zhuhongyu06\.codex\skills\spec-review-debate\scripts\check_traceability.py" "openspec/changes/build-serenity-intelligence-monitor"`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；全部退出码为 0，追溯报告 `passed=true`，未验证外部证据保持待测
 - [ ] [原声对账] 重新读 proposal.md 中的用户原声，逐项确认完成单账号可靠闭环且所有外部未验证项被如实保留
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 8`

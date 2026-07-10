@@ -1,0 +1,126 @@
+# Council Review Log
+
+## 会话 1：A7 / Tasks 级正式顾问团（修订前）
+
+- reviewed_at_commit: `16a7980caf5fad5c91052144cb54bbc3a8f0e657`
+- reviewed_files:
+  - proposal.md: `c6e00ec14172877fb8dfda402047c7b6424900a7`
+  - design.md: `9042c0038100f416ca30dbcc43252640e87e4740`
+  - test-checklist.md: `b9d668c539ec88f1a5c04f044a248afff8609b57`
+  - tasks.md: `83e5c16f2bec249dcfad13005c63e9479882d261`
+  - specs/importance-and-notification/spec.md: `9abbe20ed23f96de44e4e173cc2c88e7bc979e22`
+  - specs/operations-and-recovery/spec.md: `9b2b13ae58268debd398425449cfb3078758c5fb`
+  - specs/private-research-workspace/spec.md: `899620de9c20bdb7b2004bff2e6df93972b64da3`
+  - specs/research-context-and-card/spec.md: `aca2210655db42a47ad23840cf7d233355a1260a`
+  - specs/serenity-content-ingestion/spec.md: `a245f69f5eb0517d0141089b171b1052a90f59c3`
+  - specs/project-foundation/spec.md: 未生成
+- docs/project-pitfalls.md: 不存在；所有顾问均收到这一事实，未假装读取。
+
+### 共识
+
+1. **P0 追溯门禁失败**：32 个任务使用列表格式，已安装 `check_traceability.py` 只识别 Task 标题；主席复核得到 `passed=false / tasks.md contains no Task headings`。
+2. **P0 任务统计污染**：复制到 tasks 的 AC-2～AC-18 未保持引用前缀，OpenSpec 把它们当成实施任务，修订前显示 `0/73 tasks`。
+3. **P0 通知 exactly-once 不可证明**：普通飞书 Webhook 在“provider 可能已收、本地响应超时”窗口中无法同时绝对保证不丢与不重；本地唯一键不能约束远端副作用。
+4. **P1 真实闭环证据缺失**：现有真实 X、AI、飞书和网页验收可分段通过，却没有用同一 content/run/card/delivery 串起用户原声要求的单源闭环。
+5. **P1 版本和恢复模型不完整**：content current row 不能支持多次编辑审计；提交到入队间缺 durable intent；lease 缺 fencing；删除暂态缺项存在误清理风险；预算检查缺并发 reservation。
+6. **P1 可运行交付链不完整**：独立 worker、migration apply、Serenity bootstrap、shared/drizzle 服务端构建、MySQL/Redis 集成测试、前端 DOM/API 测试和绝对详情 URL 都缺明确任务落点。
+7. **P1 真实 AI 未定**：provider/model 尚未选择，当前任务可能只落地 interface + Mock，不能把核心 AI 能力标为完成。
+8. **P1 证据边界需收紧**：Mock Prompt Injection 只能证明无工具/schema/来源边界；重要性 fixture 只能证明算术；真实模型语义安全、低打扰和网页可用性需要人工/真实证据。
+9. **P1 主规格冲突**：新工作区替换初始化页、构建产物 Secret 扫描扩展了 `project-foundation`，不能继续声明主规格不修改。
+10. **P2 工件可执行性**：PowerShell 5.1 不支持 `&&`；状态枚举、终态人工重试、证据字段、冷启动历史和状态页阶段口径不一致；README/STATUS/PROJECT_MAP 已过期。
+
+### 盲区
+
+1. 飞书摘要本身也必须保留来源、不确定性与 AI/作者分层，不能只检查详情页。
+2. 同一内容因 model/prompt/policy 重算可能产生用户感知重复提醒，技术 delivery 去重不足。
+3. 上下文完整性、端到端阶段时间与积压应对用户可见，才能判断“没有上下文”还是“尚未获取/处理中”。
+4. 预算阻断后的产品行为必须明确：原文继续归档、AI/通知阻断、待处理可见、恢复后可续办且不重复提醒。
+5. 稳定 Serenity user ID 与 handle 连续性未单独验收，存在改名/配置错误时抓错来源风险。
+
+### 遗漏
+
+1. `project-foundation` delta spec。
+2. append-only content version/lifecycle event、verification pending、durable pending intent/fencing、budget reservation。
+3. `outcome_unknown` 与人工核对语义，以及用户感知提醒 cooldown。
+4. API/worker/migration/build/test/Compose 启动链、readiness/heartbeat、脱敏审计入口。
+5. 冷启动历史策略、真实代表样本校准、真实模型对抗抽查。
+6. 本站会话 Cookie 与第三方/金融 Cookie、公开 X 标识、内部 actor ID 的精确定义。
+7. 验收报告固定路径与执行方式/唯一证明力类别分离。
+
+### 建议调整
+
+- P0/P1 中不涉及产品选择的修订由主席直接回写 proposal、design、specs、test-checklist、tasks 和流程配置。
+- 高可用、多账号、多源、Filtered Stream、全文检索引擎、新通知渠道、OIDC、多角色、在线学习、A 股公司级映射继续延期，避免把本 change 扩成平台工程。
+- AI provider/model 与飞书安全签名策略属于实现方向裁决，保留到 `user_confirm` 合批确认。
+
+### 判定
+
+`REVISION_REQUIRED`。存在可复现 P0，禁止直接进入 debate；主席先修订并追加复审会话。
+
+## 会话 2：A7 / 主席修订后复审
+
+- reviewed_at_commit: `16a7980caf5fad5c91052144cb54bbc3a8f0e657`
+- reviewed_files:
+  - proposal.md: `168ed68088eb4210c8069d2a2b478e8d0656c4f1`
+  - design.md: `329a6254b08b4559672b731b45a5fd5e0c596746`
+  - test-checklist.md: `3fa1c32b5266fb0f39722ac841c239a51aa8317e`
+  - tasks.md: `b45129e54a10b1653e7c1d5fbd153f36852cfb78`
+  - specs/importance-and-notification/spec.md: `5eb9fc212f7d1c47ca3a625c24f453edece3c696`
+  - specs/operations-and-recovery/spec.md: `e11869f73abf4dfbe7c977dd42534634905749b2`
+  - specs/private-research-workspace/spec.md: `3fd728497143a5460c02cd5ec2a634fa4036b80f`
+  - specs/project-foundation/spec.md: `b56559feca80cecaa37332740d9c7bbfadfb0e0b`
+  - specs/research-context-and-card/spec.md: `07de600c3189f073b7ce20c77132f681caea57b0`
+  - specs/serenity-content-ingestion/spec.md: `6faeaa1c7448b3ab06b75ef458387a6f4ba983d7`
+- 注：以上 working-tree hash 在本会话最终验证时重新计算；若后续机械修订改变 hash，以 Git checkpoint 前的最终哈希附录为准。
+
+### 共识
+
+1. tasks 已转换为 33 个可识别 `### Task N.N`，每个均有完成 checkbox 和 TC 覆盖；复制 AC 均保持 blockquote。
+2. proposal 新增 AC-19，test-checklist 新增 TC-19.1/19.2，要求同一真实内容贯穿 X→上下文→真实 AI→评分→飞书→同一详情，并以真实普通内容验证低打扰、冷启动、预算阻断和浏览器操作。
+3. 通知语义改为明确失败可重试、歧义超时进入 `outcome_unknown` 且禁止盲目自动重发；加入用户感知去重/cooldown。
+4. 数据/恢复设计加入 content versions、lifecycle events、verification pending、durable pending intent、fencing 与原子预算 reservation。
+5. 任务补齐 shared/drizzle 构建、显式 migration、worker/Compose/heartbeat、Serenity bootstrap、分层测试环境、审计 API 与绝对 `APP_BASE_URL`。
+6. 新增 `project-foundation` delta spec，精确定义本站会话 Cookie 与禁止的第三方/金融 Cookie/凭据边界。
+
+### 盲区
+
+- 真实 AI provider/model 尚未选择；在选择前只能完成 provider-neutral contract/Mock。
+- 飞书是否启用安全签名尚未确认；普通 Webhook 的 outcome-unknown 保守语义已作为默认安全方案。
+- Docker、MySQL/Redis 跨进程、Node 20 镜像、HTTPS 和目标部署仍缺当前机器实证，必须保持待人工/CI 验证。
+
+### 遗漏
+
+- 无阻止进入 debate 的已知 P0；最终 hash、OpenSpec 严格校验、追溯脚本和任务统计需在本会话末重新验证。
+
+### 建议调整
+
+1. `USER_DECISION_REQUIRED`：选择本 change 唯一生产 AI provider/model；推荐优先选择支持严格结构化 JSON 输出、usage 返回和稳定 request ID 的服务。
+2. `USER_DECISION_REQUIRED`：确认飞书机器人安全策略；推荐启用签名（若目标机器人/部署支持），无论选择如何都保留 Webhook 脱敏和 outcome-unknown 语义。
+3. 用户在 `user_confirm` 同时确认新增 AC-19 与修订后的通知语义，避免在实施中再次拆问。
+
+### 判定
+
+`CONDITIONALLY_READY_FOR_DEBATE`：P0 已修复；带 2 项用户裁决和外部环境待验收边界进入 debate。
+
+## 会话 2 最终哈希与门禁附录
+
+- final_reviewed_at_commit: `16a7980caf5fad5c91052144cb54bbc3a8f0e657`
+- final_reviewed_files:
+  - proposal.md: `168ed68088eb4210c8069d2a2b478e8d0656c4f1`
+  - design.md: `329a6254b08b4559672b731b45a5fd5e0c596746`
+  - test-checklist.md: `3fa1c32b5266fb0f39722ac841c239a51aa8317e`
+  - tasks.md: `b45129e54a10b1653e7c1d5fbd153f36852cfb78`
+  - specs/importance-and-notification/spec.md: `5eb9fc212f7d1c47ca3a625c24f453edece3c696`
+  - specs/operations-and-recovery/spec.md: `e11869f73abf4dfbe7c977dd42534634905749b2`
+  - specs/private-research-workspace/spec.md: `3fd728497143a5460c02cd5ec2a634fa4036b80f`
+  - specs/project-foundation/spec.md: `b56559feca80cecaa37332740d9c7bbfadfb0e0b`
+  - specs/research-context-and-card/spec.md: `07de600c3189f073b7ce20c77132f681caea57b0`
+  - specs/serenity-content-ingestion/spec.md: `6faeaa1c7448b3ab06b75ef458387a6f4ba983d7`
+  - `.gitignore`: `fad87ac38379ad66971c38c5ff3c882886f04f20`
+  - `openspec/config.yaml`: `2fd40f4c37c365aa8b8c21c5dca2c830b0c70139`
+- verification:
+  - `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`: passed
+  - `check_traceability.py`: passed；19 AC / 38 TC / 33 Task，全部映射
+  - `openspec list`: `0/57 tasks`，不再包含验收清单中的 19 个 AC checkbox
+  - Harness `gate-check council_review`: passed
+  - `git diff --check`: passed

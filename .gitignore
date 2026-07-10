@@ -6,6 +6,8 @@ coverage/
 .env.*
 !.env.example
 *.log
+!openspec/changes/**/.council-review.log
+!openspec/changes/**/.review-debate.log
 *.sqlite
 *.sqlite3
 .DS_Store
