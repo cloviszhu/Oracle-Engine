@@ -1,0 +1,646 @@
+> 本 change 遵循 harness-spec 工作流（`C:\Users\zhuhongyu06\.codex\skills\harness-spec\SKILL.md`）。
+> 约束：tasks 后统一顾问团审查；用户原声完整保留；AI 自测；禁止兜底。
+>
+> ## 验收清单（必须包含）
+> 每条 AC 标注类型：`[AI自测]` / `[回写后测]`（UE 场景） / `[用户手动]`
+> - `[AI自测]` 的 AC 必须有对应自动化测试用例（在 test-checklist.md 中）
+> - 没有测试用例 → 必须创建专项测试
+> - AI 草拟后合批确认，不明确且会影响范围、验收或风险的点必须问清楚
+> - proposal 阶段类型标注为初判；写 test-checklist 时可建议调整
+>
+> ⚠️ proposal 确认后直接进入 design/test-checklist/tasks，零暂停；顾问团在 tasks 后统一进行。
+
+# 构建 Serenity 产业情报监控
+
+Change ID：`build-serenity-intelligence-monitor`
+
+## 背景与动机
+
+当前仓库只具备可安装、可测试、可构建的 React/NestJS 工程基础，尚未实现任何 Serenity 监控业务。此 change 要为家庭内部的 A 股产业研究建立第一阶段单信息源闭环：合规获取 Serenity（@aleabitoreddit）的帖子、回复与引用上下文，保留原始证据，生成边界清晰的中文研究卡片，仅对高价值内容提醒，并在私有网页中归档、检索与回看。
+
+本次属于场景 A（新需求），采用 Harness L2 驾驶模式。proposal 确认前不实现业务代码；外部 API、AI 模型、通知、认证、存储与部署必须位于清晰适配器边界后。
+
+## 用户原始需求
+
+<!-- HARNESS:USER_VOICE_START -->
+你正在继续开发项目：
+
+`C:\Users\zhuhongyu06\Documents\Serenity Clone`
+
+请以 `harness-spec` 为唯一主控启动 `build-serenity-intelligence-monitor` change。审计结论没有要求使用 `super-openspec-v2`，因此不得将二者并列，也不得绕过 Harness 状态机直接调用原生 OpenSpec change 流程。各 skill 的具体规则以其 `SKILL.md` 为准，不要依赖本提示词复述规则。
+
+## 第一组动作：恢复项目上下文
+
+开始前必须依次执行：
+
+1. `git status --short --branch`
+2. 阅读：
+   - `AGENTS.md`
+   - `README.md`
+   - `docs/STATUS.md`
+   - `docs/PROJECT_MAP.md`
+   - `docs/STARTUP_AUDIT.md`
+   - `openspec/config.yaml`
+   - `openspec/README.md`
+   - `openspec/specs/project-foundation/spec.md`
+3. 运行：
+   - `openspec list`
+   - `openspec validate --specs --strict --no-interactive`
+4. 检查 Harness 状态：
+
+```powershell
+python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli.py" status "openspec/changes/build-serenity-intelligence-monitor"
+```
+
+当前预期是：OpenSpec 已初始化且没有活动 change；目标 change 尚未创建，因此 Harness 会提示缺少 `.harness-progress.json`。若实际状态不同，以磁盘和命令结果为准，先解释差异，不要覆盖已有工作。
+
+## 任务目标
+
+开发一个仅供家庭内部使用的海外产业信息监控系统。第一阶段只完成 Serenity（@aleabitoreddit）单账号可靠闭环：
+
+```text
+获取 Serenity 更新
+→ 补全回复和引用上下文
+→ 保存原始数据
+→ 生成结构化中文研究卡片
+→ 判断信息重要性
+→ 重要内容推送
+→ 全部内容在私有网站中归档
+```
+
+系统服务于主要研究和投资 A 股市场的个人投资者。重点不是简单翻译，而是低门槛理解海外产业研究信息，并严格区分原始内容、忠实翻译、作者判断、AI 解释、未验证推测和历史观点变化。
+
+change-id：
+
+`build-serenity-intelligence-monitor`
+
+场景：
+
+`A — 新需求`
+
+推荐 Harness 驾驶模式：
+
+`L2`
+
+## 用户原话
+
+以下需求必须完整保留到 proposal 的用户原声区域，不得改写、省略或扩大范围：
+
+> 我准备启动一次任务：
+>
+> ## 任务描述
+>
+> 开发一个仅供家庭内部使用的海外产业信息监控系统。
+>
+> 系统第一阶段聚焦X平台账号 **Serenity（@aleabitoreddit）**，持续获取该账号发布的帖子、回复和引用内容，结合必要上下文，通过AI生成中文研究摘要，并将重要更新推送给用户，同时在私有网页中完成归档、检索和回看。
+>
+> 目标用户是一位主要研究和投资A股市场的个人投资者。系统的核心价值不是简单翻译推文，而是帮助用户及时、低门槛地理解海外产业研究信息，并明确区分：
+>
+> * 原始内容；
+> * 中文忠实翻译；
+> * Serenity本人的判断；
+> * AI生成的解释；
+> * 尚未验证的推测；
+> * 相较历史观点出现的变化。
+>
+> 本次任务属于该系统的第一阶段，重点是完成一个可靠的单信息源闭环：
+>
+> ```text
+> 获取Serenity更新
+> → 补全回复和引用上下文
+> → 保存原始数据
+> → 生成结构化中文研究卡片
+> → 判断信息重要性
+> → 重要内容推送
+> → 全部内容在私有网站中归档
+> ```
+>
+> 后续可能扩展到更多海外研究者、公司公告、财报、产业数据和A股产业链映射，但不属于本次任务的必要范围。
+>
+> ## 参考资料
+>
+> ### 目标信息源
+>
+> * Serenity的X账号：
+>   https://x.com/aleabitoreddit
+>
+> ### X官方开发资料
+>
+> * X API文档：
+>   https://docs.x.com/x-api
+>
+> * Filtered Stream：
+>   https://docs.x.com/x-api/posts/filtered-stream/introduction
+>
+> * 获取用户帖子：
+>   https://docs.x.com/x-api/users/get-posts
+>
+> * X API计费说明：
+>   https://docs.x.com/x-api/getting-started/pricing
+>
+> * X内容展示和开发者政策：
+>   https://docs.x.com/developer-terms
+>
+> ### 可供研究的数据项目
+>
+> * Serenity历史帖子档案：
+>   https://github.com/yan-labs/serenity-aleabitoreddit
+>
+> 该项目只作为以下方面的参考：
+>
+> * Serenity内容特征；
+> * 历史数据结构；
+> * 帖子分类方法；
+> * Ticker及主题提取思路；
+> * 观点演化分析方法。
+>
+> 在使用其中的代码或数据前，必须检查其License和允许的使用范围。不得默认将其作为生产环境实时数据源。
+>
+> ### 消息推送参考
+>
+> 首选评估飞书自定义机器人：
+>
+> * 飞书开放平台文档：
+>   https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot
+>
+> 系统设计应保留以后增加QQ或邮件推送适配器的可能性，但本次不要求同时实现多个推送平台。
+>
+> ## 要求
+>
+> ### 一、核心功能要求
+>
+> 1. 使用合规且相对稳定的方式获取Serenity的新内容。
+>
+> 2. 不能只获取独立主帖，还必须考虑：
+>
+>    * 回复；
+>    * 引用帖子；
+>    * 回复对象；
+>    * 被引用内容；
+>    * 必要的历史相关观点。
+>
+> 3. 所有获取到的内容都应进入系统归档，但不能把每一条内容都立即推送。
+>
+> 4. 系统应生成结构化中文研究卡片，至少能够表达：
+>
+>    * 原始内容；
+>    * 忠实中文翻译；
+>    * 内容类型；
+>    * Serenity的核心判断；
+>    * 相较历史观点发生了什么变化；
+>    * 涉及的公司、Ticker和产业主题；
+>    * 有哪些明确证据；
+>    * 有哪些不确定性；
+>    * AI分析置信度；
+>    * 是否值得即时提醒。
+>
+> 5. 必须明确区分以下信息层次：
+>
+>    * Serenity明确说出的内容；
+>    * 被回复者或被引用者的内容；
+>    * AI根据上下文形成的解释；
+>    * 尚未验证的推断。
+>
+> 6. 重要性判断应尽量结构化、可解释、可调整，不能完全依赖模型随意决定。
+>
+> 7. 高价值更新应能够通过消息平台推送。
+>
+> 8. 所有内容及研究卡片应能够通过私有网页查看。
+>
+> 9. 网页至少应支持：
+>
+>    * 查看最新情报；
+>    * 查看历史时间线；
+>    * 查看单条内容及其上下文；
+>    * 按关键词、Ticker、主题、重要性或内容类型筛选；
+>    * 查看系统运行状态；
+>    * 记录用户反馈。
+>
+> 10. 系统应支持后续扩展新的信息源和通知渠道，但不要为尚未确定的后续需求过度设计。
+>
+> ### 二、信息质量要求
+>
+> 1. 翻译必须忠于原文，不得把猜测翻译成事实。
+>
+> 2. AI不得声称自己读取了没有实际获取的网页、财报或外部链接。
+>
+> 3. AI不得擅自生成未经证据验证的A股受益公司名单。
+>
+> 4. 本阶段可以判断某条内容与A股某个行业或产业方向可能相关，但具体公司映射应当谨慎，并明确标记是否需要进一步验证。
+>
+> 5. 必须保留原始内容和来源链接，以便人工核查。
+>
+> 6. 对上下文缺失、语义不确定或实体识别不可靠的情况，应明确展示不确定性，而不是猜测补全。
+>
+> 7. 对同一观点的连续更新，应尽量呈现观点演化，而不是把每一条内容当成彼此无关的新闻。
+>
+> ### 三、数据可靠性要求
+>
+> 1. 数据获取和保存必须幂等，不能因为重复轮询或服务重启产生重复记录。
+>
+> 2. 应考虑实时通道中断或漏取内容的补偿机制。
+>
+> 3. 服务重启后应能够继续处理尚未完成的任务。
+>
+> 4. 帖子获取、上下文补全、AI分析和消息推送失败时，不能静默丢失。
+>
+> 5. 应保留必要的原始响应、处理状态、错误信息和模型版本，以便审计与重新处理。
+>
+> 6. 应考虑帖子编辑、删除或变为不可访问时的处理方式，并遵守X平台相关政策。
+>
+> ### 四、安全边界
+>
+> 1. 本系统是只读研究辅助系统。
+>
+> 2. 不连接任何券商、证券账户或交易接口。
+>
+> 3. 不存储：
+>
+>    * 证券账户；
+>    * 交易密码；
+>    * 持仓数据；
+>    * 金融账户Cookie；
+>    * 父亲个人电脑中的任何敏感信息。
+>
+> 4. 所有海外信息获取和AI处理应在服务器端完成。
+>
+> 5. 父亲的金融电脑不应安装：
+>
+>    * VPN；
+>    * X抓取程序；
+>    * 浏览器自动化插件；
+>    * 微信或QQ Hook工具；
+>    * 远程控制工具。
+>
+> 6. 不允许通过模拟登录、浏览器Cookie或客户端Hook抓取X、微信或QQ。
+>
+> 7. API Token、Webhook和其他Secret不能出现在：
+>
+>    * 前端代码；
+>    * Git仓库；
+>    * 日志；
+>    * 错误页面。
+>
+> 8. 不实现自动交易，不生成直接的买卖指令。
+>
+> 9. AI输入中来自帖子或网页的文本必须被视为不可信数据，防止Prompt Injection。
+>
+> ### 五、范围边界
+>
+> 本次任务优先完成：
+>
+> * Serenity单账号监控；
+> * 帖子、回复和引用内容获取；
+> * 上下文补全；
+> * 原始数据归档；
+> * 中文研究卡片；
+> * 重要性判断；
+> * 一种消息渠道推送；
+> * 私有网站；
+> * 基础搜索、筛选和用户反馈；
+> * 系统运行状态及错误追踪。
+>
+> 本次不要求完成：
+>
+> * 多个X账号；
+> * 自动抓取任意新闻网站；
+> * 自动读取所有外部链接；
+> * 财报和电话会系统；
+> * 完整A股产业链知识图谱；
+> * A股公司级自动映射；
+> * 行情和价格数据；
+> * 回测；
+> * 组合管理；
+> * 持仓导入；
+> * 自动交易；
+> * 微信个人号自动化；
+> * 原生移动App；
+> * 面向公众的SaaS或多租户系统。
+>
+> 如果当前项目已经存在与这些能力相关的基础设施，可以合理复用，但不要主动扩大本次change的范围。
+>
+> ### 六、工程执行要求
+>
+> 1. 先根据现有项目结构判断技术实现，不要默认重建项目或替换现有技术栈。
+>
+> 2. 优先复用当前项目已有的：
+>
+>    * 认证；
+>    * 数据库；
+>    * ORM；
+>    * 后台任务；
+>    * 日志；
+>    * 测试；
+>    * UI组件；
+>    * 部署方式。
+>
+> 3. 不要在任务启动审计阶段实现代码。
+>
+> 4. 不要在尚未读取项目和完成规范设计前，把外部参考中的技术方案直接当成最终实现。
+>
+> 5. 对任务中存在的不确定事项，应在proposal或design中记录假设、备选方案和取舍依据。
+>
+> 6. 后续规范应至少覆盖：
+>
+>    * 数据获取；
+>    * 数据去重；
+>    * 上下文构造；
+>    * AI输出边界；
+>    * 重要性判断；
+>    * 通知去重；
+>    * 私有访问；
+>    * 错误恢复；
+>    * Secret管理；
+>    * 成本控制；
+>    * 测试和人工验收。
+>
+> 7. 对所有外部API使用适配器或清晰边界，方便测试和未来替换。
+>
+> 8. 不要为了“实时”牺牲稳定性。允许采用实时获取与定期补偿相结合的方案。
+>
+> 9. 若真实API密钥暂时不可用，可以在规范阶段设计Mock和测试策略，但最终验收必须明确区分：
+>
+>    * 已通过自动化测试验证的行为；
+>    * 已通过真实外部API验证的行为；
+>    * 尚需人工配置或验证的外部依赖。
+>
+> ### 七、验收方向
+>
+> 最终至少应能够人工验证以下闭环：
+>
+> 1. 系统成功获取一条Serenity的新内容。
+>
+> 2. 回复和引用内容能够关联到必要上下文。
+>
+> 3. 重复获取同一内容不会产生重复记录或重复提醒。
+>
+> 4. 系统生成的中文研究卡片能够清楚区分原文、翻译、作者判断和AI解释。
+>
+> 5. 高价值内容可以产生消息提醒。
+>
+> 6. 普通或低价值内容不会造成高频打扰，但仍能在网页中找到。
+>
+> 7. 用户可以登录私有网页，搜索、筛选并查看历史内容。
+>
+> 8. 用户可以对研究卡片提交“重要、已知、不相关、继续跟踪、翻译有误、分析有误”等反馈。
+>
+> 9. 系统能够展示最近一次数据获取、后台任务、AI分析和通知发送状态。
+>
+> 10. 模拟数据源中断、模型调用失败或消息发送失败后，任务不会静默丢失。
+>
+> 11. 前端、日志和代码仓库中不存在API密钥或Webhook泄露。
+>
+> 12. 系统不接触证券账户和交易功能。
+>
+> 请先只做任务启动审计，不要实现代码。
+>
+> 请结合当前项目执行：
+>
+> 1. 识别任务类型：新需求 / 需求变更 / Bug修复 / 重构 / 文档交付。
+> 2. 读取必要项目文档和相关代码，给出当前状态摘要。
+> 3. 检查本地环境和关键命令是否可用，包括依赖安装、测试命令、构建命令、OpenSpec CLI、git状态。
+> 4. 判断应采用的主控工作流。默认优先`harness-spec`。不允许`harness-spec`和`super-openspec-v2`同时作为主控。只能选择一个主控，另一个最多作为参考思想。如果选择`harness-spec`，不要再绕开harness状态机直接调用原生openspec流程。
+> 5. 列出本任务最小必要skill、可选增强skill、缺失skill、降级风险。
+> 6. 输出是否可以进入SDD/OpenSpec阶段；如果可以，给出建议change-id和下一步动作。
+>
+> ## 验收缺陷修复策略预设
+>
+> 请为本任务预设验收后修复策略。
+>
+> 人工验收发现bug或目标未达成时，默认不要重新跑完整需求流程，也不要无约束vibe coding。
+>
+> 应优先走“当前change内的spec-bound repair lane”：
+>
+> * 先读取当前proposal、design、tasks、test-checklist和相关代码；
+> * 将人工反馈分类为：
+>
+>   1. 实现未满足既有规范；
+>   2. 规范遗漏但属于原目标必要行为；
+>   3. 新增需求或范围扩大；
+>   4. 环境、数据或操作问题；
+> * 第1类可进入最小修复；
+> * 第2类必须先补规范或验收清单；
+> * 第3类必须新开change或回到完整SDD流程；
+> * 第4类先复现和解释，不直接改业务代码。
+>
+> 请在任务启动审计中说明，本任务后续适合如何使用repair lane。
+>
+> 输出必须包含：
+>
+> * 已读取文件；
+> * 已执行命令；
+> * 当前项目状态摘要；
+> * 发现的阻塞；
+> * 推荐工作流；
+> * skill使用计划；
+> * 是否可以进入SDD/OpenSpec；
+> * 建议change-id；
+> * 下一步动作；
+> * 本任务repair lane使用建议。
+
+## 已完成审计结论
+
+启动审计已经通过，不要重新做一轮泛化审计，也不要重建项目。
+
+当前事实：
+
+- 当前分支：`main`
+- 当前 HEAD：`753eeb4`
+- Git 工作树：干净
+- 临时初始化 worktree 已清理
+- 技术基线：
+  - React 19 + Vite 7
+  - NestJS 11
+  - TypeScript 5.9
+  - Drizzle ORM + MySQL 8
+  - BullMQ + Redis 7
+  - Vitest + ESLint
+- `pnpm install --frozen-lockfile` 已通过
+- `pnpm check` 已通过
+- `pnpm test` 已通过：3 个测试文件、6 个测试
+- `pnpm lint` 已通过
+- `pnpm build` 已通过
+- 运行时冒烟已通过：
+  - `GET /api/health` 返回 `status=ok`
+  - 根页面返回 HTTP 200
+- `pnpm audit:secrets` 已通过
+- OpenSpec 已初始化
+- `project-foundation` 严格校验通过
+- 当前没有活动 OpenSpec change
+- 全局 `spec-review-debate` 已安装到：
+  `C:\Users\zhuhongyu06\.codex\skills\spec-review-debate`
+- 该 skill 已通过结构校验、正向自测、缺失工件拒绝测试和安装哈希校验
+- 没有阻止进入 proposal/design 的硬阻塞
+
+仍未验证但不阻塞 SDD：
+
+- 当前机器没有 Docker/docker-compose
+- X Developer 账号、credits 和 Bearer Token 未配置
+- AI 模型供应商、预算和密钥未确定
+- 飞书 Webhook 未配置
+- 私有部署和认证方案未确定
+- 未完成任何真实外部 API 联调
+
+以上项目必须在设计和验收中明确区分：
+
+- 自动化测试已验证；
+- Mock 已验证；
+- 真实外部 API 已验证；
+- 尚需人工配置或验证。
+
+## 参考资料
+
+本地工程参考：
+
+- `C:\Users\zhuhongyu06\Desktop\U声开发\uvoice`
+- `C:\Users\zhuhongyu06\Desktop\开物\uxAiLobster`
+
+外部资料：
+
+- https://x.com/aleabitoreddit
+- https://docs.x.com/x-api
+- https://docs.x.com/x-api/posts/filtered-stream/introduction
+- https://docs.x.com/x-api/users/get-posts
+- https://docs.x.com/x-api/getting-started/pricing
+- https://docs.x.com/developer-terms
+- https://github.com/yan-labs/serenity-aleabitoreddit
+- https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot
+
+参考仓库未发现明确 License，因此不得复制其代码或数据；只允许高层方法参考，除非后续取得明确授权。
+
+## Skill 优先级
+
+主控：
+
+1. `harness-spec`
+
+Harness 对应步骤按其 `SKILL.md` 调用：
+
+- `openspec-new-change`
+- `openspec-apply-change`
+- `openspec-sync-specs`
+- `openspec-archive-change`
+- `spec-review-debate`
+
+按需增强：
+
+- `systematic-debugging`
+- `test-driven-development`
+- `verification-before-completion`
+- `requesting-code-review`
+- `openai-docs`：仅在设计最终选择 OpenAI API 时使用
+
+不得将 `super-openspec-v2` 设为并列主控。不得因为项目内存在 `openspec-propose` 等 skill 而绕过 Harness routing。
+
+## 下一步动作
+
+完成上下文和状态检查后：
+
+1. 如果没有进行中的 Harness change，使用 `harness-spec` 初始化：
+
+```powershell
+python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli.py" init "openspec/changes/build-serenity-intelligence-monitor" --scenario A --name "build-serenity-intelligence-monitor" --driving-mode l2
+```
+
+2. 立即调用 Harness `next` 获取当前步骤指令。
+3. 按状态机生成 proposal，并将本提示词中的“用户原话”完整写入用户原声区域。
+4. proposal 必须集中记录尚未决定的事项、备选方案和取舍依据，尤其包括：
+   - X 获取方式及实时/补偿组合；
+   - X 内容编辑、删除和不可访问处理；
+   - 私有认证；
+   - AI 供应商和成本；
+   - 飞书机器人；
+   - 部署环境；
+   - Mock、真实 API 和人工验收边界。
+5. proposal 确认前不实现 Serenity 业务代码。
+6. 后续严格经过 design、test-checklist、tasks、顾问审查和 `spec-review-debate` 门禁。
+7. 将 repair lane 写入 proposal、design 和 test-checklist；当前 change 的第 1、2 类验收问题未解决前不得归档。
+8. 每完成 Harness 步骤，按 `harness-spec/SKILL.md` 执行状态推进和 Git checkpoint，不要在产物写完后断流。
+<!-- HARNESS:USER_VOICE_END -->
+
+## 需求分析
+
+### 需求本质
+
+- 建立从“内容获取 → 上下文补全 → 原始归档 → AI 研究卡片 → 结构化重要性判断 → 单渠道提醒 → 私有网页回看”的可靠闭环。
+- 研究卡片必须明确区分原文、忠实翻译、Serenity 本人判断、他人内容、AI 解释、未验证推断与历史观点变化。
+- 数据处理必须幂等、可审计、可恢复；获取、上下文、分析和通知失败不得静默丢失。
+- 系统是只读研究辅助工具，不触碰券商、证券账户、持仓、交易接口或自动买卖指令。
+- 来自 X、网页和历史档案的文本全部按不可信输入处理，不能让其指令覆盖系统规则。
+
+### 本 change 范围
+
+- Serenity 单账号的主帖、回复和引用内容获取，以及必要上下文关联。
+- 原始响应、来源链接、处理状态、错误、模型版本及重处理所需证据的归档。
+- 结构化中文研究卡片、可解释的重要性判断和通知去重。
+- 一种消息渠道（优先评估飞书自定义机器人）的高价值提醒。
+- 私有网站中的登录、最新情报、历史时间线、详情、搜索、筛选、运行状态和用户反馈。
+- 实时或准实时获取与定期补偿相结合的可靠性设计。
+- 外部 API、AI、通知、认证和存储的适配器边界。
+- 验收后的 spec-bound repair lane：第 1 类问题做最小修复；第 2 类先补规范与测试清单；第 3 类另开 change；第 4 类先复现和解释。
+
+### 明确不在本 change 范围
+
+- 多个 X 账号、任意新闻网站抓取、自动读取所有外部链接、财报或电话会系统。
+- 完整 A 股产业链知识图谱、公司级自动映射、行情、价格、回测、组合、持仓或交易。
+- 微信个人号自动化、QQ/微信 Hook、浏览器 Cookie/模拟登录抓取、原生移动 App。
+- 面向公众的 SaaS、多租户或超出单信息源闭环的提前抽象。
+- 在 License 未明确前复制参考仓库的代码或数据。
+
+### 默认假设与约束
+
+- 优先复用 React 19 + Vite 7、NestJS 11、Drizzle/MySQL、BullMQ/Redis、Vitest 与现有部署骨架，不重建项目或替换技术栈。
+- 第一阶段只接入一个生产通知渠道；其他渠道只保留明确、最小的适配器扩展点。
+- X Developer 账号、credits、Bearer Token、AI 供应商与密钥、飞书 Webhook、私有部署和认证均尚未确定，不阻塞 SDD，但会限制真实联调和最终验收。
+- Mock、自动化测试、真实外部 API 联调和人工配置/验收必须分别记录，禁止互相冒充。
+- 参考仓库当前未发现明确 License，只能参考高层方法，不作为生产实时数据源，也不复制代码或数据。
+- Docker 当前不可用，容器构建与 Compose 联调暂不视为已验证。
+
+## 验收清单
+
+<!-- HARNESS:AC_LIST_START -->
+- [ ] **AC-1** `[AI自测]`：（proposal_confirm 步骤填写）
+- [ ] **AC-2** `[用户手动]`：（proposal_confirm 步骤填写）
+<!-- HARNESS:AC_LIST_END -->
+
+## 关联 Spec
+
+### 已有主 Spec
+
+- `project-foundation`：继续作为工程基础规格；本 change 不修改其既有需求。
+
+### 拟新增 Capabilities
+
+- `serenity-content-ingestion`：合规获取、幂等归档、补偿拉取以及编辑/删除/不可访问状态处理。
+- `research-context-and-card`：回复/引用/历史观点上下文构造，以及边界清晰的中文研究卡片。
+- `importance-and-notification`：结构化重要性判断、可解释评分、通知选择与通知去重。
+- `private-research-workspace`：私有访问、归档检索、时间线、详情、筛选与用户反馈。
+- `operations-and-recovery`：处理状态、错误追踪、重试恢复、成本可见性与运行状态。
+
+最终 capability 边界将在 design/specs 阶段结合现有代码与审查结果收敛；不因初始拆分主动扩大范围。
+
+## 影响范围
+
+- 前端：`client/src/` 私有研究工作区、检索筛选、详情、状态与反馈界面。
+- 后端：`server/` 业务模块、任务编排和 API；`server/infrastructure/` 下的 X、AI、通知、认证与存储适配器。
+- 共享契约：`shared/` 中的内容、研究卡片、筛选、状态与反馈类型。
+- 数据：由批准后的 spec/design 定义 `drizzle/schema.ts` 和迁移；proposal 阶段不猜测业务表。
+- 外部系统：X API、选定的 AI 供应商、飞书自定义机器人、私有部署与认证环境。
+- 安全与合规：X 开发者条款和内容展示政策、Secret 管理、Prompt Injection 防护、只读研究边界。
+- 成本：X API credits、AI token/模型调用、任务补偿频率、存储保留与通知量。
+
+## 开放问题
+
+以下问题不阻塞 proposal 草稿，但会影响范围、验收、成本或风险，应在 proposal_confirm 合批确认，或在 design 中记录默认方案、备选方案与取舍依据：
+
+1. X 获取方式：以周期轮询 + 游标/时间窗补偿为稳定基线，还是加入 Filtered Stream；真实套餐、credits、速率限制与内容展示政策以实际账号验证为准。
+2. 内容生命周期：编辑、删除、不可访问内容保存哪些审计字段、是否继续展示正文、保留期限及政策约束。
+3. 私有认证：单家庭账号的认证方式、会话策略、外网暴露边界和恢复方式。
+4. AI 供应商与成本：供应商、模型、预算上限、超限行为、模型版本记录、重试与降级边界。
+5. 飞书机器人：是否确定为第一生产通知渠道、Webhook 配置、签名、限流、失败重试和消息去重。
+6. 部署环境：服务器/云环境、MySQL/Redis 可用性、HTTPS、域名、备份、日志与监控；Docker 缺失时的验证替代方案。
+7. 历史数据：参考仓库 License 未明确时，仅用官方 X API 获取的历史范围，还是等待授权后再考虑导入。
+8. 观点演化：第一阶段的历史关联窗口、主题聚类粒度与“不足以判断变化”的展示规则。
+9. 重要性阈值：默认权重、即时提醒阈值、低价值静默归档规则，以及用户反馈如何影响后续评分。
+10. 验收边界：哪些项必须真实 X/AI/飞书联调，哪些可由自动化测试或 Mock 证明，哪些必须由用户完成配置和人工检查。
+11. Repair lane：第 2 类规范遗漏需要回写哪些工件并重跑哪些审查；第 1、2 类未关闭前禁止归档。
