@@ -1,0 +1,83 @@
+# Spec Review Debate Log
+
+## Debate Session 2026-07-10T10:20:38Z
+
+- scenario: A
+- reviewed_at_commit: `f9efa513f924ae4c34052bd8d3d7bbe61ef5b095`
+- reviewed_files:
+  - proposal.md: `168ed68088eb4210c8069d2a2b478e8d0656c4f1`
+  - design.md: `64d3bf1b301c8200ffee18693fe1e55a669bdfc3`
+  - tasks.md: `14fb5a11094cd5d099ab39f2d16ad138e3497465`
+  - test-checklist.md: `92dd6d9c64b6a7b09960f57ac061e594e8ff5665`
+  - .council-review.log: `fcbde318ed55890c34e5b7f8c2d80c7771e539f9`
+- rounds: 2
+- status: CONVERGED
+
+### 第 1 轮
+
+- 确定性追溯检查已通过，但人工对照发现 4 个残留 P1：
+  1. 服务端如何同时导入 `shared/`/`drizzle/` 并保持 API/worker/静态产物路径尚未选定。
+  2. 飞书绝对详情深链接缺少 Nest SPA fallback，直接刷新可能 404。
+  3. 会话 TTL、注销/吊销/Secret 轮换和登录限速缺少 spec/TC。
+  4. 验收报告和脱敏附件路径未固定，TC-18 不够可执行。
+- 处置：回写 design、private-research-workspace spec、tasks 与 TC-10；明确 `rootDir="."/outDir="dist"/deleteOutDir=false` 构建策略、jsdom/Testing Library/Nest testing/Supertest 分层、SPA fallback、会话生命周期/限速和固定验收路径。
+
+### 第 2 轮
+
+- `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`: passed。
+- `check_traceability.py`: passed。
+- Harness `gate-check debate`: passed。
+- `git diff --check`: passed。
+- 人工复核 19 条 AC 均有 2 条 TC，33 个 Task 均有 `覆盖测试用例`；未发现未解决 P0/P1。
+- 对 council 已处理项复核：Webhook 结果未知、内容版本、durable intent/fencing、预算 reservation、worker/migration/shared build、project-foundation 冲突、会话 Cookie 边界、冷启动历史和同一真实内容闭环均已进入工件。
+
+## 追溯链路校验
+
+### R1: TC 全覆盖
+
+- 总 TC 数: 38
+- 已覆盖: 38
+- **未覆盖**: 无
+
+### R2: Task 全用
+
+- 总 Task 数: 33
+- 已标注覆盖: 33
+- **未标注**: 无
+
+### R3: AC 闭环
+
+| AC | 对应 TC | 对应 Task |
+|---|---|---|
+| AC-1 | TC-1.1, TC-1.2 | Task 2.1, Task 2.4, Task 8.1, Task 8.4 |
+| AC-2 | TC-2.1, TC-2.2 | Task 3.1, Task 3.4 |
+| AC-3 | TC-3.1, TC-3.2 | Task 1.2, Task 1.3, Task 1.5, Task 2.2, Task 2.4, Task 7.1, Task 7.2 |
+| AC-4 | TC-4.1, TC-4.2 | Task 1.2, Task 2.3, Task 2.4 |
+| AC-5 | TC-5.1, TC-5.2 | Task 3.2, Task 3.4, Task 6.3 |
+| AC-6 | TC-6.1, TC-6.2 | Task 3.1, Task 3.2, Task 3.4, Task 6.3, Task 8.1, Task 8.4 |
+| AC-7 | TC-7.1, TC-7.2 | Task 4.1, Task 4.4, Task 7.2 |
+| AC-8 | TC-8.1, TC-8.2 | Task 1.2, Task 1.3, Task 4.2, Task 4.4, Task 7.1, Task 7.2 |
+| AC-9 | TC-9.1, TC-9.2 | Task 4.3, Task 4.4, Task 8.1, Task 8.4 |
+| AC-10 | TC-10.1, TC-10.2 | Task 1.5, Task 5.1, Task 5.2, Task 6.1, Task 6.2, Task 6.3, Task 8.4 |
+| AC-11 | TC-11.1, TC-11.2 | Task 1.2, Task 1.4, Task 5.3, Task 6.4, Task 8.4 |
+| AC-12 | TC-12.1, TC-12.2 | Task 5.4, Task 6.4, Task 8.4 |
+| AC-13 | TC-13.1, TC-13.2 | Task 1.2, Task 1.3, Task 1.5, Task 2.1, Task 2.2, Task 2.4, Task 4.2, Task 5.4, Task 7.1, Task 7.2 |
+| AC-14 | TC-14.1, TC-14.2 | Task 3.3, Task 3.4, Task 7.3 |
+| AC-15 | TC-15.1, TC-15.2 | Task 1.1, Task 1.4, Task 2.1, Task 2.3, Task 3.3, Task 4.3, Task 5.1, Task 5.2, Task 5.4, Task 6.1, Task 7.3 |
+| AC-16 | TC-16.1, TC-16.2 | Task 5.2, Task 7.3, Task 8.3 |
+| AC-17 | TC-17.1, TC-17.2 | Task 1.1, Task 1.2, Task 1.4, Task 2.1, Task 2.2, Task 3.3, Task 4.3, Task 7.4 |
+| AC-18 | TC-18.1, TC-18.2 | Task 1.5, Task 8.2, Task 8.3, Task 8.4 |
+| AC-19 | TC-19.1, TC-19.2 | Task 8.4 |
+
+### 分歧与处置
+
+- P0: 无。
+- P1: 无。
+- P2/P3:
+  1. `USER_DECISION_REQUIRED`：本 change 唯一生产 AI provider/model 尚未选择；适配器边界已收敛，选择不改变 AC/模块边界，但必须在 Task 3.3 前完成。
+  2. `USER_DECISION_REQUIRED`：飞书机器人安全签名策略尚未确认；推荐目标机器人支持时启用签名，任何选择都保留 Webhook 脱敏与 `outcome_unknown`。
+  3. 当前机器没有 Docker/MySQL/Redis 服务，Node 20 镜像、跨进程恢复、HTTPS 与目标部署证据保持待 CI/目标环境验证。
+  4. `docs/project-pitfalls.md` 不存在；已明确记录而未制造产品需求。
+  5. 高可用、多账号/多源、Filtered Stream、全文引擎、新通知渠道、OIDC/多角色、在线学习和 A 股公司级映射继续延期到新 change。
+- 用户裁决原话: 不适用（本轮没有 USER_OVERRIDE；上述 P2 在下一 Harness `user_confirm` 合批裁决）。
+- 风险说明: 若用户在 `user_confirm` 不选择 AI provider/model，则 provider-neutral 与 Mock 工作可实施，但真实 AI、AC-6、AC-14 真实模型部分和 AC-19 必须保持未验收；若未配置目标环境，外部/部署证据不得标记通过。

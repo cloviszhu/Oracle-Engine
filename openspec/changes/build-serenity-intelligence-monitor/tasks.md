@@ -601,7 +601,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 1.3: 建立共享构建、迁移、数据库/队列和 worker 运行闭环
 
 - [ ] [完成] Task 1.3
-  - 实现细节: 先解决服务端导入 `shared/`/`drizzle/` 的 TypeScript/ESM 构建边界并保持 API 启动路径；实现显式 `db:migrate`、Drizzle client/事务、Redis/BullMQ、durable pending intent、dispatcher、lease owner/fencing、reconciliation、稳定 job ID、worker heartbeat/优雅退出以及 `dev:worker`/`start:worker`/Compose 启动入口。生产不得用 `db:push` 代替 migration。
+  - 实现细节: 将服务端构建明确为 `rootDir: "."`、`outDir: "dist"`，include `server/shared/drizzle`，保持 `dist/server/main.js` 并生成 `dist/server/worker.js`，依靠现有 `deleteOutDir=false` 保留 Vite 产物；实现显式 `db:migrate`、Drizzle/Redis/BullMQ、durable pending intent、dispatcher、lease/fencing、reconciliation、worker heartbeat/优雅退出以及 `dev:worker`/`start:worker`/Compose 入口。生产不得用 `db:push` 代替 migration。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-8.2, TC-13.1, TC-13.2
 ### Task 1.4: 建立基础共享 DTO、错误分类、状态契约和集中日志脱敏
 
@@ -612,7 +612,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 1.5: 建立分层测试环境与可重复清理
 
 - [ ] [完成] Task 1.5
-  - 实现细节: 明确 Node 单元/Mock、DOM/API 集成、真实 MySQL/Redis 跨进程测试三层；增加 DOM 交互与 Nest API 测试工具、测试专用 URL、migration/seed/队列清理命令。当前无 Docker 时第三层保持待 CI/目标环境验证，不以 repository Mock 冒充。
+  - 实现细节: 明确 Node 单元/Mock、Vitest jsdom + Testing Library、Nest testing + Supertest、真实 MySQL/Redis 跨进程测试四层；增加测试专用 URL、migration/seed/队列清理命令。当前无 Docker 时真实存储层保持待 CI/Compose/目标环境验证，不以 repository Mock 冒充。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-10.1, TC-10.2, TC-13.1, TC-13.2, TC-18.1
 
 - [ ] [自测] 按顺序运行 `pnpm db:generate`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`；每条命令退出码均为 0，migration 存在且不含默认 Secret，构建后 API/worker 入口可解析
@@ -742,7 +742,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 6.1: 建立登录、会话恢复和受保护导航
 
 - [ ] [完成] Task 6.1
-  - 实现细节: 替换初始化占位页，增加 `/login`、认证状态加载、401 回登录、注销和同源 CSRF 请求封装；页面不读取或展示任何外部 Secret。
+  - 实现细节: 替换初始化占位页，增加 `/login`、认证状态加载、401 回登录、注销和同源 CSRF 请求封装；Nest 对非 API 路由实现 SPA fallback，直接刷新详情/时间线/状态页仍返回应用，`/api/**` 404 不被吞掉；页面不读取或展示任何外部 Secret。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1
 ### Task 6.2: 实现最新情报、时间线和筛选界面
 
@@ -805,7 +805,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 8.2: 建立四类验收证据和结果记录模板
 
 - [ ] [完成] Task 8.2
-  - 实现细节: 固定验收报告/脱敏附件路径；为每条 TC 分开记录执行方式、唯一实际证明力类别、状态、证据位置、执行时间、provider/request ID、成本与环境；缺关键字段时机械禁止标为真实通过，Docker/HTTPS/部署/认证未验证时保持待测。
+  - 实现细节: 固定报告为 `docs/verification/build-serenity-intelligence-monitor.md`，脱敏附件放 `docs/verification/evidence/build-serenity-intelligence-monitor/`；为每条 TC 分开记录执行方式、唯一实际证明力类别、状态、证据位置、执行时间、provider/request ID、成本与环境；缺关键字段时机械禁止标为真实通过，Docker/HTTPS/部署/认证未验证时保持待测。
   - **覆盖测试用例**: TC-18.1, TC-18.2
 ### Task 8.3: 执行一致性、范围、路由与状态文档审计
 

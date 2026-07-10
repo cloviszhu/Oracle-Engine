@@ -13,6 +13,16 @@
 - **THEN** 私有 API 返回 401 且页面导航到登录入口
 - **AND** 响应不泄露账号、Secret 或内部错误栈
 
+#### Scenario: 会话过期、注销或 Secret 轮换
+- **WHEN** Redis 会话 TTL 到期、用户注销、会话记录被删除或 `SESSION_SECRET` 轮换
+- **THEN** 旧 Cookie 立即或在既定轮换边界内失效并返回 401
+- **AND** Redis 只保存不可直接复用的会话 token 哈希
+
+#### Scenario: 连续登录失败触发限速
+- **WHEN** 同一来源或管理员标识在窗口内超过允许的失败次数
+- **THEN** 登录接口返回稳定限速响应且不泄露账号是否存在
+- **AND** 限速窗口结束后正确凭据可以恢复登录
+
 #### Scenario: 写请求缺少 CSRF 保护
 - **WHEN** 反馈或重试请求的 CSRF token 或 Origin 校验失败
 - **THEN** 系统以明确 4xx 拒绝请求
@@ -64,3 +74,16 @@
 - **WHEN** 执行生产构建和 Secret 扫描
 - **THEN** 前端 bundle、source map、错误页和测试快照不包含任何服务端 Secret
 - **AND** 外部 API 只由服务端适配器调用
+
+### Requirement: 私有站点深链接必须可直接打开
+系统 MUST 对非 API 的客户端路由提供 SPA fallback，同时 MUST 保持 API 与静态资源的真实 404 语义。
+
+#### Scenario: 从飞书打开详情绝对链接
+- **WHEN** 已认证或完成登录后的用户直接访问 `/intelligence/:id`、`/timeline` 或 `/status`
+- **THEN** NestJS 返回 React 应用并恢复目标路由
+- **AND** 页面加载对应私有数据而不是返回服务器 404
+
+#### Scenario: 访问不存在的 API
+- **WHEN** 客户端请求不存在的 `/api/**` 路径
+- **THEN** 系统返回 API 404
+- **AND** 不得用 `index.html` 覆盖该错误

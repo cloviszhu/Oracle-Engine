@@ -84,6 +84,12 @@ React 私有站点 ─► NestJS API ─► MySQL
 - `server/operations/`：流水线状态、失败记录、死信、用量和恢复入口。
 - `server/worker.ts`：启动 BullMQ consumers；不暴露 HTTP。
 
+### 构建与测试工程策略
+
+- 服务端 TypeScript 使用 `rootDir: "."`、`outDir: "dist"` 并 include `server/**/*.ts`、`shared/**/*.ts`、`drizzle/**/*.ts`；现有 Nest `deleteOutDir=false` 保留先生成的 `dist/public`。构建后 API 保持 `dist/server/main.js`，worker 为 `dist/server/worker.js`，共享契约和 schema 分别位于 `dist/shared`、`dist/drizzle`，必须有 Node ESM 构建后导入测试。
+- Vitest 拆分 Node service 项目与 jsdom UI 项目；前端交互采用 Testing Library，Nest API 采用 `@nestjs/testing` + Supertest。真实浏览器视觉/可理解性仍由 AC-19 人工验收，不以 jsdom 冒充。
+- MySQL/Redis repository、唯一约束、BullMQ 和跨进程重启测试必须在具备 MySQL 8/Redis 7 的 CI/Compose 或目标环境运行；当前无 Docker 的本机只运行纯单元和 Mock 契约测试，报告保持分层。
+
 ### 基础设施适配器
 
 - `server/infrastructure/x/content-source.adapter.ts`
@@ -220,6 +226,8 @@ React 私有站点 ─► NestJS API ─► MySQL
 - `/intelligence/:id`：原文与来源、忠实翻译、Serenity 判断、他人内容、AI 解释、未验证推断、证据、不确定性、观点变化和上下文图分区展示。
 - `/status`：最近各阶段状态、失败原因、待配置项和可恢复操作。
 - 反馈按钮固定为“重要、已知、不相关、继续跟踪、翻译有误、分析有误”，提交后显示时间和当前选择。
+
+NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求回退到 `dist/public/index.html`，使飞书绝对详情链接、`/timeline`、`/status` 和详情页刷新可用；API 404 不得被 SPA fallback 吞掉。
 
 前端不读取 X、AI 或飞书环境变量，不直接请求外部 API；所有错误页仅展示稳定错误码和面向用户的说明。
 
