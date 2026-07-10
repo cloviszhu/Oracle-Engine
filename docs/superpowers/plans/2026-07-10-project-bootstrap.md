@@ -36,31 +36,31 @@
 - Consumes: Node.js 20+ 和 pnpm 10.4.1。
 - Produces: `pnpm dev`、`pnpm build`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`。
 
-- [ ] **Step 1: 创建 package.json**
+- [x] **Step 1: 创建 package.json**
 
 定义单包工作区，脚本使用 `concurrently` 启动 Vite 与 NestJS；生产构建先生成 `dist/public`，再生成 `dist/server/main.js`。依赖版本以两个参考项目已验证版本为基线。
 
-- [ ] **Step 2: 创建 TypeScript、NestJS、Vite、Vitest 和 ESLint 配置**
+- [x] **Step 2: 创建 TypeScript、NestJS、Vite、Vitest 和 ESLint 配置**
 
 客户端配置使用 `moduleResolution: Bundler` 和 `jsx: react-jsx`；服务端配置使用装饰器元数据和 `outDir: dist/server`。Vitest 扫描 `client/**/*.test.tsx` 与 `server/**/*.test.ts`。
 
-- [ ] **Step 3: 创建安全的忽略规则和环境变量样例**
+- [x] **Step 3: 创建安全的忽略规则和环境变量样例**
 
 `.gitignore` 必须覆盖 `.env`、`node_modules`、`dist`、覆盖率、日志和本地数据库文件。`.env.example` 只声明 `PORT`、`DATABASE_URL`、`REDIS_URL`、`SESSION_SECRET`、`X_API_BEARER_TOKEN`、`AI_API_KEY`、`FEISHU_WEBHOOK_URL`，其中 Secret 使用空值。
 
-- [ ] **Step 4: 验证 JSON 和配置可解析**
+- [x] **Step 4: 验证 JSON 和配置可解析**
 
 Run: `node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); console.log('package-json-ok')"`
 
 Expected: 输出 `package-json-ok`。
 
-- [ ] **Step 5: 安装并锁定工具链依赖**
+- [x] **Step 5: 安装并锁定工具链依赖**
 
 Run: `pnpm install`
 
 Expected: 生成 `pnpm-lock.yaml`，安装退出码为 0。
 
-- [ ] **Step 6: 提交工具链配置**
+- [x] **Step 6: 提交工具链配置**
 
 ```bash
 git add package.json pnpm-lock.yaml tsconfig.json tsconfig.server.json nest-cli.json vite.config.ts vitest.config.ts eslint.config.mjs .gitignore .env.example
@@ -79,7 +79,7 @@ git commit -m "chore: initialize TypeScript toolchain"
 - Consumes: `dist/public` 静态目录和环境变量 `PORT`。
 - Produces: `GET /api/health -> { status: "ok", service: "serenity-intelligence-monitor" }`。
 
-- [ ] **Step 1: 编写失败测试**
+- [x] **Step 1: 编写失败测试**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -95,23 +95,23 @@ describe('HealthController', () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `pnpm exec vitest run server/health/health.controller.test.ts`
 
 Expected: FAIL，因为 `health.controller.ts` 尚不存在。
 
-- [ ] **Step 3: 实现最小健康检查和 NestJS 启动入口**
+- [x] **Step 3: 实现最小健康检查和 NestJS 启动入口**
 
 `HealthController` 使用 `@Controller('api/health')` 和 `@Get()`；`AppModule` 注册 `ServeStaticModule` 和该 Controller；`main.ts` 从 `PORT` 读取端口并默认监听 `3000`。
 
-- [ ] **Step 4: 运行测试并确认通过**
+- [x] **Step 4: 运行测试并确认通过**
 
 Run: `pnpm exec vitest run server/health/health.controller.test.ts`
 
 Expected: 1 test passed。
 
-- [ ] **Step 5: 提交后端骨架**
+- [x] **Step 5: 提交后端骨架**
 
 ```bash
 git add server
@@ -133,7 +133,7 @@ git commit -m "feat: add backend health shell"
 - Consumes: `SYSTEM_NAME` 常量。
 - Produces: 仅说明项目已完成工程初始化的静态页面，不展示虚构业务数据。
 
-- [ ] **Step 1: 编写失败测试**
+- [x] **Step 1: 编写失败测试**
 
 ```tsx
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -149,23 +149,23 @@ describe('App', () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试并确认失败**
+- [x] **Step 2: 运行测试并确认失败**
 
 Run: `pnpm exec vitest run client/src/App.test.tsx`
 
 Expected: FAIL，因为 `App.tsx` 尚不存在。
 
-- [ ] **Step 3: 实现最小页面和入口**
+- [x] **Step 3: 实现最小页面和入口**
 
 页面只包含系统名称、初始化状态以及“业务功能将在 OpenSpec change 中定义”的说明。样式使用本地 CSS，不引入组件库。
 
-- [ ] **Step 4: 运行测试并确认通过**
+- [x] **Step 4: 运行测试并确认通过**
 
 Run: `pnpm exec vitest run client/src/App.test.tsx`
 
 Expected: 1 test passed。
 
-- [ ] **Step 5: 提交前端骨架**
+- [x] **Step 5: 提交前端骨架**
 
 ```bash
 git add client shared
@@ -190,31 +190,31 @@ git commit -m "feat: add frontend initialization shell"
 - Consumes: `DATABASE_URL` 和 `REDIS_URL`。
 - Produces: 只读配置解析函数、MySQL/Redis 本地容器和新会话文档入口。
 
-- [ ] **Step 1: 编写配置失败测试**
+- [x] **Step 1: 编写配置失败测试**
 
 创建 `server/infrastructure/config.test.ts`，断言数据库和队列配置在环境变量缺失时抛出明确错误，在变量存在时返回 URL；测试必须恢复进程环境。
 
-- [ ] **Step 2: 运行配置测试并确认失败**
+- [x] **Step 2: 运行配置测试并确认失败**
 
 Run: `pnpm exec vitest run server/infrastructure/config.test.ts`
 
 Expected: FAIL，因为配置模块尚不存在。
 
-- [ ] **Step 3: 实现配置边界和空 Drizzle schema**
+- [x] **Step 3: 实现配置边界和空 Drizzle schema**
 
 两个配置模块只读取服务端环境变量并返回字符串，不建立真实连接。`drizzle/schema.ts` 明确说明业务表由后续 change 定义，不创建猜测的数据模型。
 
-- [ ] **Step 4: 创建容器和文档**
+- [x] **Step 4: 创建容器和文档**
 
 Docker Compose 使用 MySQL 8.4 和 Redis 7，并通过环境变量为应用传递连接地址。README 和状态文档明确当前只有工程骨架、没有业务能力。
 
-- [ ] **Step 5: 运行配置测试并确认通过**
+- [x] **Step 5: 运行配置测试并确认通过**
 
 Run: `pnpm exec vitest run server/infrastructure/config.test.ts`
 
 Expected: 配置测试全部通过。
 
-- [ ] **Step 6: 提交基础设施边界**
+- [x] **Step 6: 提交基础设施边界**
 
 ```bash
 git add drizzle drizzle.config.ts server/infrastructure Dockerfile docker-compose.yml README.md AGENTS.md docs/STATUS.md docs/PROJECT_MAP.md
@@ -234,17 +234,17 @@ git commit -m "chore: add infrastructure and project boundaries"
 - Consumes: 已通过测试和构建的工程骨架。
 - Produces: 可由 `harness-spec` 创建 `openspec/changes/build-serenity-intelligence-monitor` 的项目状态。
 
-- [ ] **Step 1: 初始化 OpenSpec**
+- [x] **Step 1: 初始化 OpenSpec**
 
 Run: `openspec init . --tools codex`
 
 Expected: 创建 `openspec/` 和 Codex 集成文件，不创建业务 change。
 
-- [ ] **Step 2: 按 openspec-init 规则补全基础规格**
+- [x] **Step 2: 按 openspec-init 规则补全基础规格**
 
 `config.yaml` 首行使用 `schema: spec-driven`。`project-foundation/spec.md` 只覆盖健康检查、构建验证、Secret 边界和 Harness 入口，不描述未实现业务。
 
-- [ ] **Step 3: 运行完整验证**
+- [x] **Step 3: 运行完整验证**
 
 Run in order:
 
@@ -261,7 +261,7 @@ git diff --check
 
 Expected: 所有命令退出码为 0；测试至少包含后端、前端和配置三组；OpenSpec 没有活动 change。
 
-- [ ] **Step 4: 更新状态并提交初始化基线**
+- [x] **Step 4: 更新状态并提交初始化基线**
 
 `docs/STATUS.md` 记录真实命令结果、未验证的外部依赖和下一步 change-id。
 
@@ -270,7 +270,7 @@ git add pnpm-lock.yaml openspec .codex docs/STATUS.md
 git commit -m "chore: initialize OpenSpec project baseline"
 ```
 
-- [ ] **Step 5: 复跑启动审计**
+- [x] **Step 5: 复跑启动审计**
 
 Run: `git status --short --branch`、`openspec list`、Harness CLI `status openspec/changes/build-serenity-intelligence-monitor`。
 

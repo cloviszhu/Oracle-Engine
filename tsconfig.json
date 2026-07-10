@@ -20,5 +20,5 @@
       "@shared/*": ["shared/*"]
     }
   },
-  "include": ["client", "shared", "vite.config.ts", "vitest.config.ts"]
+  "include": ["client", "shared", "drizzle", "drizzle.config.ts", "vite.config.ts", "vitest.config.ts"]
 }

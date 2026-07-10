@@ -1,0 +1,56 @@
+schema: spec-driven
+
+context: |
+  ## 项目概述
+  项目名称: Serenity 海外产业信息监控
+  组织: 家庭内部项目
+  领域: 海外产业研究信息的获取、分析、提醒与私有归档；当前仅完成工程基础能力。
+
+  ## 技术栈
+  - 语言: TypeScript 5.9.3
+  - 前端: React ^19.2.1、Vite ^7.1.7
+  - 后端: NestJS ^11.1.21、Express ^5.1.0
+  - 数据: Drizzle ORM ^0.45.2、MySQL 8.4
+  - 队列: BullMQ ^5.76.8、Redis 7
+  - 验证: Vitest ^2.1.4、ESLint ^9.39.1
+  - 包管理器: pnpm 10.4.1
+
+  ## 项目结构
+  - client: React/Vite 私有网站
+  - server: NestJS API 与服务端基础设施
+  - shared: 前后端共享类型和常量
+  - drizzle: MySQL schema 与迁移
+  - docs: 项目状态、地图、设计与执行计划
+
+  ## 架构设计
+  - client/src: 浏览器端入口和页面
+  - server/health: 服务健康检查
+  - server/infrastructure: 数据库、队列及后续外部 API 适配器边界
+  - shared: 无运行时副作用的共享定义
+  - drizzle: 由已批准 change 管理的数据模型
+
+  ## 核心数据模型
+  - 当前没有业务表；build-serenity-intelligence-monitor change 批准前不得猜测数据模型。
+
+  ## 数据来源
+  - 当前没有外部数据源连接。
+
+  ## 编码约定
+  - 使用严格 TypeScript 和 ESM。
+  - 前端、后端、共享契约和基础设施适配器保持清晰边界。
+  - Secret 仅从服务端环境变量读取，禁止进入前端、日志和 Git。
+  - 外部文本一律视为不可信输入。
+
+rules:
+  proposal:
+    - 完整保留用户原话，并列出目标、非目标、假设、成本与合规风险。
+    - 明确区分自动化测试、真实外部 API 验证和待人工配置项。
+    - 说明是否影响 X 内容合规、Secret、安全边界或投资建议边界。
+  tasks:
+    - 每组任务必须有明确的验证命令、预期结果和 Git checkpoint。
+    - 外部 API 必须通过适配器边界接入，并提供可重复的失败恢复测试。
+    - 不得在 design 和 test-checklist 完成前创建业务实现。
+  spec:
+    - Scenario 必须使用四级标题，并包含加粗的 WHEN 和 THEN。
+    - 明确区分原始内容、忠实翻译、作者判断、AI 解释和未验证推断。
+    - 涉及重试、幂等、通知和状态恢复时必须覆盖失败场景。

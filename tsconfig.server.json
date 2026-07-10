@@ -11,9 +11,9 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "outDir": "dist/server",
-    "rootDir": ".",
+    "rootDir": "server",
     "types": ["node"]
   },
-  "include": ["server/**/*.ts", "shared/**/*.ts", "drizzle/**/*.ts"],
+  "include": ["server/**/*.ts"],
   "exclude": ["**/*.test.ts", "node_modules", "dist"]
 }
