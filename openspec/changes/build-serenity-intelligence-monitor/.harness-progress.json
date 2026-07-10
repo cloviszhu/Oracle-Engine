@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.1",
+  "change_name": "build-serenity-intelligence-monitor",
+  "scenario": "A",
+  "current_step": "new_change",
+  "created_at": "2026-07-10T16:53:32+08:00",
+  "updated_at": "2026-07-10T16:53:45+08:00",
+  "fast_forward": false,
+  "driving_mode": {
+    "mode": "L2",
+    "source": "init_arg",
+    "updated_at": "2026-07-10T16:53:32+08:00"
+  },
+  "degradation": {
+    "level": null,
+    "reasons": []
+  },
+  "step_chain": [
+    "routing",
+    "new_change",
+    "proposal_draft",
+    "proposal_scan",
+    "proposal_confirm",
+    "design",
+    "cheap_search",
+    "test_checklist",
+    "tasks",
+    "council_review",
+    "debate",
+    "user_confirm",
+    "implement",
+    "test_verify",
+    "user_accept",
+    "archive"
+  ],
+  "steps": {
+    "routing": {
+      "status": "done",
+      "completed_at": "2026-07-10T16:53:45+08:00"
+    },
+    "new_change": {
+      "status": "in_progress"
+    },
+    "proposal_draft": {
+      "status": "blocked"
+    },
+    "proposal_scan": {
+      "status": "blocked"
+    },
+    "proposal_confirm": {
+      "status": "blocked"
+    },
+    "design": {
+      "status": "blocked"
+    },
+    "cheap_search": {
+      "status": "blocked"
+    },
+    "test_checklist": {
+      "status": "blocked"
+    },
+    "tasks": {
+      "status": "blocked"
+    },
+    "council_review": {
+      "status": "blocked"
+    },
+    "debate": {
+      "status": "blocked"
+    },
+    "user_confirm": {
+      "status": "blocked"
+    },
+    "implement": {
+      "status": "blocked"
+    },
+    "test_verify": {
+      "status": "blocked"
+    },
+    "user_accept": {
+      "status": "blocked"
+    },
+    "archive": {
+      "status": "blocked"
+    }
+  },
+  "artifacts": {
+    "proposal.md": {
+      "exists": false,
+      "hash": ""
+    },
+    "design.md": {
+      "exists": false,
+      "hash": ""
+    },
+    ".cheap-search-report.md": {
+      "exists": false,
+      "hash": ""
+    },
+    "test-checklist.md": {
+      "exists": false,
+      "hash": ""
+    },
+    "tasks.md": {
+      "exists": false,
+      "hash": ""
+    },
+    ".council-review.log": {
+      "exists": false,
+      "hash": ""
+    },
+    ".review-debate.log": {
+      "exists": false,
+      "hash": ""
+    }
+  }
+}
