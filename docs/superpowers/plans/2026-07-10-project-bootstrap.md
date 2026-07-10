@@ -54,10 +54,16 @@ Run: `node -e "JSON.parse(require('fs').readFileSync('package.json','utf8')); co
 
 Expected: 输出 `package-json-ok`。
 
-- [ ] **Step 5: 提交工具链配置**
+- [ ] **Step 5: 安装并锁定工具链依赖**
+
+Run: `pnpm install`
+
+Expected: 生成 `pnpm-lock.yaml`，安装退出码为 0。
+
+- [ ] **Step 6: 提交工具链配置**
 
 ```bash
-git add package.json tsconfig.json tsconfig.server.json nest-cli.json vite.config.ts vitest.config.ts eslint.config.mjs .gitignore .env.example
+git add package.json pnpm-lock.yaml tsconfig.json tsconfig.server.json nest-cli.json vite.config.ts vitest.config.ts eslint.config.mjs .gitignore .env.example
 git commit -m "chore: initialize TypeScript toolchain"
 ```
 
@@ -228,23 +234,17 @@ git commit -m "chore: add infrastructure and project boundaries"
 - Consumes: 已通过测试和构建的工程骨架。
 - Produces: 可由 `harness-spec` 创建 `openspec/changes/build-serenity-intelligence-monitor` 的项目状态。
 
-- [ ] **Step 1: 安装并锁定依赖**
-
-Run: `pnpm install`
-
-Expected: 生成 `pnpm-lock.yaml`，安装退出码为 0。
-
-- [ ] **Step 2: 初始化 OpenSpec**
+- [ ] **Step 1: 初始化 OpenSpec**
 
 Run: `openspec init . --tools codex`
 
 Expected: 创建 `openspec/` 和 Codex 集成文件，不创建业务 change。
 
-- [ ] **Step 3: 按 openspec-init 规则补全基础规格**
+- [ ] **Step 2: 按 openspec-init 规则补全基础规格**
 
 `config.yaml` 首行使用 `schema: spec-driven`。`project-foundation/spec.md` 只覆盖健康检查、构建验证、Secret 边界和 Harness 入口，不描述未实现业务。
 
-- [ ] **Step 4: 运行完整验证**
+- [ ] **Step 3: 运行完整验证**
 
 Run in order:
 
@@ -261,7 +261,7 @@ git diff --check
 
 Expected: 所有命令退出码为 0；测试至少包含后端、前端和配置三组；OpenSpec 没有活动 change。
 
-- [ ] **Step 5: 更新状态并提交初始化基线**
+- [ ] **Step 4: 更新状态并提交初始化基线**
 
 `docs/STATUS.md` 记录真实命令结果、未验证的外部依赖和下一步 change-id。
 
@@ -270,7 +270,7 @@ git add pnpm-lock.yaml openspec .codex docs/STATUS.md
 git commit -m "chore: initialize OpenSpec project baseline"
 ```
 
-- [ ] **Step 6: 复跑启动审计**
+- [ ] **Step 5: 复跑启动审计**
 
 Run: `git status --short --branch`、`openspec list`、Harness CLI `status openspec/changes/build-serenity-intelligence-monitor`。
 
