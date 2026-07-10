@@ -596,6 +596,18 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - 参考仓库当前未发现明确 License，只能参考高层方法，不作为生产实时数据源，也不复制代码或数据。
 - Docker 当前不可用，容器构建与 Compose 联调暂不视为已验证。
 
+### 全景扫描结论
+
+- 仓库没有 `plan/`、`Source/` 或 `Plugins/` 目录，也没有未纳入 Harness 的业务草案；实际源码边界是 `client/`、`server/`、`shared/` 与 `drizzle/`。
+- `docs/superpowers/` 中只有已完成的项目初始化设计与执行计划，二者明确把 Serenity 业务留给本 change；本 change 基于该工程基线继续，不重建项目。
+- `openspec/specs/` 只有 `project-foundation`，覆盖当前初始化页、健康检查、配置失败可见、Secret 扫描、构建交付和空数据模型边界；它不覆盖 X 获取、AI 分析、通知、认证、归档或检索。
+- `openspec/COVERAGE.md` 对当前 10 个工程骨架元素报告 100% 覆盖，同时明确业务能力尚无代码；因此不存在可复用的同义业务 capability，也不应把新需求并入 `project-foundation`。
+- `openspec/changes/` 除归档目录外只有当前 `build-serenity-intelligence-monitor`，没有冲突、重叠或待续做的旧 change。
+- 当前前端只是初始化占位页；后端只有静态资源托管和 `GET /api/health`；Drizzle schema 为空；MySQL/Redis 仅有配置读取和 Compose 基线，尚未建立连接、队列或业务表。
+- `.env.example` 与 Compose 已预留 `SESSION_SECRET`、`X_API_BEARER_TOKEN`、`AI_API_KEY`、`FEISHU_WEBHOOK_URL` 的服务端配置边界，但没有对应业务实现；后续应复用变量边界并在 design 中决定是否细化命名和校验。
+- Capability 决策：复用 `project-foundation` 作为不变的工程前提；本 change 新增五个业务 capability，不写 `MODIFIED project-foundation`，避免把业务要求混入基础规格。
+- 扫描未发现会阻止 proposal 确认的冲突。
+
 ## 验收清单
 
 <!-- HARNESS:AC_LIST_START -->

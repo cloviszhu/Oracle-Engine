@@ -2,9 +2,9 @@
   "schema_version": "1.1",
   "change_name": "build-serenity-intelligence-monitor",
   "scenario": "A",
-  "current_step": "proposal_scan",
+  "current_step": "proposal_confirm",
   "created_at": "2026-07-10T16:53:32+08:00",
-  "updated_at": "2026-07-10T16:57:06+08:00",
+  "updated_at": "2026-07-10T16:58:04+08:00",
   "fast_forward": false,
   "driving_mode": {
     "mode": "L2",
@@ -47,10 +47,11 @@
       "completed_at": "2026-07-10T16:57:06+08:00"
     },
     "proposal_scan": {
-      "status": "in_progress"
+      "status": "done",
+      "completed_at": "2026-07-10T16:58:04+08:00"
     },
     "proposal_confirm": {
-      "status": "blocked"
+      "status": "in_progress"
     },
     "design": {
       "status": "blocked"
@@ -89,7 +90,7 @@
   "artifacts": {
     "proposal.md": {
       "exists": true,
-      "hash": "ee9a8ce3"
+      "hash": "86e63257"
     },
     "design.md": {
       "exists": false,
