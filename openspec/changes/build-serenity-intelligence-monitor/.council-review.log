@@ -123,4 +123,52 @@
   - `check_traceability.py`: passed；19 AC / 38 TC / 33 Task，全部映射
   - `openspec list`: `0/57 tasks`，不再包含验收清单中的 19 个 AC checkbox
   - Harness `gate-check council_review`: passed
-  - `git diff --check`: passed
+- `git diff --check`: passed
+
+## 会话 3：A7 / 用户裁决修订后重新顾问团审查（2026-07-15）
+
+- reviewed_at_commit: `4d0cee01edce07b8eb5e1d08b04e2d9084b234f0`
+- reviewed_files:
+  - proposal.md: `d2103a005325710b3ec2c2db1892a2694ddcf87b`
+  - design.md: `3adbbb3cac54884e9880d6172f9bca06f9528b5f`
+  - test-checklist.md: `9f877a9feb746a7db342a0c3696fe5ec6ab1815d`
+  - tasks.md: `4d99f2bf39bd1e9422e9c3e4cf0f741459a87a9d`
+  - specs/importance-and-notification/spec.md: `97874442620b4fef6d5cd360c6f3f6eb2f8e87ac`
+  - specs/operations-and-recovery/spec.md: `c4e9a327b2cb35a0f3c756799dd83c56a2e07259`
+  - specs/private-research-workspace/spec.md: `3c98d8b2a0a6c6f0e48623d1ca0dcf5fccc7e718`
+  - specs/project-foundation/spec.md: `b56559feca80cecaa37332740d9c7bbfadfb0e0b`
+  - specs/research-context-and-card/spec.md: `962284ad3570fdc384242f7ad319ec3347d1a37f`
+  - specs/serenity-content-ingestion/spec.md: `6faeaa1c7448b3ab06b75ef458387a6f4ba983d7`
+- docs/project-pitfalls.md: 不存在；继续记录为流程资料缺失，不扩张为产品需求。
+- round_1: 5 个独立只读视角完成（反驳者、本质追问者、扩张者、局外人、执行者）。
+- round_2: 匿名互审代理读取被中断，返回了不带最新行号的风险清单；主席未把其建议直接当作已确认缺陷，而是逐项对照最终工件人工复核。
+
+### 共识
+
+1. 旧 council/debate 哈希已过期，必须以本会话最终工件重新审查；禁止沿用 2026-07-10 的 `CONVERGED` 直接实施。
+2. 私有网页是核心闭环，父亲与提出需求的用户各使用一个预配置、同权限家庭账号；无注册、角色系统、OAuth 或多租户，反馈绑定实际 actor。
+3. 飞书三态已机械统一：默认 `disabled` 时零 delivery/零队列/零失败积压；显式启用且配置不全时只阻断通知分支；完整配置时强制时间戳安全签名并发送到提出需求用户控制的私有飞书群。
+4. 飞书实现从原 Group 4 后移到 Group 8；Group 4 只形成重要性评分和提醒候选事实，网页核心闭环不等待可选通知。
+5. OpenAI 第一版生产配置只接受 `openai/gpt-5.6-terra`，通过 Responses API 严格结构化输出且不启用 tools；适配器记录请求/实际模型、usage 和 request ID，错误模型、无权限或能力不符时显式阻断且不静默换模。
+6. AI data envelope 使用最小字段白名单，不发送家庭账号、会话、反馈、访问日志、通知配置、X raw payload 或 Secret；飞书只接收最小摘要和私有详情链接。
+7. 验收新增父亲的低门槛理解判据、默认 30 分钟核心网页可见性目标、真实 `gpt-5.6-terra` 固定 Prompt Injection 样本和双账号 actor 隔离。
+
+### 盲区
+
+1. 飞书签名固定向量、时间戳窗口、签名拒绝 4xx 与 `outcome_unknown` 只能在实现后由自动化/真实联调证明；规格不得写成已验证。
+2. 目标 OpenAI 项目是否实际有 `gpt-5.6-terra` 权限、真实 X 配额、Docker/MySQL/Redis、HTTPS 和部署环境仍缺证据，对应 TC 必须保持待人工或真实 API 状态。
+3. 两个家庭账号同权是满足“父亲用网页、提出者接收并查看提醒”的最小实现；角色差异、注册、找回密码和多租户继续延期。
+
+### 遗漏
+
+- 未发现仍未回写的 P0/P1。首轮指出的双账号冲突、飞书禁用积压、证据类别冲突、真实模型对抗样本、可选通知实施顺序、接收目标、模型能力检查、最小出站字段和配置变量命名均已进入 proposal/design/specs/test-checklist/tasks。
+
+### 建议调整
+
+- P2：`CORE_VISIBILITY_SLO_MINUTES=30` 作为可配置初始目标，真实运行后根据 X 套餐和样本耗时单独调参，不在本 change 引入复杂 SLO 平台。
+- P2/P3：多接收人、多飞书群、个人私聊、通知偏好、高级检索、收藏、角色系统、多模型路由和自动 fallback 延后到新 change。
+- 实施前仍需重新运行 debate 并冻结当前工件哈希；用户确认前不进入 implement。
+
+### 判定
+
+`READY_FOR_DEBATE`：当前无未解决 P0/P1；19 AC / 38 TC / 33 Task 的确定性追溯、OpenSpec strict validate、Harness embed-check、council gate 和 `git diff --check` 均通过。匿名互审返回不完整已如实记录，不影响主席对其所有风险项的逐条人工复核。

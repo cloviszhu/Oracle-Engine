@@ -1,7 +1,12 @@
 ## ADDED Requirements
 
 ### Requirement: 每个流水线阶段必须有可审计状态
-系统 MUST 为获取、上下文补全、AI 分析、评分和通知记录 pending、processing、成功、可重试失败、阻断、结果未知或死信，以及 attempt、lease owner/fencing、错误分类、人工重试资格和版本信息。
+系统 MUST 为获取、上下文补全、AI 分析和评分的核心流水线，以及独立的可选通知分支记录 pending、processing、成功、可重试失败、阻断、结果未知或死信，以及 attempt、lease owner/fencing、错误分类、人工重试资格和版本信息。可选通知配置缺失 MUST NOT 把已完成评分的核心流水线标记为失败。
+
+#### Scenario: 可选通知禁用但核心流水线完成
+- **WHEN** 内容已完成归档、上下文、OpenAI 分析和评分，且飞书未启用
+- **THEN** 核心流水线保持成功且不创建通知 delivery
+- **AND** 状态页显示可选渠道 `disabled`，不计入失败或积压
 
 #### Scenario: 流水线正常完成
 - **WHEN** 一条内容依次完成各处理阶段
@@ -32,7 +37,12 @@
 - **AND** 只有管理员显式重试才能创建新的 attempt 链
 
 ### Requirement: 私有状态页必须呈现运行与恢复信息
-认证管理员 MUST 能查看最近一次轮询、补偿、上下文、AI 与通知状态、队列摘要、待配置项和可恢复失败，但 MUST NOT 看到 Secret 或内部错误栈。
+认证家庭用户 MUST 能查看最近一次轮询、补偿、上下文、AI 与通知状态、队列摘要、待配置项和可恢复失败，但 MUST NOT 看到 Secret 或内部错误栈。
+
+#### Scenario: 核心网页可见性目标
+- **WHEN** X API 首次成功返回一条新内容
+- **THEN** 系统记录从首次观察到研究卡片可在网页查看的分阶段耗时，并以 30 分钟为默认目标
+- **AND** 超目标时状态页显示阻塞阶段和原因，不得静默丢弃、跳过证据校验或伪造成功
 
 #### Scenario: 查看运行状态
 - **WHEN** 管理员打开状态页
@@ -83,10 +93,15 @@
 - **THEN** 对应验收项保持待人工或 Mock 状态
 - **AND** 不得标记为真实通过
 
-#### Scenario: 同一真实内容完成端到端验收
-- **WHEN** 同一 Serenity external ID 经过真实 X、上下文、选定真实 AI、评分、真实飞书和私有详情页
-- **THEN** 验收报告保存可串联的 run、content version、context、provider request、card、score、delivery 与页面 ID
-- **AND** 用户能够从飞书绝对 HTTPS 链接进入同一详情并完成登录、筛选、反馈与状态核查
+#### Scenario: 同一真实内容完成核心网页端到端验收
+- **WHEN** 同一 Serenity external ID 经过真实 X、上下文、OpenAI `gpt-5.6-terra`、评分和私有详情页
+- **THEN** 验收报告保存可串联的 run、content version、context、OpenAI request、card、score 与页面 ID
+- **AND** 用户无需飞书即可在私有网页完成登录、搜索、筛选、详情、反馈与状态核查
+
+#### Scenario: 可选飞书分支加入同一闭环
+- **WHEN** 已配置带安全签名的真实飞书机器人并对上述同一内容启用提醒
+- **THEN** 验收报告追加可串联的 delivery/provider ID 与签名请求结果
+- **AND** 用户能从提醒中的绝对 HTTPS 链接进入同一私有详情；未配置飞书不改变核心网页闭环结论
 
 #### Scenario: 真实普通内容保持低打扰
 - **WHEN** 用户预先标注的普通或低价值真实内容完成分析

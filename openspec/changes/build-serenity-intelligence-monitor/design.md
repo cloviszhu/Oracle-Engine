@@ -1,8 +1,10 @@
 # build-serenity-intelligence-monitor — 技术设计
 
+> 本 change 遵循 harness-spec 工作流；用户原声与验收清单以 `proposal.md` 为真相源，本设计不得降低其范围或证据门禁。
+
 ## 概述
 
-本 change 在现有 React 19、NestJS 11、Drizzle/MySQL 8 和 BullMQ/Redis 7 基线上实现 Serenity（`@aleabitoreddit`）单信息源闭环。系统仅在服务端通过官方 X API 获取内容，以 MySQL 保存可审计事实和处理状态，以 BullMQ 执行可重试流水线；AI、X、飞书均通过适配器接入。浏览器只访问同源私有 API，不接触外部凭据。第一阶段以可靠轮询和周期补偿为获取基线，不把 Filtered Stream、多个信息源、A 股公司级自动映射或任何交易能力纳入实现。
+本 change 在现有 React 19、NestJS 11、Drizzle/MySQL 8 和 BullMQ/Redis 7 基线上实现 Serenity（`@aleabitoreddit`）单信息源闭环。系统仅在服务端通过官方 X API 获取内容，以 MySQL 保存可审计事实和处理状态，以 BullMQ 执行可重试流水线；X、OpenAI 和可选飞书均通过适配器接入。私有网页是主要使用入口，浏览器只访问同源私有 API，不接触外部凭据。飞书未配置时，归档、OpenAI 分析、搜索和查看仍完整运行。第一阶段以可靠轮询和周期补偿为获取基线，不把 Filtered Stream、多个信息源、A 股公司级自动映射或任何交易能力纳入实现。
 
 ## 设计依据与现有边界
 
@@ -33,9 +35,9 @@
 | 异步执行 | BullMQ/Redis 负责调度和重试，MySQL 状态为可审计真相源 | Redis 负责执行效率，MySQL 防止队列丢失后无法判断业务状态 |
 | AI 接入 | `ResearchModelAdapter` + 单一运行时实现 + Zod 结构化输出 | 便于 Mock、替换和严格字段校验；不让模型直接决定通知或调用工具 |
 | 重要性 | 确定性加权评分器消费结构化特征，模型只能提供有证据的特征候选 | 可解释、可调、可测试，避免模型任意决定是否打扰用户 |
-| 私有认证 | 单管理员、无注册、服务端 Redis 会话、HttpOnly/SameSite Cookie | 符合家庭内部使用，避免引入多租户和复杂身份系统 |
-| 管理员凭据 | 环境变量保存用户名与 Node `scrypt` 密码摘要，`SESSION_SECRET` 签名会话 Cookie | 不保存明文密码，避免额外密码库依赖，Secret 不进入数据库和前端 |
-| 通知 | `NotificationAdapter`，本 change 仅实现飞书机器人 | 满足一个渠道闭环，同时保留以后增加邮件/QQ 的清晰边界 |
+| 私有认证 | 两个预配置同权限家庭账号、无注册/角色系统、服务端 Redis 会话、HttpOnly/SameSite Cookie | 父亲与提出需求的用户可分别登录并追溯反馈，同时不引入多租户或复杂身份系统 |
+| 家庭凭据 | 服务端配置保存 actor ID、用户名与 Node `scrypt` 密码摘要列表，`SESSION_SECRET` 签名会话 Cookie | 不保存明文密码；可单独轮换并撤销某个家庭账号会话，Secret 不进入数据库和前端 |
+| 通知 | `NotificationAdapter`，本 change 仅实现可选且强制安全签名的飞书机器人 | 网页闭环不依赖通知，同时保留以后增加邮件/QQ 的清晰边界 |
 | 搜索 | 低数据量阶段使用受限分页的文本匹配 + 规范化 ticker/topic 关系表 | 不假设部署环境已配置中文全文索引；后续有数据量证据再升级 |
 | 部署 | 单 NestJS 进程承载 API/静态资源，独立 worker 进程消费队列；MySQL/Redis 为外部依赖 | 延续现有构建方式并隔离 Web 与后台任务故障，不引入集群和多租户 |
 | 内容生命周期 | 活跃、已编辑、已删除、不可访问四态；删除/不可访问默认隐藏正文并清除受限原始载荷，只保留政策允许的最小 tombstone | 同时满足可追踪与平台政策；最终保留字段由生产前政策复核确认 |
@@ -132,7 +134,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 ### 枚举与状态机
 
 - 内容可见性：`active → verification_pending → deleted | unavailable`，明确 provider 删除事件可直接确认；批量缺项、限流、权限变化或暂态错误只能进入非破坏性的待确认状态。编辑是 `content_versions` 的新增事件，不与可见性状态混用。重新可访问时允许恢复为 `active`。
-- 流水线阶段：`ingest → context → analysis → score → notify`。
+- 核心流水线阶段：`ingest → context → analysis → score`；`notify` 是评分后的可选子分支，单独记录 delivery 状态。飞书未配置不得把已完成评分的内容标记为核心流水线失败。
 - 处理状态：`pending → processing → succeeded | retryable_failed | blocked | dead_letter`；`blocked` 通过 `block_reason=budget|configuration|policy|permission` 区分，不自动重试；`dead_letter` 只有显式允许时才能创建新 attempt。lease 超时可由 reconciliation 回收，迟到 worker 受 fencing 拒绝。
 - 通知：`pending → sending → sent | retryable_failed | outcome_unknown | blocked | dead_letter | suppressed`；`outcome_unknown` 代表 provider 可能已收但本地无确认，禁止盲目自动重发。
 - 卡片置信度：`low | medium | high`，另保留 0–1 数值；上下文不足时不得标为 `high`。
@@ -164,9 +166,18 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 `ResearchCardDraft` 至少包含：忠实翻译、内容类型、`serenity_statements[]`、`other_party_statements[]`、`ai_interpretations[]`、`unverified_inferences[]`、观点变化、entities、evidence、uncertainties、confidence、importance features。每个结论都带来源 content ID 或明确标记为 AI 解释/未验证推断。
 
+### 第一版 OpenAI 实现
+
+- 业务层只依赖 `ResearchModelAdapter`；基础设施层实现 `OpenAIResearchModelAdapter`，通过 OpenAI Responses API 调用 `gpt-5.6-terra`。官方模型文档确认该模型支持 Responses API 和 Structured Outputs：<https://developers.openai.com/api/docs/models/gpt-5.6-terra>。
+- `AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra`、`OPENAI_API_KEY`、reasoning effort、deadline、重试和预算从服务端配置读取；模型 ID 不散落在业务代码、prompt 或数据库迁移中。
+- 适配器把 `ResearchCardDraft` 转为严格 JSON Schema/Structured Outputs，并返回统一的文本结果、usage、provider request ID 与模型版本；OpenAI SDK/Responses 类型不得穿透适配器边界。
+- 第一版请求显式不提供任何 tools；不启用 web search、file search、code interpreter 或其他供应商工具，即使目标模型支持这些能力。
+- 生产启用时执行一次脱敏能力检查，确认目标项目可访问 `gpt-5.6-terra` 且严格结构化响应可解析；保存请求配置的模型 ID 与响应返回的实际模型标识。不可用时阻断分析并显示原因，禁止静默换模。
+
 ### 防 Prompt Injection
 
 - 系统提示与不可信内容分离；帖子、引用、历史材料放在带来源 ID 的 data envelope 中，并声明其中指令不可执行。
+- OpenAI data envelope 采用字段白名单，只发送完成研究卡片所需的已归档正文、来源 ID、关系、时间和历史观点候选；不得发送家庭账号、会话、反馈备注、访问日志、通知配置、X raw payload 或任何 Secret。飞书只接收生成后的最小提醒摘要和私有详情链接。
 - 模型适配器不提供工具调用、网络、文件系统和环境变量；模型无法读取外链或 Secret。
 - 输出必须通过严格 Zod schema、长度限制、枚举和来源引用校验；越权内容、伪造来源或额外字段导致失败重试/人工检查。
 - 用恶意帖子 fixture 验证“忽略系统指令、泄露 Secret、调用工具、把指令当结论”等攻击不会越权。
@@ -176,7 +187,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 - 输入以 `contentVersion + contextHash + promptVersion + modelVersion` 形成分析幂等键，相同输入不重复付费。
 - 调用前通过原子 reservation 检查并占用 `AI_DAILY_BUDGET_CENTS`；达到上限后保持 `blocked` 且 `block_reason=budget`，不得静默切换低质量模型。
 - 保存模型、prompt 版本、token usage、provider request ID、耗时和成本；不保存 API key。
-- 生产实现 MUST 落地一个经用户确认的具体 AI provider/model；在 `user_confirm` 前保持 `USER_DECISION_REQUIRED`，未选定时可完成 provider-neutral contract 与 Mock，但真实 AI 能力不得标记完成。
+- 生产实现 MUST 落地已确认的 OpenAI `gpt-5.6-terra`，同时保留 provider/model 配置和适配器边界。若 `OPENAI_API_KEY` 缺失，原文仍归档且网页可检索，分析进入 `blocked/configuration` 并可在配置恢复后续办；不得伪造卡片或静默切换模型。
 
 ## 重要性评分
 
@@ -189,20 +200,21 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 ## 通知设计
 
-- `NotificationPolicy` 在评分成功后创建 delivery。技术 delivery key 继续包含 card/policy version；另以内容事件 ID + 用户提醒策略维护用户感知去重与 cooldown，单纯模型/prompt/策略重算不得再次打扰，只有正文实质编辑、观点实质变化或管理员明确重发才允许新提醒。
-- 飞书消息使用稳定事件 ID，并只包含保留不确定性标签的分层摘要、重要性理由和由受校验 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；不包含 Token、Webhook、完整 raw payload 或未经验证的 A 股公司结论。
-- Webhook 仅从服务端 `FEISHU_WEBHOOK_URL` 读取；请求和错误日志对 URL 完全脱敏。
+- `NotificationPolicy` 始终保存“符合提醒条件”的评分事实。仅当 `FEISHU_ENABLED=true` 时创建 delivery；默认禁用时渠道状态为 `disabled`，不创建发送 intent、不入队、不重试、不计入失败/积压。技术 delivery key 继续包含 card/policy version；另以内容事件 ID + 用户提醒策略维护用户感知去重与 cooldown，单纯模型/prompt/策略重算不得再次打扰，只有正文实质编辑、观点实质变化或管理员明确重发才允许新提醒。
+- 飞书是可选提醒而不是使用入口。第一版由提出需求的用户控制的私有飞书群 Webhook 接收，父亲只使用私有网页；不实现个人私聊或任意用户定向发送。
+- 飞书消息使用稳定事件 ID，并只包含保留不确定性标签的分层摘要、重要性理由和由受校验 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；不包含 Token、Webhook、签名密钥、完整 raw payload 或未经验证的 A 股公司结论。
+- 启用开关、Webhook 与安全签名密钥仅从服务端 `FEISHU_ENABLED`、`FEISHU_WEBHOOK_URL`、`FEISHU_SIGNING_SECRET` 读取；启用飞书必须后两者同时存在并按飞书机器人协议为每次请求生成带时间戳的签名，缺一即不发送。请求和错误日志对 URL、签名和密钥完全脱敏。
 - 成功响应保存 provider message ID；明确拒绝、连接建立前失败、429、5xx 按分类重试；请求已经发送但响应超时/进程在发送后落库前崩溃时进入 `outcome_unknown`，不自动重发，由管理员核对后显式处理。只有真实联调证明 provider 支持幂等/结果查询时才能收紧为自动补偿。
-- 未配置 Webhook 时高价值内容标记 `blocked` 且 `block_reason=configuration`，普通归档和网页功能继续运行。
+- `FEISHU_ENABLED=false` 时状态页显示渠道已禁用但不显示故障；`FEISHU_ENABLED=true` 且 Webhook 或签名密钥缺失时才创建/保留 `blocked/configuration` 状态。两种情况下归档、OpenAI 分析、评分、搜索和网页查看均继续运行。
 
 ## 私有认证与 API
 
 ### 认证
 
-- `/api/auth/login` 校验环境变量中的管理员用户名和 `scrypt` 密码摘要，比较使用恒定时间函数；失败统一返回通用错误并限速。
+- `/api/auth/login` 在两个预配置家庭账号列表中查找用户名并校验对应 `scrypt` 密码摘要，比较使用恒定时间函数；失败统一返回通用错误并按账号/IP 限速。
 - 登录成功后生成 256-bit 随机会话 token，Cookie 使用 `HttpOnly`、`SameSite=Strict`、生产环境 `Secure` 并由 `SESSION_SECRET` 签名；Redis 只保存 token 哈希、actor、创建时间和绝对 TTL。注销、Redis 记录删除或 Secret 轮换后旧 Cookie 必须失效。
 - 除 `/api/health` 和登录接口外，所有 API 由 `SessionGuard` 保护。写请求额外校验 CSRF token 与 Origin。
-- 无公开注册、找回密码、多角色、OAuth 或多租户；凭据缺失时生产启动失败可见。
+- 两个账号权限相同，无公开注册、找回密码、多角色、OAuth 或多租户；账号密码摘要轮换会撤销该 actor 的全部会话。任一必需家庭账号配置缺失时生产启动失败可见，外网部署必须启用 HTTPS。
 
 ### API 契约
 
@@ -212,7 +224,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 | `GET /api/intelligence` | 最新/历史分页，支持 keyword、ticker、topic、importance、contentType、date range |
 | `GET /api/intelligence/:id` | 内容、上下文图、卡片、评分、通知状态和反馈 |
 | `POST /api/intelligence/:id/feedback` | 提交固定枚举反馈和可选短备注 |
-| `GET /api/operations/status` | ingestion run（poll/compensation mode）及 ingest/context/analysis/score/notify 五阶段、worker heartbeat、阻断/失败摘要 |
+| `GET /api/operations/status` | ingestion run（poll/compensation mode）、ingest/context/analysis/score 核心阶段、可选 notify 分支、worker heartbeat、阻断/失败摘要 |
 | `GET /api/operations/audit/:runId` | 管理员读取脱敏 ingestion/provider/attempt 证据，不返回 raw payload 或 Secret |
 | `POST /api/operations/retry/:attemptId` | 仅管理员对明确 `manual_retry_allowed` 的 blocked/dead-letter 任务创建新 attempt；不可恢复终态拒绝请求 |
 
@@ -225,6 +237,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 - `/timeline`：历史时间线及 keyword/ticker/topic/importance/contentType 筛选。
 - `/intelligence/:id`：原文与来源、忠实翻译、Serenity 判断、他人内容、AI 解释、未验证推断、证据、不确定性、观点变化和上下文图分区展示。
 - `/status`：最近各阶段状态、失败原因、待配置项和可恢复操作。
+- 状态页展示从 X 首次成功观察到研究卡片网页可见的耗时。默认 `CORE_VISIBILITY_SLO_MINUTES=30`，超目标只告警并显示阻塞阶段，不丢弃或跳过处理。
 - 反馈按钮固定为“重要、已知、不相关、继续跟踪、翻译有误、分析有误”，提交后显示时间和当前选择。
 
 NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求回退到 `dist/public/index.html`，使飞书绝对详情链接、`/timeline`、`/status` 和详情页刷新可用；API 404 不得被 SPA fallback 吞掉。
@@ -261,8 +274,8 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 ### 真实 API 与人工验收
 
 - X：需要 Developer 账号、credits、Bearer Token 和政策确认；记录真实获取证据与资源成本。
-- AI：需要选定供应商、模型、密钥和预算；抽查翻译、证据引用、不确定性与注入边界。
-- 飞书：需要真实机器人 Webhook；验证单条高价值通知和去重。
+- AI：使用真实 OpenAI `gpt-5.6-terra`、API Key 和预算；抽查 Responses API 严格结构化输出、翻译、证据引用、不确定性与注入边界。
+- 飞书：仅在用户选择启用时配置真实机器人 Webhook 与安全签名密钥，验证签名请求、单条高价值通知和去重；未启用不阻塞核心网页闭环。
 - 认证/部署：在最终私有部署环境验证 HTTPS、Secure Cookie、重启恢复和网络访问边界。
 - Docker 当前不可用，因此容器验证必须标为待人工/目标环境验证，不能由本地 Mock 代替。
 
@@ -276,7 +289,7 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 4. 配置 MySQL、Redis、管理员密码摘要、Session Secret、`APP_BASE_URL`、外部 deadline/并发/lease/最大 attempt/上下文与 payload 上限；未配置真实外部服务时生产同步保持关闭。
 5. 通过独立 `dev:worker`/`start:worker` 与 Compose/process supervisor 启动 API 和 worker，验证 liveness、readiness、worker heartbeat、优雅退出和 reconciliation；API 健康但 worker 缺失时状态页必须告警。
 6. 配置 X 凭据和预算并记录政策确认人、时间、政策版本及允许 tombstone 字段后启用单账号轮询。
-7. 配置经用户确认的 AI provider/model 与飞书（含所选安全签名策略），逐项完成真实联调；任何一步失败均保留在状态页，不回滚已归档事实。
+7. 配置 OpenAI `gpt-5.6-terra` 并完成真实分析联调；如启用飞书，再同时配置 Webhook 与安全签名密钥完成可选通知联调。任何一步失败均保留在状态页，不回滚已归档事实；飞书缺失不阻塞网页闭环。
 8. 本地无 Docker 时，单元/Mock 测试可继续；MySQL/Redis 跨进程恢复、Node 20 镜像与目标部署证据保持待 CI/目标环境验证，不得以内存 Mock 替代。
 
 ## Repair lane
@@ -339,11 +352,11 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 - **数据流**：评分决策 → delivery 唯一键 → 飞书适配器 → 状态/重试
 - **验证点**：失败、超时、重试不丢失且不重复
 
-### AC-9：真实飞书提醒
+### AC-9：可选且安全签名的真实飞书提醒
 - **涉及模块/文件（猜测）**：`server/infrastructure/notifications/feishu.adapter.ts`
 - **关键函数/类（猜测）**：`FeishuNotificationAdapter.send`
 - **数据流**：脱敏消息 → 服务端 Webhook → provider result → 私有详情链接
-- **验证点**：真实发送一条；未配置时 `blocked/configuration`
+- **验证点**：默认禁用时零 delivery/零失败积压；显式启用但配置不全时 `blocked/configuration`；完整配置时以安全签名真实发送一条
 
 ### AC-10：私有访问和检索
 - **涉及模块/文件（猜测）**：`server/auth/`、`server/content/`、`client/src/pages/`
@@ -414,11 +427,11 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 | AC-3 | 数据设计；获取、幂等与补偿 | 数据库唯一键 + 稳定作业键 |
 | AC-4 | 数据状态机；内容生命周期 | 生产前政策复核 |
 | AC-5 | AI 研究卡片与安全边界 | 严格结构化分层 |
-| AC-6 | AI 结构化契约；前端详情页 | 需要真实内容人工抽查 |
+| AC-6 | OpenAI Responses API；AI 结构化契约；前端详情页 | 需要 `gpt-5.6-terra` 真实内容人工抽查 |
 | AC-7 | 重要性评分 | 服务端确定性决策 |
 | AC-8 | 通知设计；运行状态与恢复 | delivery 唯一键和可见失败 |
-| AC-9 | 通知设计 | 飞书是唯一实现渠道 |
-| AC-10 | 私有认证与 API；前端设计 | 单管理员、无注册 |
+| AC-9 | 通知设计 | 飞书是唯一可选实现渠道，启用即强制安全签名 |
+| AC-10 | 私有认证与 API；前端设计 | 网页为主要入口，两个同权限家庭账号、无注册 |
 | AC-11 | 数据设计；API；前端设计 | 追加式反馈记录 |
 | AC-12 | 运行状态、日志和恢复 | 私有状态 API |
 | AC-13 | 获取补偿；运行状态和恢复 | lease + reconciliation + 终态 |
@@ -427,7 +440,7 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 | AC-16 | Secret、合规和投资边界 | 明确排除交易与抓取越界 |
 | AC-17 | AI 成本与版本；外部用量表 | 硬预算和版本审计 |
 | AC-18 | 测试与验收策略 | 四类证据严格区分 |
-| AC-19 | 真实 API 与人工验收；部署与迁移顺序 | 同一业务事件贯穿真实闭环 |
+| AC-19 | 真实 API 与人工验收；部署与迁移顺序 | 同一业务事件贯穿核心网页闭环，飞书按配置追加验证 |
 
 ## 自审结论
 

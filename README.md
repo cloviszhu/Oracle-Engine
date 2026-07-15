@@ -1,6 +1,6 @@
 # Serenity 海外产业信息监控
 
-仅供家庭内部使用的海外产业研究辅助系统。当前仓库只完成工程初始化，尚未实现 X 内容获取、AI 研究卡片、重要性判断、消息推送或私有认证。
+仅供家庭内部使用的海外产业研究辅助系统。当前正在通过 Harness Spec 评审 `build-serenity-intelligence-monitor`：以私有网页为主要入口，合规归档 Serenity 内容，并使用 OpenAI `gpt-5.6-terra` 生成结构化研究卡片；飞书仅作为可选且启用安全签名的重要提醒渠道。业务代码尚未开始实现。
 
 ## 技术基线
 
@@ -40,4 +40,4 @@ pnpm dev
 
 ## 下一步
 
-新会话应以 `harness-spec` 为主控，按场景 A 创建 `build-serenity-intelligence-monitor`。在 proposal、design、test-checklist 和 tasks 完成前，不实现业务功能。
+当前 change 已完成 proposal、design、test-checklist、tasks 和首轮双审查，正在按用户最新决策修订后重新评审。在 Harness 再次到达实施前确认且用户明确同意前，不实现业务功能。

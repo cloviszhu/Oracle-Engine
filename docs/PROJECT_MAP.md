@@ -4,12 +4,12 @@
 
 | 路径 | 职责 | 当前状态 |
 |---|---|---|
-| `client/` | React 私有网站 | 初始化页 |
-| `server/` | NestJS API 和后台任务入口 | 健康检查 |
+| `client/` | React 私有网站 | 初始化页；当前 change 已设计登录、最新、时间线、详情、筛选、反馈和状态页，尚未实现 |
+| `server/` | NestJS API 和后台任务入口 | 健康检查；当前 change 已设计业务 API/worker，尚未实现 |
 | `server/infrastructure/` | 数据库、队列和外部系统边界 | 仅配置读取 |
 | `shared/` | 前后端共享类型和常量 | 系统名称 |
 | `drizzle/` | MySQL schema 与迁移 | 无业务表 |
-| `openspec/` | SDD 规格和 change | 待初始化 |
+| `openspec/` | SDD 规格和 change | `build-serenity-intelligence-monitor` 实施前复审中 |
 | `docs/` | 状态、地图、设计和执行计划 | 已建立 |
 
 ## 变更指引
@@ -23,4 +23,4 @@
 
 ## 禁止扩展
 
-当前初始化不创建 X、AI、通知、认证或 A 股公司映射模块。相关目录和接口必须在 `build-serenity-intelligence-monitor` 的 design 获批后创建。
+当前业务代码仍未创建。已评审设计限定为 Serenity 单账号、OpenAI `gpt-5.6-terra` 适配器、私有网页主入口和可选签名飞书提醒；多账号、多源、A 股公司级映射、新通知渠道和交易能力不进入本 change。只有 Harness 实施前确认完成后才能按 tasks 创建相关目录和接口。

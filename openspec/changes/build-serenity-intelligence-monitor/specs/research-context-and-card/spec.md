@@ -63,7 +63,30 @@
 - **AND** Mock 结果不得被标记为真实模型语义抗注入验证
 
 ### Requirement: 模型调用必须版本化并受硬预算约束
-系统 MUST 记录模型、prompt 版本、token usage、成本、provider request ID 与调用状态，并 MUST 以内容版本、上下文哈希、prompt 版本和模型版本形成分析幂等键。
+系统 MUST 在第一版通过 `ResearchModelAdapter` 的 OpenAI 实现使用 Responses API 调用 `gpt-5.6-terra` 严格结构化输出，并 MUST 记录 provider、模型、prompt 版本、token usage、成本、provider request ID 与调用状态；系统 MUST 以内容版本、上下文哈希、prompt 版本和模型版本形成分析幂等键。业务层 MUST NOT 依赖 OpenAI SDK 类型，provider 与 model MUST 可由服务端配置替换。
+
+#### Scenario: OpenAI 第一版生成研究卡片
+- **WHEN** `AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra` 和合法服务端凭据已配置
+- **THEN** 适配器通过 Responses API 请求严格 `ResearchCardDraft` 结构化输出并通过本地 schema/来源校验
+- **AND** 请求不提供网络、文件、代码执行或其他工具，响应保存统一 usage、request ID 与模型版本而不泄露 API Key
+
+#### Scenario: OpenAI 配置缺失
+- **WHEN** OpenAI API Key 或已确认模型配置缺失
+- **THEN** 原始内容继续归档并可从私有网页搜索和查看，分析进入 `blocked/configuration`
+- **AND** 系统不得伪造卡片、切换未批准模型或阻塞既有归档浏览
+
+#### Scenario: 第一版配置了错误 provider 或 model
+- **WHEN** 生产配置不是 `AI_PROVIDER=openai` 与 `OPENAI_MODEL=gpt-5.6-terra` 的批准组合，或能力检查表明目标项目无权访问/无法返回严格结构化输出
+- **THEN** 配置校验或分析阶段以明确 `blocked/configuration|capability` 失败
+- **AND** 系统不得静默切换 provider/model，原始归档和已有网页内容保持可用
+
+### Requirement: 发送给 AI 的家庭数据必须最小化
+系统 MUST 仅向研究模型发送生成卡片所需的已归档正文、来源 ID、上下文关系、时间和历史观点候选；系统 MUST NOT 发送家庭账号、会话、反馈备注、访问日志、通知配置、X raw payload 或任何 Secret。
+
+#### Scenario: 构造 OpenAI data envelope
+- **WHEN** 系统为一条内容构造研究请求
+- **THEN** envelope 只包含字段白名单内的研究材料并保留来源 ID
+- **AND** actor、Cookie、反馈、Webhook、签名密钥、Authorization 和 raw payload 字段不存在
 
 #### Scenario: 相同输入重复分析
 - **WHEN** 相同分析幂等键被再次提交

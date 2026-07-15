@@ -1,10 +1,10 @@
 # 项目状态
 
-更新时间：2026-07-10
+更新时间：2026-07-15
 
 ## 当前阶段
 
-工程初始化和启动复审已完成。项目可以进入 Harness Spec/OpenSpec 的新需求流程，但尚未创建业务 change。
+工程初始化和启动复审已完成。`build-serenity-intelligence-monitor` 已进入 Harness Spec 的实施前评审阶段；当前正在根据用户最新裁决修订并重新运行顾问团与 debate，尚未开始业务实现。
 
 ## 已有能力
 
@@ -27,6 +27,15 @@
 - `openspec validate --specs --strict --no-interactive`：1 个规格通过
 - 全局 `spec-review-debate`：正向自测通过、缺失工件样例被拒绝、skill 结构校验与安装哈希校验通过
 
+## 已完成的规格工作
+
+- 19 条验收标准、38 条测试用例、8 个任务组、33 个可追溯任务
+- X 官方轮询/补偿、上下文、内容版本、恢复和成本边界设计
+- 私有网页主入口、单管理员会话、搜索/详情/反馈/状态设计
+- OpenAI `gpt-5.6-terra` Responses API 适配器与严格结构化输出方案
+- 可选飞书提醒；启用时强制安全签名，未配置时不阻塞归档、AI、搜索和查看
+- 首轮 OpenSpec 严格校验与 AC→TC→Task 追溯已经通过；最新修订正在复审
+
 ## 未实现能力
 
 - X API 内容获取与补偿
@@ -38,4 +47,4 @@
 
 ## 下一步
 
-新会话以 `harness-spec` 场景 A 创建并推进 `build-serenity-intelligence-monitor`。Docker 和真实外部 API 尚未验证，不得在验收中写成已通过。
+继续由 `harness-spec` 驱动当前 change 的顾问团和 debate 复审。复审收敛后回到实施前确认；用户明确确认前不进入 implement。Docker 和真实 X/OpenAI/可选飞书 API 尚未验证，不得在验收中写成已通过。

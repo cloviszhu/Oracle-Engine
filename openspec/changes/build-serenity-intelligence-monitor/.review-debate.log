@@ -81,3 +81,90 @@
   5. 高可用、多账号/多源、Filtered Stream、全文引擎、新通知渠道、OIDC/多角色、在线学习和 A 股公司级映射继续延期到新 change。
 - 用户裁决原话: 不适用（本轮没有 USER_OVERRIDE；上述 P2 在下一 Harness `user_confirm` 合批裁决）。
 - 风险说明: 若用户在 `user_confirm` 不选择 AI provider/model，则 provider-neutral 与 Mock 工作可实施，但真实 AI、AC-6、AC-14 真实模型部分和 AC-19 必须保持未验收；若未配置目标环境，外部/部署证据不得标记通过。
+
+## Debate Session 2026-07-15T04:09:38Z
+
+- scenario: A
+- reviewed_at_commit: `4d0cee01edce07b8eb5e1d08b04e2d9084b234f0`
+- reviewed_files:
+  - proposal.md: `d2103a005325710b3ec2c2db1892a2694ddcf87b`
+  - design.md: `3adbbb3cac54884e9880d6172f9bca06f9528b5f`
+  - tasks.md: `4d99f2bf39bd1e9422e9c3e4cf0f741459a87a9d`
+  - test-checklist.md: `9f877a9feb746a7db342a0c3696fe5ec6ab1815d`
+  - .council-review.log: `4a08e9bff6c9c1906935ac49f4abb48c402c1e61`
+- rounds: 2
+- status: CONVERGED
+
+### 第 1 轮
+
+- 追溯脚本通过，但人工对照最新用户原话和旧 review 发现旧哈希已失效，并识别出 7 个需要回写的 P1：
+  1. 父亲使用网页、提出需求用户接收提醒意味着至少两个家庭 actor，旧单管理员方案无法保持反馈追溯。
+  2. 飞书默认未配置不能为每条高价值内容制造 `blocked` delivery 和永久失败积压。
+  3. 无飞书核心闭环需要自动化证明零 delivery、零队列、零外发和网页/分析继续，而不是混合证据类别。
+  4. 可选飞书不应先于网页主入口实施。
+  5. `gpt-5.6-terra` 需要错误模型/无权限/能力不符、实际模型记录、严格结构化输出和真实固定对抗样本的机械门禁。
+  6. 核心价值需要验证父亲不读英文/X 也能理解，并记录从 X 首次观察到网页可见的耗时。
+  7. OpenAI/飞书出站字段需要最小化，防止家庭账号、会话、反馈、raw payload 或 Secret 被发送。
+- 处置：回写 proposal、design、四份相关 delta spec、test-checklist 和 tasks；将两个家庭账号、飞书三态、OpenAI 生产 allowlist、最小 data envelope、30 分钟可配置初始目标、真实对抗样本和任务后移全部落盘。
+
+### 第 2 轮
+
+- `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`: passed。
+- `check_traceability.py`: passed；19 AC / 38 TC / 33 Task 全部闭环。
+- Harness `embed-check`: passed；用户原声和 AC 嵌入完整。
+- Harness `gate-check council_review` 与 `gate-check debate`: passed。
+- `git diff --check`: passed。
+- 人工复核飞书三态：默认 disabled 零 delivery；显式启用但配置不完整只阻断通知；完整配置强制时间戳签名并发送到提出需求用户控制的私有群。三态均不阻塞网页归档、OpenAI 分析、评分、搜索和查看。
+- 人工复核 OpenAI：第一版只允许 `openai/gpt-5.6-terra`，Responses API strict structured output、无 tools、能力检查、实际模型/usage/request ID、错误配置不换模和最小字段白名单均有 spec/TC/Task 落点。
+- 人工复核网页主入口：两个预配置同权限家庭账号、actor 隔离、父亲中文理解验收和核心网页可见性耗时均有 spec/TC/Task 落点；飞书任务已后移到 Group 8。
+- 未发现未解决 P0/P1。
+
+## 追溯链路校验
+
+### R1: TC 全覆盖
+
+- 总 TC 数: 38
+- 已覆盖: 38
+- **未覆盖**: 无
+
+### R2: Task 全用
+
+- 总 Task 数: 33
+- 已标注覆盖: 33
+- **未标注**: 无
+
+### R3: AC 闭环
+
+| AC | 对应 TC | 对应 Task |
+|---|---|---|
+| AC-1 | TC-1.1, TC-1.2 | Task 2.1, Task 2.4, Task 8.1, Task 8.7 |
+| AC-2 | TC-2.1, TC-2.2 | Task 3.1, Task 3.4 |
+| AC-3 | TC-3.1, TC-3.2 | Task 1.2, Task 1.3, Task 1.5, Task 2.2, Task 2.4, Task 7.1, Task 7.2 |
+| AC-4 | TC-4.1, TC-4.2 | Task 1.2, Task 2.3, Task 2.4 |
+| AC-5 | TC-5.1, TC-5.2 | Task 3.2, Task 3.4, Task 6.3 |
+| AC-6 | TC-6.1, TC-6.2 | Task 3.1, Task 3.2, Task 3.4, Task 6.3, Task 8.1, Task 8.7 |
+| AC-7 | TC-7.1, TC-7.2 | Task 4.1, Task 7.2 |
+| AC-8 | TC-8.1, TC-8.2 | Task 1.2, Task 1.3, Task 7.1, Task 7.2, Task 8.4, Task 8.6 |
+| AC-9 | TC-9.1, TC-9.2 | Task 8.1, Task 8.5, Task 8.6, Task 8.7 |
+| AC-10 | TC-10.1, TC-10.2 | Task 1.5, Task 5.1, Task 5.2, Task 6.1, Task 6.2, Task 6.3, Task 8.7 |
+| AC-11 | TC-11.1, TC-11.2 | Task 1.2, Task 1.4, Task 5.3, Task 6.4, Task 8.7 |
+| AC-12 | TC-12.1, TC-12.2 | Task 5.4, Task 6.4, Task 8.7 |
+| AC-13 | TC-13.1, TC-13.2 | Task 1.2, Task 1.3, Task 1.5, Task 2.1, Task 2.2, Task 2.4, Task 5.4, Task 7.1, Task 7.2, Task 8.4 |
+| AC-14 | TC-14.1, TC-14.2 | Task 3.3, Task 3.4, Task 7.3, Task 8.7 |
+| AC-15 | TC-15.1, TC-15.2 | Task 1.1, Task 1.4, Task 2.1, Task 2.3, Task 3.3, Task 5.1, Task 5.2, Task 5.4, Task 6.1, Task 7.3, Task 8.5 |
+| AC-16 | TC-16.1, TC-16.2 | Task 5.2, Task 7.3, Task 8.3 |
+| AC-17 | TC-17.1, TC-17.2 | Task 1.1, Task 1.2, Task 1.4, Task 2.1, Task 2.2, Task 3.3, Task 7.4, Task 8.5 |
+| AC-18 | TC-18.1, TC-18.2 | Task 1.5, Task 8.2, Task 8.3, Task 8.7 |
+| AC-19 | TC-19.1, TC-19.2 | Task 8.7 |
+
+### 分歧与处置
+
+- P0: 无。
+- P1: 无。
+- P2/P3:
+  1. `CORE_VISIBILITY_SLO_MINUTES=30` 是可配置的初始目标，真实运行后可另行调参；本 change 不建设复杂 SLO 平台。
+  2. Docker/MySQL/Redis 跨进程、Node 20 镜像、HTTPS、目标部署、真实 X 配额、OpenAI 模型权限与可选真实飞书仍缺当前环境实证，必须按 TC 保持待人工/真实 API 状态。
+  3. 多接收人、多飞书群、个人私聊、通知偏好、角色系统、注册/找回密码、多模型路由、自动 fallback、高级检索和收藏继续延期。
+  4. `docs/project-pitfalls.md` 不存在；已记录而未扩张为产品需求。
+- 用户裁决原话: “按审查建议修订后继续评审。私有网页作为主要使用入口，爸爸不需要使用飞书；飞书仅作为可选的重要消息提醒渠道，第一版可以先把提醒发给我。未配置飞书时，网页归档、AI 分析、搜索和查看功能仍应正常运行。若接入飞书，请启用安全签名。AI 第一版使用 OpenAI gpt-5.6-terra，并继续通过适配器和配置隔离，确保以后可以更换模型或供应商。请按此方案推进。”
+- 风险说明: 飞书默认禁用不影响核心闭环，但启用前必须同时提供 Webhook、签名密钥和目标私有群；真实 OpenAI/X/部署证据缺失时对应外部/人工 TC 不得标记通过。
