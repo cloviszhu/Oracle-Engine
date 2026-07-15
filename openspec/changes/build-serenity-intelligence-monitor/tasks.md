@@ -683,7 +683,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 运行 `pnpm test -- server/context server/research server/infrastructure/ai`，确认模型 Mock 调用次数、输入 envelope 和卡片 schema 快照可判定
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认翻译、作者判断、AI 解释、未验证推断和历史变化严格分层
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 3`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 3`
 
 ## Group 4: 可解释重要性与提醒候选事实
 
@@ -691,11 +691,11 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 4.1: 实现版本化重要性评分器和提醒候选事实
 
-- [ ] [完成] Task 4.1
+- [x] [完成] Task 4.1
   - 实现细节: 对产业相关性、新颖度、观点变化、证据质量、时效/催化和不确定性执行服务端确定性加权；保存权重/阈值快照、总分和解释；默认高分且置信度合格时保存“符合提醒条件”候选事实，低分仅归档，本组不调用通知渠道。
   - **覆盖测试用例**: TC-7.1, TC-7.2
-- [ ] [自测] 运行 `pnpm test -- server/importance`，核对高低价值、阈值边界、模型相反建议和提醒候选事实均可判定，且本组尚不调用任何通知渠道
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认评分可解释且网页核心实现不等待可选飞书
+- [x] [自测] 运行 `pnpm test -- server/importance`，核对高低价值、阈值边界、模型相反建议和提醒候选事实均可判定，且本组尚不调用任何通知渠道
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认评分可解释且网页核心实现不等待可选飞书
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 4`
 
 ## Group 5: 家庭账号认证、私有 API、反馈和运行状态
