@@ -9,6 +9,7 @@ import type {
   ResearchModelResult,
 } from '../../research/research-model.adapter.js';
 import type { RuntimeConfig } from '../runtime-config.js';
+import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 
 type Fetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -44,7 +45,8 @@ export type ResearchModelCapability =
     };
 
 export function createResearchModelCapability(
-  config: RuntimeConfig['ai'],
+  config: Pick<RuntimeConfig['ai'], 'provider' | 'model' | 'apiKey' | 'dailyBudgetCents' | 'inputCostPerMillionCents' | 'outputCostPerMillionCents' | 'maxRequestCostCents' | 'reasoningEffort'>
+    & Partial<Pick<RuntimeConfig['ai'], 'providerPreset' | 'protocol' | 'baseUrl' | 'pricingVersion'>>,
 ): ResearchModelCapability {
   if (!config.apiKey) return { enabled: false, reason: 'not_configured' };
   if (
@@ -54,15 +56,34 @@ export function createResearchModelCapability(
   ) {
     throw new OpenAIResearchError('configuration', false);
   }
+  const providerPreset = config.providerPreset ?? 'openai';
+  const protocol = config.protocol ?? 'responses';
+  if (providerPreset === 'openai' && config.model !== 'gpt-5.6-terra') {
+    throw new OpenAIResearchError('configuration', false);
+  }
+  const adapter = providerPreset === 'openai'
+    ? new OpenAIResearchModelAdapter({
+        apiKey: config.apiKey,
+        model: config.model as 'gpt-5.6-terra',
+        reasoningEffort: config.reasoningEffort,
+        inputCostPerMillionCents: config.inputCostPerMillionCents,
+        outputCostPerMillionCents: config.outputCostPerMillionCents,
+      })
+    : new ProviderAdapterRegistry().resolve({
+        preset: providerPreset,
+        provider: config.provider,
+        protocol,
+        baseUrl: config.baseUrl,
+        apiKey: config.apiKey,
+        model: config.model,
+        reasoningEffort: config.reasoningEffort,
+        inputCostPerMillionCents: config.inputCostPerMillionCents,
+        outputCostPerMillionCents: config.outputCostPerMillionCents,
+        pricingVersion: config.pricingVersion,
+      }).adapter;
   return {
     enabled: true,
-    adapter: new OpenAIResearchModelAdapter({
-      apiKey: config.apiKey,
-      model: config.model,
-      reasoningEffort: config.reasoningEffort,
-      inputCostPerMillionCents: config.inputCostPerMillionCents,
-      outputCostPerMillionCents: config.outputCostPerMillionCents,
-    }),
+    adapter,
     dailyBudgetCents: config.dailyBudgetCents,
     maxRequestCostCents: config.maxRequestCostCents,
   };

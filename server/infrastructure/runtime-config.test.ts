@@ -98,4 +98,17 @@ describe('runtime configuration', () => {
     expect(() => parseRuntimeConfigSnapshot({ ...environmentConfig, port: 70_000 })).toThrow(/port/i);
     expect(() => parseRuntimeConfigSnapshot({ ...environmentConfig, unexpectedSecret: 'canary' })).toThrow();
   });
+
+  it('accepts an explicit HTTPS custom compatible provider without guessing prices', () => {
+    const config = parseRuntimeConfig({
+      ...validEnvironment,
+      AI_PROVIDER_PRESET: 'custom', AI_PROVIDER: 'family-gateway', AI_PROTOCOL: 'chat_completions',
+      AI_BASE_URL: 'https://models.example.test', AI_MODEL: 'family-model', OPENAI_MODEL: '',
+    });
+    expect(config.ai).toMatchObject({
+      providerPreset: 'custom', provider: 'family-gateway', protocol: 'chat_completions',
+      baseUrl: 'https://models.example.test', model: 'family-model',
+    });
+    expect(config.ai.inputCostPerMillionCents).toBeUndefined();
+  });
 });

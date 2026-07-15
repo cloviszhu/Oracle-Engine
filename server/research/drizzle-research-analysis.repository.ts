@@ -52,7 +52,7 @@ export function toExternalUsageRecord(
     id,
     provider: result.provider,
     operation: 'research_card',
-    apiVersion: 'responses-v1',
+    apiVersion: result.audit?.protocol === 'chat_completions' ? 'chat-completions-v1' : 'responses-v1',
     requestedModel: result.requestedModel,
     model: result.actualModel,
     providerRequestId: result.providerRequestId,
@@ -62,6 +62,14 @@ export function toExternalUsageRecord(
     outputUnits: result.usage.outputTokens,
     resourceUnits: result.usage.totalTokens,
     costCents: result.costCents.toFixed(4),
+    ...(result.audit ? {
+      protocol: result.audit.protocol,
+      providerHost: result.audit.providerHost,
+      pricingVersion: result.audit.pricingVersion,
+      promptVersion: result.audit.promptVersion,
+      schemaVersion: result.audit.schemaVersion,
+      probeVersion: result.audit.probeVersion,
+    } : {}),
     occurredAt,
   };
 }

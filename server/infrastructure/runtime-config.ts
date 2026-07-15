@@ -45,14 +45,20 @@ const environmentSchema = z
     X_POLICY_CONFIRMED: booleanString,
     X_POLL_INTERVAL_SECONDS: positiveInteger(300, 86_400),
     X_COMPENSATION_INTERVAL_SECONDS: positiveInteger(3_600, 604_800),
-    AI_PROVIDER: z.literal('openai'),
-    OPENAI_MODEL: z.literal('gpt-5.6-terra'),
+    AI_PROVIDER_PRESET: z.enum(['openai', 'custom']).default('openai'),
+    AI_PROVIDER: z.string().trim().min(1).max(64).default('openai'),
+    AI_PROTOCOL: z.enum(['responses', 'chat_completions']).default('responses'),
+    AI_BASE_URL: optionalString,
+    AI_MODEL: optionalString,
+    OPENAI_MODEL: optionalString,
     OPENAI_API_KEY: optionalString,
+    AI_PROVIDER_API_KEY: optionalString,
     OPENAI_INPUT_COST_PER_MILLION_CENTS: optionalNonnegativeNumber,
     OPENAI_OUTPUT_COST_PER_MILLION_CENTS: optionalNonnegativeNumber,
     AI_MAX_REQUEST_COST_CENTS: optionalNonnegativeNumber,
     AI_DAILY_BUDGET_CENTS: z.coerce.number().int().nonnegative().max(10_000_000).default(0),
     AI_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
+    AI_PRICING_VERSION: z.string().trim().min(1).max(64).default('user-config-v1'),
     FEISHU_ENABLED: booleanString,
     FEISHU_WEBHOOK_URL: optionalString,
     FEISHU_SIGNING_SECRET: optionalString,
@@ -91,7 +97,25 @@ const environmentSchema = z
         message: 'FEISHU_WEBHOOK_URL and FEISHU_SIGNING_SECRET are required when Feishu is enabled',
       });
     }
-    if (value.OPENAI_API_KEY && (
+    const aiModel = value.AI_MODEL ?? value.OPENAI_MODEL ?? 'gpt-5.6-terra';
+    const aiApiKey = value.AI_PROVIDER_API_KEY ?? value.OPENAI_API_KEY;
+    if (value.AI_PROVIDER_PRESET === 'openai' && (
+      value.AI_PROVIDER !== 'openai' || value.AI_PROTOCOL !== 'responses' || aiModel !== 'gpt-5.6-terra' || value.AI_BASE_URL
+    )) {
+      context.addIssue({ code: 'custom', message: 'AI_PROVIDER, AI_PROTOCOL and OPENAI_MODEL for the OpenAI official preset must use openai/responses/gpt-5.6-terra without AI_BASE_URL' });
+    }
+    if (value.AI_PROVIDER_PRESET === 'custom' && (!value.AI_BASE_URL || !value.AI_MODEL)) {
+      context.addIssue({ code: 'custom', message: 'AI_BASE_URL and AI_MODEL are required for a custom provider preset' });
+    }
+    if (value.AI_BASE_URL) {
+      try {
+        if (new URL(value.AI_BASE_URL).protocol !== 'https:') context.addIssue({ code: 'custom', message: 'AI_BASE_URL must use HTTPS' });
+      } catch { context.addIssue({ code: 'custom', message: 'AI_BASE_URL must be a valid HTTPS URL' }); }
+    }
+    if (value.AI_PROVIDER_API_KEY && value.OPENAI_API_KEY) {
+      context.addIssue({ code: 'custom', message: 'Configure only one AI provider API key field' });
+    }
+    if (aiApiKey && (
       value.OPENAI_INPUT_COST_PER_MILLION_CENTS === undefined
       || value.OPENAI_OUTPUT_COST_PER_MILLION_CENTS === undefined
       || value.AI_MAX_REQUEST_COST_CENTS === undefined
@@ -134,14 +158,18 @@ export interface RuntimeConfig {
     compensationIntervalSeconds: number;
   };
   ai: {
-    provider: 'openai';
-    model: 'gpt-5.6-terra';
+    providerPreset: 'openai' | 'custom';
+    provider: string;
+    protocol: 'responses' | 'chat_completions';
+    baseUrl?: string;
+    model: string;
     apiKey?: string;
     dailyBudgetCents: number;
     inputCostPerMillionCents?: number;
     outputCostPerMillionCents?: number;
     maxRequestCostCents?: number;
     reasoningEffort: 'low' | 'medium' | 'high';
+    pricingVersion: string;
   };
   feishu:
     | { enabled: false; cooldownSeconds: number }
@@ -176,14 +204,18 @@ const runtimeConfigSnapshotSchema = z.object({
     compensationIntervalSeconds: z.number().int().positive(),
   }).strict(),
   ai: z.object({
-    provider: z.literal('openai'),
-    model: z.literal('gpt-5.6-terra'),
+    providerPreset: z.enum(['openai', 'custom']),
+    provider: z.string().min(1).max(64),
+    protocol: z.enum(['responses', 'chat_completions']),
+    baseUrl: z.string().url().startsWith('https://').optional(),
+    model: z.string().min(1).max(128),
     apiKey: z.string().min(1).optional(),
     dailyBudgetCents: z.number().int().nonnegative(),
     inputCostPerMillionCents: z.number().nonnegative().optional(),
     outputCostPerMillionCents: z.number().nonnegative().optional(),
     maxRequestCostCents: z.number().nonnegative().optional(),
     reasoningEffort: z.enum(['low', 'medium', 'high']),
+    pricingVersion: z.string().min(1).max(64),
   }).strict(),
   feishu: z.discriminatedUnion('enabled', [
     z.object({ enabled: z.literal(false), cooldownSeconds: z.number().int().positive() }).strict(),
@@ -201,7 +233,14 @@ const runtimeConfigSnapshotSchema = z.object({
     maxOutputChars: z.number().int().positive(),
     maxRawPayloadBytes: z.number().int().positive(),
   }).strict(),
-}).strict();
+}).strict().superRefine((value, context) => {
+  if (value.ai.providerPreset === 'openai' && (
+    value.ai.provider !== 'openai' || value.ai.protocol !== 'responses' || value.ai.model !== 'gpt-5.6-terra' || value.ai.baseUrl
+  )) context.addIssue({ code: 'custom', message: 'Invalid OpenAI official preset snapshot', path: ['ai'] });
+  if (value.ai.providerPreset === 'custom' && !value.ai.baseUrl) {
+    context.addIssue({ code: 'custom', message: 'Custom provider snapshot requires HTTPS baseUrl', path: ['ai', 'baseUrl'] });
+  }
+});
 
 export type RuntimeConfigSnapshot = RuntimeConfig;
 
@@ -230,14 +269,18 @@ export function parseRuntimeConfig(environment: Record<string, string | undefine
       compensationIntervalSeconds: value.X_COMPENSATION_INTERVAL_SECONDS,
     },
     ai: {
+      providerPreset: value.AI_PROVIDER_PRESET,
       provider: value.AI_PROVIDER,
-      model: value.OPENAI_MODEL,
-      apiKey: value.OPENAI_API_KEY,
+      protocol: value.AI_PROTOCOL,
+      baseUrl: value.AI_BASE_URL,
+      model: value.AI_MODEL ?? value.OPENAI_MODEL ?? 'gpt-5.6-terra',
+      apiKey: value.AI_PROVIDER_API_KEY ?? value.OPENAI_API_KEY,
       dailyBudgetCents: value.AI_DAILY_BUDGET_CENTS,
       inputCostPerMillionCents: value.OPENAI_INPUT_COST_PER_MILLION_CENTS,
       outputCostPerMillionCents: value.OPENAI_OUTPUT_COST_PER_MILLION_CENTS,
       maxRequestCostCents: value.AI_MAX_REQUEST_COST_CENTS,
       reasoningEffort: value.AI_REASONING_EFFORT,
+      pricingVersion: value.AI_PRICING_VERSION,
     },
     feishu: value.FEISHU_ENABLED
       ? {
@@ -276,7 +319,10 @@ export function summarizeRuntimeConfig(config: RuntimeConfig): Record<string, un
       policyConfirmed: config.x.policyConfirmed,
     },
     ai: {
+      providerPreset: config.ai.providerPreset,
       provider: config.ai.provider,
+      protocol: config.ai.protocol,
+      host: config.ai.baseUrl ? new URL(config.ai.baseUrl).host : 'api.openai.com',
       model: config.ai.model,
       configured: Boolean(config.ai.apiKey),
       dailyBudgetCents: config.ai.dailyBudgetCents,

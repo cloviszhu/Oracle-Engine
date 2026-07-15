@@ -35,4 +35,20 @@ describe('research audit persistence mapping', () => {
       occurredAt: new Date('2026-07-15T00:00:00Z'),
     });
   });
+
+  it('persists compatible protocol, host, user pricing, prompt, schema, and probe versions', () => {
+    const audited = toExternalUsageRecord('usage-2', {
+      ...result,
+      audit: {
+        protocol: 'chat_completions' as const, providerHost: 'models.example.test',
+        pricingVersion: 'user-2026-07-15', promptVersion: 'research-prompt-v1',
+        schemaVersion: 'research-card-v1', probeVersion: '1',
+      },
+    }, new Date('2026-07-15T00:00:00Z'));
+    expect(audited).toMatchObject({
+      apiVersion: 'chat-completions-v1', protocol: 'chat_completions', providerHost: 'models.example.test',
+      pricingVersion: 'user-2026-07-15', promptVersion: 'research-prompt-v1',
+      schemaVersion: 'research-card-v1', probeVersion: '1',
+    });
+  });
 });

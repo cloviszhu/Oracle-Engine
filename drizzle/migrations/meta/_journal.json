@@ -36,6 +36,13 @@
       "when": 1784098190303,
       "tag": "0004_giant_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1784113506381,
+      "tag": "0005_burly_slipstream",
+      "breakpoints": true
     }
   ]
 }

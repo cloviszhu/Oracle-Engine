@@ -10,6 +10,14 @@ export interface ResearchModelResult {
   requestId?: string;
   usage: { inputTokens: number; outputTokens: number; totalTokens: number };
   costCents: number;
+  audit?: {
+    protocol: 'responses' | 'chat_completions';
+    providerHost: string;
+    pricingVersion: string;
+    promptVersion?: string;
+    schemaVersion: string;
+    probeVersion?: string;
+  };
 }
 
 export interface ResearchModelAdapter {

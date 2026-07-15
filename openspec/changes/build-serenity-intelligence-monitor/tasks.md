@@ -912,25 +912,25 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 12.1: 扩展运行配置和 ProviderAdapterRegistry
 
-- [ ] [完成] Task 12.1
+- [x] [完成] Task 12.1
   - 实现细节: GUI/共享契约支持 provider preset、protocol、base URL、API Key、model、reasoning、输入/输出价格、单次/每日预算；registry 注册 OpenAI 官方与自定义 preset、Responses-compatible 与 Chat Completions-compatible；原生 Anthropic/Gemini 只保留扩展边界。
   - **覆盖测试用例**: TC-17.1, TC-17.2, TC-24.1, TC-24.2
 
 ### Task 12.2: 实现双协议严格结构化 adapter
 
-- [ ] [完成] Task 12.2
+- [x] [完成] Task 12.2
   - 实现细节: Responses-compatible 使用 `text.format`，Chat Completions-compatible 使用 `response_format`；统一处理 refusal、不完整输出、卡片/source schema、response ID、usage、requested/actual model、429、超时、5xx 与认证错误；显式禁用 tools。
   - **覆盖测试用例**: TC-5.1, TC-5.2, TC-6.1, TC-6.2, TC-14.1, TC-14.2, TC-24.1, TC-24.2
 
 ### Task 12.3: 实现 capability probe 和审计迁移
 
-- [ ] [完成] Task 12.3
+- [x] [完成] Task 12.3
   - 实现细节: 验证 URL/HTTPS、认证、模型、requested/actual model、严格 schema、完整卡片、来源、response ID、usage 和稳定错误分类；失败可保存为未启用但 worker 不使用；持久化 provider/protocol/host/request IDs/usage/价格版本/费用/prompt/schema/probe version。
   - **覆盖测试用例**: TC-6.1, TC-17.1, TC-17.2, TC-24.1, TC-24.2
 
-- [ ] [自测] 运行 `pnpm test -- server/research server/infrastructure/ai`、`pnpm check`、`pnpm lint`；`gpt-5.6-terra` 官方 preset 回归快照通过，任一缺失能力均阻断且无自动 fallback
-- [ ] [原声对账] 不宣称任意模型零适配；价格只用用户配置，不从模型名猜测
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 12`
+- [x] [自测] 运行 `pnpm test -- server/research server/infrastructure/ai`、`pnpm check`、`pnpm lint`；`gpt-5.6-terra` 官方 preset 回归快照通过，任一缺失能力均阻断且无自动 fallback
+- [x] [原声对账] 不宣称任意模型零适配；价格只用用户配置，不从模型名猜测
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 12`
 
 ## Group 13: GUI 首次设置、可选 X/飞书和日常管理
 
