@@ -15,6 +15,13 @@
       "when": 1784093627565,
       "tag": "0001_gigantic_iron_lad",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1784094629615,
+      "tag": "0002_clumsy_invaders",
+      "breakpoints": true
     }
   ]
 }

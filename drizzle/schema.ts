@@ -219,6 +219,7 @@ export const processingAttempts = mysqlTable(
     errorCategory: varchar('error_category', { length: 64 }),
     provider: varchar('provider', { length: 32 }),
     providerVersion: varchar('provider_version', { length: 128 }),
+    requestedByActorId: varchar('requested_by_actor_id', { length: 64 }),
     startedAt: datetime('started_at', { mode: 'date', fsp: 3 }).notNull(),
     finishedAt: datetime('finished_at', { mode: 'date', fsp: 3 }),
   },

@@ -696,7 +696,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
   - **覆盖测试用例**: TC-7.1, TC-7.2
 - [x] [自测] 运行 `pnpm test -- server/importance`，核对高低价值、阈值边界、模型相反建议和提醒候选事实均可判定，且本组尚不调用任何通知渠道
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认评分可解释且网页核心实现不等待可选飞书
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 4`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 4`
 
 ## Group 5: 家庭账号认证、私有 API、反馈和运行状态
 
@@ -704,27 +704,27 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 5.1: 实现两个同权限家庭账号和 Redis 服务端会话
 
-- [ ] [完成] Task 5.1
+- [x] [完成] Task 5.1
   - 实现细节: 从服务端配置加载父亲与提出需求用户的 actor/用户名/Node `scrypt` 摘要列表；两个账号权限相同。实现恒定时间比较、按账号/IP 登录限速、随机会话 token、签名 HttpOnly/SameSite Cookie、生产 Secure/HTTPS 门禁、CSRF/Origin 校验；Redis 只存 token 哈希、actor 与绝对 TTL，覆盖注销、过期、记录删除、单账号密码摘要轮换和 Session Secret 轮换失效；无注册、多角色或 OAuth。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1, TC-15.2
 ### Task 5.2: 实现情报列表、时间线、详情和组合筛选 API
 
-- [ ] [完成] Task 5.2
+- [x] [完成] Task 5.2
   - 实现细节: 提供受 Guard 保护的列表/详情接口；支持 keyword/ticker/topic/importance/contentType/date range、白名单排序和有界 cursor 分页，使用 `(published_at, internal_id)` 等稳定复合顺序；详情返回上下文完整性、卡片、评分、通知状态但不返回 raw payload。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1, TC-16.1, TC-16.2
 ### Task 5.3: 实现追加式反馈 API
 
-- [ ] [完成] Task 5.3
+- [x] [完成] Task 5.3
   - 实现细节: 固定六种反馈枚举，可选短备注；服务端绑定 actor/card/version/time；拒绝未知类型、超长备注、伪造 actor、不存在卡片和无 CSRF 请求。
   - **覆盖测试用例**: TC-11.1, TC-11.2
 ### Task 5.4: 实现状态、脱敏审计与显式恢复 API
 
-- [ ] [完成] Task 5.4
+- [x] [完成] Task 5.4
   - 实现细节: 将 poll/compensation 作为 ingestion mode，分别聚合 ingest/context/analysis/score 核心流水线与可选 notify 分支、队列、worker heartbeat、渠道 disabled/待配置、预算阻断、outcome_unknown 和 dead-letter；记录 X 首次观察到卡片网页可见的分阶段耗时及 30 分钟默认目标，飞书禁用不污染核心成功状态或失败积压。提供脱敏 run/attempt/provider 审计视图。仅对 `manual_retry_allowed` 的 blocked/dead-letter 创建新 attempt，不可恢复状态拒绝，保留旧历史且不回显配置值。
   - **覆盖测试用例**: TC-12.1, TC-12.2, TC-13.2, TC-15.2
 
-- [ ] [自测] 运行 `pnpm test -- server/auth server/content server/feedback server/operations`，并对未认证、非法筛选、CSRF、越界动作和 Secret canary 执行负向 API 测试
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认私有访问、检索、反馈和状态闭环不引入多租户或交易能力
+- [x] [自测] 运行 `pnpm test -- server/auth server/content server/feedback server/operations`，并对未认证、非法筛选、CSRF、越界动作和 Secret canary 执行负向 API 测试
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认私有访问、检索、反馈和状态闭环不引入多租户或交易能力
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 5`
 
 ## Group 6: 私有研究工作区前端

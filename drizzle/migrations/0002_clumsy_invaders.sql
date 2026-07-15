@@ -1,0 +1,1 @@
+ALTER TABLE `processing_attempts` ADD `requested_by_actor_id` varchar(64);
