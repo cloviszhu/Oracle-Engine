@@ -886,25 +886,25 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 11.1: 实现中文环境检查器
 
-- [ ] [完成] Task 11.1
+- [x] [完成] Task 11.1
   - 实现细节: 检查 Windows 版本、Docker Desktop、engine、Compose、虚拟化、端口、磁盘和目录权限；每项返回稳定 code、pass/warning/fail、中文说明和下一步操作；Docker 缺失时提供官方入口与复查，不静默安装。
   - **覆盖测试用例**: TC-21.1, TC-21.2
 
 ### Task 11.2: 将 Compose 收敛为回环 MySQL/Redis
 
-- [ ] [完成] Task 11.2
+- [x] [完成] Task 11.2
   - 实现细节: 修改 `docker-compose.yml` 只运行 MySQL/Redis，端口只绑定 `127.0.0.1` 的随机或已验证值；使用固定 Serenity project name，禁止停止 Docker Desktop、其他 project 或其他容器。
   - **覆盖测试用例**: TC-20.1, TC-21.2, TC-23.1, TC-23.2
 
 ### Task 11.3: 实现 migration、API/worker `utilityProcess` 编排
 
-- [ ] [完成] Task 11.3
+- [x] [完成] Task 11.3
   - 实现细节: 启动顺序为目录/端口→Docker→MySQL/Redis 健康→幂等 migration→API 健康→worker heartbeat→打开网页；停止顺序为停止新任务→worker 可恢复边界→API→Serenity 容器；关闭窗口缩入托盘，重复启停幂等。
   - **覆盖测试用例**: TC-12.1, TC-12.2, TC-20.1, TC-23.1, TC-23.2
 
-- [ ] [自测] 运行 `pnpm test -- desktop/environment desktop/runtime server/infrastructure/worker-runtime.test.ts`；fake controller 覆盖逐阶段失败与非 Serenity 容器保护
-- [ ] [原声对账] 当前开发机没有 Docker，Mock 只证明编排契约，真实生命周期保持目标环境待验
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 11`
+- [x] [自测] 运行 `pnpm test -- desktop/environment desktop/runtime server/infrastructure/worker-runtime.test.ts`；fake controller 覆盖逐阶段失败与非 Serenity 容器保护
+- [x] [原声对账] 当前开发机没有 Docker，Mock 只证明编排契约，真实生命周期保持目标环境待验
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 11`
 
 ## Group 12: AI provider registry、双协议 adapter 和 capability probe
 

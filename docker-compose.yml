@@ -1,35 +1,12 @@
-x-app-environment: &app-environment
-  NODE_ENV: production
-  PORT: 3000
-  DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
-  REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
-  FAMILY_ACCOUNTS_JSON: ${FAMILY_ACCOUNTS_JSON:?FAMILY_ACCOUNTS_JSON is required}
-  SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
-  APP_BASE_URL: ${APP_BASE_URL:?APP_BASE_URL is required}
-  AI_PROVIDER: openai
-  OPENAI_MODEL: gpt-5.6-terra
-  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-  OPENAI_INPUT_COST_PER_MILLION_CENTS: ${OPENAI_INPUT_COST_PER_MILLION_CENTS:-}
-  OPENAI_OUTPUT_COST_PER_MILLION_CENTS: ${OPENAI_OUTPUT_COST_PER_MILLION_CENTS:-}
-  AI_DAILY_BUDGET_CENTS: ${AI_DAILY_BUDGET_CENTS:-0}
-  AI_MAX_REQUEST_COST_CENTS: ${AI_MAX_REQUEST_COST_CENTS:-}
-  X_API_BEARER_TOKEN: ${X_API_BEARER_TOKEN:-}
-  X_PRODUCTION_SYNC_ENABLED: ${X_PRODUCTION_SYNC_ENABLED:-false}
-  X_POLICY_CONFIRMED: ${X_POLICY_CONFIRMED:-false}
-  FEISHU_ENABLED: ${FEISHU_ENABLED:-false}
-  FEISHU_WEBHOOK_URL: ${FEISHU_WEBHOOK_URL:-}
-  FEISHU_SIGNING_SECRET: ${FEISHU_SIGNING_SECRET:-}
-  FEISHU_COOLDOWN_SECONDS: ${FEISHU_COOLDOWN_SECONDS:-3600}
+name: serenity-local
 
 services:
   db:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE is required}
-      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER is required}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: serenity
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       TZ: UTC
     command:
       - --default-time-zone=+00:00
@@ -37,8 +14,10 @@ services:
       - --collation-server=utf8mb4_0900_ai_ci
     volumes:
       - mysql-data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:${SERENITY_MYSQL_PORT:-33060}:3306"
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "--silent"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -48,34 +27,13 @@ services:
     restart: unless-stopped
     volumes:
       - redis-data:/data
+    ports:
+      - "127.0.0.1:${SERENITY_REDIS_PORT:-36379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  api:
-    build: .
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment: *app-environment
-    ports:
-      - "3000:3000"
-
-  worker:
-    build: .
-    restart: unless-stopped
-    command: ["node", "dist/server/worker.js"]
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment: *app-environment
 
 volumes:
   mysql-data:
