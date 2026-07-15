@@ -1,8 +1,8 @@
 # Serenity 海外产业信息监控
 
-仅供家庭内部使用的海外产业研究辅助系统。私有网页是主要入口：归档 Serenity 内容，使用 OpenAI `gpt-5.6-terra` 生成分层中文研究卡片，并提供搜索、详情、反馈和运行状态。飞书只承担可选的重要提醒；关闭时不创建通知任务，启用时强制安全签名。
+仅供家庭内部使用的海外产业研究辅助系统。私有网页是主要入口：归档 Serenity 内容，通过统一 AI 适配器生成分层中文研究卡片，并提供搜索、详情、反馈和运行状态。OpenAI 官方 preset 推荐 `gpt-5.6-terra`；修订目标还支持通过 probe 的 Responses-compatible 与 Chat Completions-compatible 配置。飞书只承担可选的重要提醒。
 
-当前 `build-serenity-intelligence-monitor` 已完成本地实现和 Mock/自动化验证，真实 X、OpenAI、可选飞书、Docker/HTTPS 部署和家庭人工验收仍保持待测，不能视为真实闭环已通过。
+当前 `build-serenity-intelligence-monitor` 的原始研究闭环已完成本地实现和 Mock/自动化验证；用户在 `user_accept` 要求补齐自包含 Windows `.exe`、GUI 配置、安全 vault 和服务管理。该修订仍处于规格/任务重新评审阶段，尚未实现，不能视为家庭交付闭环已通过。
 
 ## 技术基线
 
@@ -32,9 +32,9 @@ pnpm dev
 
 ## 配置
 
-复制 `.env.example` 为 `.env` 后，只在本地填写实际值。不得提交 `.env`、API Token、Webhook 或 Cookie。
+`.env.example` 仅供开发和测试。修订后的家庭生产路径将由 Electron GUI 与 Windows DPAPI vault 管理配置，不要求普通用户手工编辑 `.env` 或生成密码摘要。不得提交 `.env`、API Token、Webhook 或 Cookie。
 
-完整的账号摘要生成、migration、Serenity bootstrap、容器启动、政策复核和真实联调步骤见 `docs/OPERATIONS.md`。爸爸只需使用网页，不需要飞书。
+当前开发者运行步骤和未来家庭启动器边界见 `docs/OPERATIONS.md`。爸爸只需使用网页，不需要飞书。
 
 ## 文档入口
 
@@ -47,4 +47,4 @@ pnpm dev
 
 ## 下一步
 
-完成 OpenSpec 严格校验、追溯检查和最终本地验证；外部凭据与目标环境具备后，再按验收报告逐条补真实证据。
+完成家庭本地版规格、TC、Group 9～14 的严格校验与重新评审，交由用户确认；确认前不写修订实现代码。

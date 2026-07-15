@@ -1,5 +1,36 @@
 ## ADDED Requirements
 
+### Requirement: AI 必须通过可扩展 registry 和 capability probe 启用
+业务流水线 MUST 只依赖统一 `ResearchModelAdapter`；基础设施 MUST 通过 `ProviderAdapterRegistry` 支持 OpenAI Responses-compatible、OpenAI Chat Completions-compatible、OpenAI 官方 preset 与自定义 OpenAI-compatible preset。`gpt-5.6-terra` MUST 作为推荐默认值而非唯一合法模型。
+
+#### Scenario: Responses-compatible 配置通过 probe
+- **WHEN** 配置使用 Responses-compatible 协议且返回 `text.format` 严格 JSON Schema 对应的完整研究卡片、response ID、usage 和 actual model
+- **THEN** probe 记录 requested/actual model、schema/probe version 与通过时间并允许启用
+- **AND** 业务流水线只接收统一 `ResearchModelResult`
+
+#### Scenario: Chat Completions-compatible 配置通过 probe
+- **WHEN** 配置使用 Chat Completions-compatible 协议且返回 `response_format` 严格 JSON Schema 对应的完整研究卡片、response ID、usage 和 actual model
+- **THEN** probe 记录相同的统一审计字段并允许启用
+- **AND** Chat Completions provider 字段不得穿透业务层
+
+#### Scenario: actual model 与 requested model 不同
+- **WHEN** provider 返回的 actual model 与 GUI 请求值不同
+- **THEN** probe 显示两者并阻止静默通过
+- **AND** 无法解释的替换直接阻断，不自动换模型、协议或 schema
+
+#### Scenario: provider 缺少必要能力
+- **WHEN** 响应拒绝、不完整、缺严格 schema、必要卡片字段、来源约束、response ID、usage 或稳定错误分类
+- **THEN** 配置可以保存为未启用但 worker 不得使用
+- **AND** 系统明确报告不兼容字段，不降低研究卡片契约
+
+### Requirement: AI 配置和调用必须形成完整兼容性审计
+系统 MUST 记录 provider preset、protocol、base URL host、requested model、actual model、local/provider request ID、usage、输入/输出价格与价格版本、费用、prompt/schema/probe version 和最近 probe 通过时间；系统 MUST NOT 根据模型名猜测第三方价格。
+
+#### Scenario: 自定义 OpenAI-compatible 调用成功
+- **WHEN** 自定义 endpoint 通过 probe 并完成研究分析
+- **THEN** 分析记录保存所选协议和全部审计字段
+- **AND** API Key、完整 URL query 与原始 provider body 不进入审计或日志
+
 ### Requirement: 上下文只能由实际获取的材料构造
 系统 MUST 将回复对象、被引用内容和实际归档的必要历史观点关联到当前内容，并 MUST 对缺失、不可访问或语义不确定的上下文显式标记。
 
@@ -62,28 +93,28 @@
 - **THEN** 验收报告分别记录无工具/无 Secret 通道的自动化证据和语义输出的人工结论
 - **AND** Mock 结果不得被标记为真实模型语义抗注入验证
 
-### Requirement: 模型调用必须版本化并受硬预算约束
-系统 MUST 在第一版通过 `ResearchModelAdapter` 的 OpenAI 实现使用 Responses API 调用 `gpt-5.6-terra` 严格结构化输出，并 MUST 记录 provider、模型、prompt 版本、token usage、成本、provider request ID 与调用状态；系统 MUST 以内容版本、上下文哈希、prompt 版本和模型版本形成分析幂等键。业务层 MUST NOT 依赖 OpenAI SDK 类型，provider 与 model MUST 可由服务端配置替换。
+### Requirement: 模型调用必须版本化、通过 probe 并受硬预算约束
+系统 MUST 只使用已通过 capability probe 的 `ResearchModelAdapter` 配置生成严格结构化输出，并 MUST 记录 provider preset、protocol、base URL host、requested/actual model、prompt/schema/probe 版本、token usage、价格版本、成本、local/provider request ID 与调用状态；系统 MUST 以内容版本、上下文哈希、prompt 版本、provider/protocol 和 actual model 形成分析幂等键。
 
-#### Scenario: OpenAI 第一版生成研究卡片
-- **WHEN** `AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra` 和合法服务端凭据已配置
-- **THEN** 适配器通过 Responses API 请求严格 `ResearchCardDraft` 结构化输出并通过本地 schema/来源校验
-- **AND** 请求不提供网络、文件、代码执行或其他工具，响应保存统一 usage、request ID 与模型版本而不泄露 API Key
+#### Scenario: 已启用兼容配置生成研究卡片
+- **WHEN** Responses-compatible 或 Chat Completions-compatible 配置已通过 probe 且预算允许
+- **THEN** 对应 adapter 请求严格 `ResearchCardDraft` 并通过本地 schema/来源校验
+- **AND** 请求不提供网络、文件、代码执行或其他工具，响应保存统一审计字段而不泄露 API Key
 
-#### Scenario: OpenAI 配置缺失
-- **WHEN** OpenAI API Key 或已确认模型配置缺失
-- **THEN** 原始内容继续归档并可从私有网页搜索和查看，分析进入 `blocked/configuration`
-- **AND** 系统不得伪造卡片、切换未批准模型或阻塞既有归档浏览
+#### Scenario: AI 配置缺失或未通过 probe
+- **WHEN** API Key、必要价格/预算或有效 probe 结果缺失
+- **THEN** 原始内容继续归档并可从私有网页搜索和查看，分析进入 `blocked/configuration|capability`
+- **AND** 系统不得伪造卡片、自动更换 provider/model/protocol 或阻塞既有归档浏览
 
-#### Scenario: 第一版配置了错误 provider 或 model
-- **WHEN** 生产配置不是 `AI_PROVIDER=openai` 与 `OPENAI_MODEL=gpt-5.6-terra` 的批准组合，或能力检查表明目标项目无权访问/无法返回严格结构化输出
-- **THEN** 配置校验或分析阶段以明确 `blocked/configuration|capability` 失败
-- **AND** 系统不得静默切换 provider/model，原始归档和已有网页内容保持可用
+#### Scenario: OpenAI 官方推荐 preset 回归
+- **WHEN** 用户选择 OpenAI 官方 Responses-compatible preset
+- **THEN** GUI 默认建议 `gpt-5.6-terra` 并执行与其他配置相同的完整 probe
+- **AND** 用户可以修改 model；推荐值不得成为硬编码 allowlist
 
 ### Requirement: 发送给 AI 的家庭数据必须最小化
 系统 MUST 仅向研究模型发送生成卡片所需的已归档正文、来源 ID、上下文关系、时间和历史观点候选；系统 MUST NOT 发送家庭账号、会话、反馈备注、访问日志、通知配置、X raw payload 或任何 Secret。
 
-#### Scenario: 构造 OpenAI data envelope
+#### Scenario: 构造 AI data envelope
 - **WHEN** 系统为一条内容构造研究请求
 - **THEN** envelope 只包含字段白名单内的研究材料并保留来源 ID
 - **AND** actor、Cookie、反馈、Webhook、签名密钥、Authorization 和 raw payload 字段不存在

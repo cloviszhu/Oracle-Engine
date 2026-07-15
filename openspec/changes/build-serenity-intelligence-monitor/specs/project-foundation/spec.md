@@ -1,5 +1,18 @@
 ## MODIFIED Requirements
 
+### Requirement: 家庭生产配置不得依赖开发者环境文件
+家庭生产路径 MUST 由 Electron main 提供已校验的运行配置快照，普通用户 MUST NOT 手工编辑 `.env`、生成密码摘要或执行多条命令；`.env.example` MAY 仅用于开发与测试。
+
+#### Scenario: 打包应用启动 API 和 worker
+- **WHEN** 启动器已解密 vault 并启动受控 `utilityProcess`
+- **THEN** API 与 worker 通过私有进程 IPC 接收一次性运行配置快照
+- **AND** Secret 不进入命令行参数、普通环境文件或 Docker inspect
+
+#### Scenario: 开发者运行本地测试
+- **WHEN** 开发者使用仓库脚本启动或测试服务
+- **THEN** 开发/测试路径可以读取 `.env.example` 对应变量
+- **AND** 文档不得把该路径描述为家庭用户的正常交付方式
+
 ### Requirement: 初始化页面
 React 应用 MUST 在业务 change 实施前展示工程初始化状态；`build-serenity-intelligence-monitor` 实施后，根页面 MUST 成为受保护的私有研究工作区入口，不得继续把业务能力描述为尚未实现。
 

@@ -1,10 +1,22 @@
 # Serenity 配置、启动与真实联调
 
+> 状态说明（2026-07-15）：本文件下方命令是当前开发者/测试路径，不是家庭最终交付方式。已确认的修订目标是自包含 Electron Windows `.exe`：普通用户通过 GUI 配置，Secret 由 `safeStorage`/DPAPI vault 保存，API/worker 由启动器管理。Group 9～14 尚未实施，因此不得把目标流程写成已可用。
+
+## 0. 家庭本地版目标流程（待实现）
+
+1. 运行自包含 `.exe`，无需安装 Node、打开终端或编辑 `.env`。
+2. GUI 检查 Docker Desktop、Compose、虚拟化、端口、磁盘和权限；缺少 Docker 时显示中文安装与复查说明。
+3. GUI 设置两个家庭账号、AI、可选 X 和可选飞书；Secret 保存后只显示是否已配置。
+4. 启动器只用 Compose 管理 Serenity MySQL/Redis，并用 `utilityProcess` 管理 API/worker。
+5. 一键启动、停止、检查健康、打开本机私有网页、备份和导出脱敏诊断。
+
+OpenAI 官方 preset 推荐 `gpt-5.6-terra`，但家庭 GUI 将支持 Responses-compatible 与 Chat Completions-compatible、自定义 base URL/model 和 capability probe。Sites、云端、远程访问及关机后持续运行延期到后续 change。
+
 本文是 `build-serenity-intelligence-monitor` 的固定运维入口。系统只供家庭内部使用；爸爸只使用私有网页。飞书是可选的重要提醒渠道，第一版仅允许发送到需求提出者控制的私有群，不支持个人私聊或任意定向。
 
 ## 1. 安全准备
 
-1. 复制 `.env.example` 为 `.env`，只填写在部署机器本地；不得提交、截图或粘贴任何实际 Token、Webhook、签名密钥、Cookie、账号密码或持仓信息。
+1. 开发/测试时可复制 `.env.example` 为 `.env`，只填写在开发机器本地；不得提交、截图或粘贴任何实际 Token、Webhook、签名密钥、Cookie、账号密码或持仓信息。该步骤不得用于家庭用户交付说明。
 2. 运行 `pnpm account:hash` 两次，分别生成两个家庭账号的 scrypt 摘要。命令会隐藏输入，只输出摘要。
 3. 将两个摘要写入 `FAMILY_ACCOUNTS_JSON`，两个对象的 `actorId` 和 `username` 必须唯一。爸爸和需求提出者各用自己的网页账号。
 4. `SESSION_SECRET` 使用至少 32 字符的随机值。密码轮换时重新生成对应摘要；如需立即撤销全部旧会话，同时轮换 `SESSION_SECRET` 并重启 API。所有家庭成员随后重新登录。

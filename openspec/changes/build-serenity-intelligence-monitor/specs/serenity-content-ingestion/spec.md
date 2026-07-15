@@ -1,5 +1,18 @@
 ## ADDED Requirements
 
+### Requirement: X 必须默认关闭并允许无凭据完成设置
+X 生产同步 MUST 默认为关闭；用户 MUST 能在不配置 X 凭据时完成向导。未配置或关闭时系统 MUST NOT 发起真实 X 请求或创建同步任务，并 MUST 显示“X 未配置，尚未进行真实同步”。
+
+#### Scenario: 首次设置跳过 X
+- **WHEN** 用户未填写 Token 或保持 X 关闭并完成向导
+- **THEN** 系统保存 `configured=false`/`enabled=false` 状态且零真实请求
+- **AND** 启动器和私有网页明确显示尚未进行真实同步，不用 fixture 冒充真实数据
+
+#### Scenario: 用户启用 X
+- **WHEN** 用户填写 Token、确认政策并选择连接测试
+- **THEN** 系统只通过官方服务端 API 测试认证与必要能力
+- **AND** 测试通过前不得创建周期同步任务
+
 ### Requirement: 仅通过官方服务端接口获取 Serenity 内容
 系统 MUST 仅在服务端通过合规的官方 X API 获取 `@aleabitoreddit` 的帖子、回复和引用内容，且不得使用浏览器 Cookie、模拟登录、客户端 Hook 或父亲金融电脑上的抓取程序。
 

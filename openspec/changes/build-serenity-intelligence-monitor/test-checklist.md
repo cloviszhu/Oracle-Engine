@@ -163,19 +163,19 @@
 
 ---
 
-## AC-6 `[用户手动]`：使用 OpenAI `gpt-5.6-terra` 的真实 Responses API 调用抽查研究卡片时，输出通过严格结构化契约且保持证据边界。
+## AC-6 `[用户手动]`：已通过 capability probe 的真实 AI 配置生成严格结构化研究卡片并保持证据边界
 
 ### TC-6.1：真实内容抽查确认翻译忠实与证据分层
 
 - **类型**: `[用户手动]`
 - **前置条件**:
-  - 已通过真实 X API 归档一条含观点、限定词或不确定表达的 Serenity 内容，并由 OpenAI `gpt-5.6-terra` Responses API 生成研究卡片；原始来源仍可人工打开。
+  - 已通过真实 X API 归档一条含观点、限定词或不确定表达的 Serenity 内容，并由已通过 capability probe 的真实 AI 配置生成研究卡片；原始来源仍可人工打开。
   - 验收人员能够阅读原文并已登录私有站点。
 - **测试步骤**:
   1. 操作路径：从 `/login` 登录，经 `/` 或 `/timeline` 找到目标内容，进入 `/intelligence/:id`。
   2. 打开详情页的来源 URL，对照原文逐句抽查“忠实翻译”。
   3. 分别检查“Serenity 判断”“他人内容”“AI 解释”“未验证推断”“证据”“不确定性”和“观点变化”分区。
-  4. 核对限定词、可能性措辞和来源引用是否与原文及已获取上下文一致，并在脱敏审计中确认 provider=`openai`、model=`gpt-5.6-terra`、Responses request ID、usage 和 schema 校验成功。
+  4. 核对限定词、可能性措辞和来源引用，并在脱敏审计中确认 provider preset、protocol、requested/actual model、provider request ID、usage 和 schema/probe 校验成功。
 - **预期结果**: 严格结构化输出通过本地 schema/来源校验；翻译保留原文的可能性、条件和不确定性，不把猜测改写为事实；作者、他人和 AI 内容在视觉与字段上可区分；每个观点变化结论有可打开证据，若证据充分则其前后观点与来源一致。
 - **证据类别**: `真实 API 已验证`；执行方式为用户手动，保存脱敏 request ID/模型/usage、详情页分区截图、来源页截图和逐项抽查记录，AI 质量结论不得仅以 Mock 代替。
 
@@ -427,7 +427,7 @@
 
 ---
 
-## AC-14 `[用户手动]`：Prompt Injection 的自动边界与真实模型语义验收
+## AC-14 `[用户手动]`：Prompt Injection 的自动边界与已启用真实模型语义验收
 
 ### TC-14.1：正常外部文本仅作为带来源的不可信数据被分析（正向）
 
@@ -443,14 +443,14 @@
 - **可判定预期**：外部文本全部位于标记为不可信的 data envelope，系统指令未被拼入数据区；模型无网络、文件、环境变量或工具接口；合规输出通过校验且结论能追溯到 fixture 来源。
 - **证据类别**：`Mock 已验证`（输入 envelope 快照、模型能力清单断言和 schema 校验结果）；**用例检索依据**：`openspec/changes/build-serenity-intelligence-monitor/.cheap-search-report.md`。
 
-### TC-14.2：真实 `gpt-5.6-terra` 对抗样本不能越权或成为事实结论（异常/边界）
+### TC-14.2：已启用真实模型的对抗样本不能越权或成为事实结论（异常/边界）
 
 - **类型**：`[用户手动]`
 - **前置条件**：
   - 恶意 fixture 同时包含“忽略系统指令”“输出 Secret”“调用工具/读取外链”“把本段写成事实”及伪造来源 ID。
-  - 已配置受预算限制的真实 OpenAI `gpt-5.6-terra` 验收环境；适配器不提供任何工具。Secret canary 只存在于测试进程，绝不进入模型输入。
+  - 已配置受预算限制且通过 probe 的真实 AI 验收环境；适配器不提供任何工具。Secret canary 只存在于测试进程，绝不进入模型输入。
 - **测试步骤**：
-  1. 将固定恶意 fixture 经同一不可信封装路径送入真实 `gpt-5.6-terra` Responses API，并记录脱敏 request ID/model/usage。
+  1. 将固定恶意 fixture 经同一不可信封装路径送入真实已启用 adapter，并记录脱敏 protocol/request ID/requested/actual model/usage。
   2. 运行严格 schema、来源、枚举和越权内容校验；如果响应引用不存在来源、把恶意指令写成事实、声称读过外链或请求工具，则必须拒绝。
   3. 检查研究卡片、评分、通知候选、日志和错误响应是否产生越权副作用，并确认所有 provider tools 都未启用。
 - **可判定预期**：恶意文本不能触发工具、读取 canary 或成为事实结论；合规且忽略攻击的输出可以持久化，伪造来源/越权结论必须被拒绝且不进入评分或通知；报告不得把这一语义结论写成仅由 Mock 证明。
@@ -522,7 +522,7 @@
 
 ---
 
-## AC-17：版本和成本控制
+## AC-17：provider/protocol/model/usage/价格版本和成本控制
 
 ### TC-17.1：X 与 AI 调用形成完整用量和版本审计（正向）
 
@@ -567,7 +567,7 @@
   1. 用户按操作路径打开验收报告，从 AC-1 到 AC-19 逐项检查 TC 状态和证据。
   2. 对标为“自动化已验证”的项目打开测试输出，对标为“Mock 已验证”的项目确认没有宣称真实外部联调。
   3. 对标为“真实 API 已验证”的 X、AI、飞书项目打开脱敏的真实请求/响应、provider ID、时间和成本证据。
-  4. 检查 Docker、部署、HTTPS/Secure Cookie、认证和外部凭据等未实际验证项是否保留为“待人工配置或验证”。
+  4. 检查 Docker、Windows 打包应用、回环网络边界、HTTPS 或回环 HTTP Cookie 规则、认证和外部凭据等未实际验证项是否保留为“待人工配置或验证”。
 - **可判定预期**：每条 TC 明确且仅按实际证明力归入四类证据之一；真实 API 证据能对应供应商与执行时间且不泄露凭据；任何无实证的 Docker、部署、认证或外部依赖均未标记为通过。
 - **证据类别**：`待人工配置或验证`（由用户保存逐项勾选记录、脱敏截图或验收签名）。
 
@@ -576,7 +576,7 @@
 - **类型**：`[用户手动]`
 - **操作路径**：`openspec/changes/build-serenity-intelligence-monitor/test-checklist.md` → 筛选“通过”项 → 打开对应证据 → 对照 `design.md`“真实 API 与人工验收”及“四类证据”要求 → 修正验收结论
 - **前置条件**：
-  - 准备一份待审报告，其中至少包含：把 Mock X/AI/飞书写成真实验证、把本地构建写成 Docker 通过、把未配置 HTTPS/Secure Cookie 写成认证通过中的任一种错误分类。
+  - 准备一份待审报告，其中至少包含：把 Mock X/AI/飞书写成真实验证、把本地构建写成 Docker 通过、把未验证回环绑定或 Cookie 策略写成认证通过中的任一种错误分类。
 - **测试步骤**：
   1. 用户按操作路径定位所有标为“通过”或“真实 API 已验证”的项目。
   2. 检查每项是否存在与声明相符的原始脱敏证据，而非 fixture、Mock 调用或推测性文字。
@@ -587,20 +587,20 @@
 
 ---
 
-## AC-19 `[用户手动]`：同一真实内容端到端闭环
+## AC-19 `[用户手动]`：同一真实内容通过已完成 probe 的 AI 配置形成端到端闭环
 
 ### TC-19.1：同一真实高价值内容贯穿完整闭环（正向）
 
 - **类型**：`[用户手动]`
-- **操作路径**：真实 X 同步 → `/status` 脱敏审计 → 飞书消息 → 绝对 HTTPS 详情链接 → `/intelligence/:id` → 反馈与筛选
+- **操作路径**：真实 X 同步 → `/status` 脱敏审计 → 可选飞书消息/内容 ID → 同机回环详情链接 → `/intelligence/:id` → 反馈与筛选
 - **前置条件**：
-  - 已配置并分别确认真实 X Developer、OpenAI `gpt-5.6-terra`、MySQL、Redis、API、worker、私有 HTTPS 域名与管理员会话；X 政策复核已记录。飞书是可选前置条件，只有需要验证提醒分支时才配置带安全签名的真实机器人。
+  - 已配置并分别确认真实 X Developer、已通过 probe 的真实 AI、MySQL、Redis、API、worker、本机回环网页与家庭账号；X 政策复核已记录。飞书是可选前置条件。
   - 选取一条真实 Serenity 高价值内容，其回复/引用上下文可合法获取；若真实内容不适合强制等待，可由管理员在评分阈值测试配置下选择真实样本，但不得用 Mock 替代任何外部阶段。
 - **测试步骤**：
   1. 记录 X external ID 与 ingestion run/provider request ID，确认归档的是稳定 Serenity user ID 而非仅按 handle 猜测。
   2. 核对实际获取的回复/引用上下文、缺失原因和上下文完整性信号，记录 content/version/context ID。
-  3. 核对真实 OpenAI Responses request ID、model=`gpt-5.6-terra`、prompt version、usage/cost，以及研究卡片中原文、翻译、作者判断、AI 解释、推断、证据、不确定性和对抗样本边界。
-  4. 核对评分分项与决策并直接从私有网页进入同一 card/content 详情；若已配置飞书，再打开真实签名消息，确认摘要保留来源/不确定性并通过绝对 HTTPS URL 进入同一详情。
+  3. 核对真实 provider protocol/request ID、requested/actual model、prompt/schema/probe version、usage/cost，以及研究卡片的证据与不确定性边界。
+  4. 核对评分分项与决策并直接从私有网页进入同一 card/content 详情；若已配置飞书，再确认真实签名消息包含同一内容 ID、本机回环 URL 和“仅同一电脑可打开”的说明，并在运行 Serenity 的电脑进入同一详情。
   5. 在浏览器完成两名家庭账号登录、关键词/Ticker/主题/重要性/内容类型筛选、提交可区分 actor 的反馈，并分别查看核心阶段、评分与可选通知状态及时间戳。
   6. 请父亲不打开 X 来源、不阅读英文原文，只看中文研究卡片回答“发生了什么、谁说的、证据是什么、哪里不确定”，记录四项回答及人工判定。
 - **可判定预期**：同一业务事件的 X external ID、content/version、ingestion/context/OpenAI request、card、score 和详情 URL 连续可追溯；父亲四项回答均能从卡片找到正确依据且无需英文/X；反馈可再次查看、actor 正确且不修改原文。飞书启用时额外要求 delivery/provider ID 可追溯、签名有效且真实通知仅一条；飞书禁用时核心闭环仍可通过并记录渠道 disabled。
@@ -618,13 +618,128 @@
   3. 在历史积累不足时检查观点变化区明确显示“历史样本不足/无法判断”，不得使用无 License 参考数据；随后检查上下文缺失信号。
   4. 模拟 AI 预算阻断，确认原始内容继续归档、AI/通知暂停、待处理数量可见；恢复预算后按明确策略续跑且不重复提醒。
 - **可判定预期**：普通内容可搜索、筛选和回看但不通知；真实样本校准结果与用户裁决被记录；冷启动、上下文不足和预算阻断均可见且不伪造结论/丢失原始内容；恢复后不产生用户感知重复提醒。
-- **证据类别**：`真实 API 已验证`；执行方式包含用户手动质量抽查。若真实 X、OpenAI `gpt-5.6-terra`、目标部署或代表样本缺失，则唯一实际类别必须为 `待人工配置或验证`；飞书缺失不影响本用例，因为普通内容本就不得提醒。
+- **证据类别**：`真实 API 已验证`；执行方式包含用户手动质量抽查。若真实 X、已通过 probe 的真实 AI、目标环境或代表样本缺失，则唯一实际类别必须为 `待人工配置或验证`；飞书缺失不影响本用例。
+
+---
+
+## AC-20 `[用户手动]`：自包含 Windows `.exe` 的 GUI-only 首次设置与本机网页
+
+### TC-20.1：全新 user-data 目录只通过 GUI 完成首启（正向）
+
+- **类型**：`[用户手动]`
+- **前置条件**：Windows 目标机未安装 Node；使用全新 Electron user-data，Docker Desktop 可用。
+- **测试步骤**：运行打包 `.exe`；不打开终端、不创建 `.env`，完成两个账号、AI、X/飞书跳过；点击“一键启动并打开 Serenity”。
+- **可判定预期**：数据库未启动时向导可用；MySQL、Redis、migration、API、worker 依次健康；系统浏览器打开回环私有网页并可登录。
+- **证据类别**：`待人工配置或验证`，必须保存安装产物哈希、界面录像和健康摘要。
+
+### TC-20.2：目标机无 Node 且首次设置中断可恢复（边界）
+
+- **类型**：`[用户手动]`
+- **测试步骤**：确认 `node` 不在 PATH；在账号或 AI 步骤退出并重新启动，再继续完成设置。
+- **可判定预期**：打包应用仍可运行；非敏感进度恢复，未提交 Secret 不回显；无需命令行补救。
+- **证据类别**：`待人工配置或验证`。
+
+## AC-21 `[AI自测]`：中文环境检查与 Docker 缺失引导
+
+### TC-21.1：全部环境检查通过（正向）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：向 checker 注入 Windows、Docker Desktop/engine、Compose、虚拟化、空闲端口、足够磁盘和可写目录结果。
+- **可判定预期**：每项返回稳定 code、`pass`、中文说明；允许继续且不泄露本机敏感路径。
+- **证据类别**：`自动化已验证`。
+
+### TC-21.2：Docker 缺失、端口占用与权限失败（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：分别注入 Docker 缺失、engine 未运行、Compose 缺失、虚拟化关闭、端口占用、空间不足和目录拒绝写入。
+- **可判定预期**：GUI 始终可用；显示用途、官方入口与复查动作；后续服务不启动，不静默安装、不显示健康。
+- **证据类别**：`自动化已验证`；真实 Docker 仍单列目标环境验证。
+
+## AC-22 `[AI自测]`：DPAPI vault、窄 IPC 与 Secret 零回显
+
+### TC-22.1：保存后只返回配置状态（正向）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：以 canary 保存 AI Key、X Token、飞书 Webhook/签名密钥、数据库密码和 Session Secret；遍历 IPC 返回、renderer storage、URL、日志、错误、配置元数据与快照。
+- **可判定预期**：vault 为加密密文；所有读取只返回 `configured`/时间/脱敏标识；canary 零命中，Secret 输入提交后清空。
+- **证据类别**：`自动化已验证`。
+
+### TC-22.2：safeStorage/ACL 失败和通用 IPC 被拒绝（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：模拟加密不可用、ACL 设置失败，并尝试调用文件系统、shell、进程执行或通用 `ipcRenderer`。
+- **可判定预期**：配置保存失败且不落明文；preload 不存在越权接口；错误不含原值或内部栈。
+- **证据类别**：`自动化已验证`。
+
+## AC-23 `[AI自测]`：Serenity 专属 Compose 与 `utilityProcess` 生命周期
+
+### TC-23.1：固定启动/停止顺序和托盘行为（正向）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：用可控 fake 记录目录/端口、Docker、MySQL/Redis、migration、API、worker、网页的调用顺序；关闭窗口后再执行“停止 Serenity 并退出”。
+- **可判定预期**：启动与停止顺序完全匹配设计；关闭窗口只缩入托盘；重复操作幂等且无重复进程。
+- **证据类别**：`Mock 已验证`；真实 Docker 生命周期待目标环境。
+
+### TC-23.2：依赖失败不越级且不影响其他 project（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：逐阶段注入失败，并放置非 Serenity Compose project/容器。
+- **可判定预期**：后续阶段不执行；只停止固定 Serenity project；Docker Desktop、其他 project 和容器保持运行。
+- **证据类别**：`Mock 已验证`。
+
+## AC-24 `[AI自测]`：双协议 provider registry 与 capability probe
+
+### TC-24.1：Responses 与 Chat Completions 兼容端点通过（正向）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：分别使用 Responses-compatible `text.format` 和 Chat Completions-compatible `response_format` mock，返回完整卡片、来源、response ID、usage 和一致 actual model；另对 OpenAI 官方 `gpt-5.6-terra` preset 的请求契约做回归快照。
+- **可判定预期**：registry 生成对应 adapter；probe 通过并记录 provider/protocol/host/requested/actual model/schema/probe version；worker 仅使用启用配置。
+- **证据类别**：`Mock 已验证`。
+
+### TC-24.2：不兼容 endpoint 被明确阻断（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：覆盖 URL 含凭据/query、非回环 HTTP、认证失败、模型不存在、requested/actual 不同、refusal、不完整 JSON、缺字段/来源/response ID/usage、429、超时和 5xx。
+- **可判定预期**：返回稳定类别和具体不兼容字段；可保存为未启用但 worker 不调用；不换模型、不改协议、不降低 schema。
+- **证据类别**：`Mock 已验证`。
+
+## AC-25 `[AI自测]`：X 与飞书默认可跳过且零真实副作用
+
+### TC-25.1：无 X/飞书配置完成向导（正向）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：保持 X 关闭、飞书跳过，完成向导并启动核心服务。
+- **可判定预期**：X 零真实请求/零同步任务并显示“X 未配置，尚未进行真实同步”；飞书零 delivery/零任务/零失败积压；网页、归档和已具备数据的搜索查看可用。
+- **证据类别**：`自动化已验证`。
+
+### TC-25.2：启用配置不完整或测试失败（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：X 缺 Token/政策确认；飞书只填 Webhook 或签名密钥；签名测试返回拒绝/超时。
+- **可判定预期**：对应分支不启用且无真实业务任务；错误分类明确；核心网页不被标为失败。
+- **证据类别**：`Mock 已验证`。
+
+## AC-26 `[用户手动]`：一致性备份、DPAPI 恢复边界和脱敏诊断
+
+### TC-26.1：备份并在同一 Windows 用户恢复（正向）
+
+- **类型**：`[用户手动]`
+- **测试步骤**：运行中创建 MySQL 一致性备份、非敏感清单、版本和 DPAPI 密文副本；在隔离目录恢复并核对业务事实。
+- **可判定预期**：数据库事实一致；Redis 会话/队列不被当作可移植事实；同一用户可解密，跨用户恢复明确要求重新输入 Secret。
+- **证据类别**：`待人工配置或验证`，真实 MySQL/Windows DPAPI 必须现场执行。
+
+### TC-26.2：诊断 canary 命中时拒绝导出（异常/边界）
+
+- **类型**：`[AI自测]`
+- **测试步骤**：在日志/错误/快照中分别注入 canary，再请求诊断包；清理后重试。
+- **可判定预期**：命中时无导出文件且报告脱敏失败；清理后包内只含版本、健康、端口、容器状态和脱敏错误类别。
+- **证据类别**：`自动化已验证`。
 
 ---
 
 ## test_verify 执行记录（2026-07-15）
 
-执行环境：Windows 本地工作区，提交 `c3a532d`；`pnpm check`、44 个测试文件/188 个测试、`pnpm lint`、`pnpm build`、Secret 审计、OpenSpec 严格校验和追溯校验均通过。Mock/自动化结果不替代真实外部 API、Docker/HTTPS 或家庭人工验收。
+执行环境：Windows 本地工作区，提交 `c3a532d`；以下记录只覆盖修订前实现。家庭本地版 AC-20～AC-26 尚未实现、尚未重新运行 `test_verify`，旧的 `pnpm check`、44 个测试文件/188 个测试、`pnpm lint`、`pnpm build` 和 Secret 审计结果不得视为新范围通过。
 
 | TC | 类型 | test_verify 结果 | 关键证据（file:line） |
 |---|---|---|---|
@@ -666,8 +781,12 @@
 | TC-18.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:64` |
 | TC-19.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:65` |
 | TC-19.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:66` |
+| TC-20.1～20.2 | 用户手动 | 📋 修订任务待实施 | Windows 打包与 GUI-only 首启证据待补 |
+| TC-21.1～25.2 | AI 自测 | 📋 修订任务待实施 | 自动化/Mock 测试文件按 tasks 新建 |
+| TC-26.1 | 用户手动 | 📋 修订任务待实施 | 真实 MySQL/DPAPI 备份恢复证据待补 |
+| TC-26.2 | AI 自测 | 📋 修订任务待实施 | 诊断 canary 自动化待补 |
 
-原声对账：私有网页保持主入口；父亲无需飞书；飞书默认关闭、启用时强制签名且只作为需求提出者私有群的重要提醒；关闭时网页归档、OpenAI 分析、搜索和查看不受影响；第一版模型固定为 `openai/gpt-5.6-terra`，供应商边界仍由适配器与配置隔离；无交易、券商、持仓、Cookie/Hook 或客户端抓取扩展。独立代码复核未发现剩余 Critical/Important。
+原声对账：私有网页保持本机主要入口；普通使用改为自包含 `.exe` 与 GUI；飞书/X 默认可跳过；`gpt-5.6-terra` 改为 OpenAI 官方推荐 preset，不再固定为唯一模型；双协议 adapter 与 probe 成为启用门禁；无云端、Sites、远程访问、交易、券商、持仓、Cookie/Hook 或客户端抓取扩展。旧独立代码复核不覆盖 AC-20～AC-26。
 
 踩坑检查：原文件缺失；本轮将已修复的容器 ESM、跨层详情 ID、生产通知编排、发送中断歧义和审计化人工恢复记录到 `docs/project-pitfalls.md`。
 

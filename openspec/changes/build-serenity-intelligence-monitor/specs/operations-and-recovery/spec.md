@@ -1,5 +1,26 @@
 ## ADDED Requirements
 
+### Requirement: 启动器必须呈现本地依赖和后台进程生命周期
+系统 MUST 在启动器中分别显示 MySQL、Redis、migration、API 和 worker 的启动、健康、停止与错误状态，并 MUST 使用稳定中文错误类别和下一步操作。
+
+#### Scenario: worker 未产生 heartbeat
+- **WHEN** 数据库、Redis 与 API 健康但 worker 在时限内没有 heartbeat
+- **THEN** 启动流程停止在 worker 阶段并显示 `worker_start_failed`
+- **AND** 不打开网页或把整个系统显示为健康
+
+#### Scenario: 重复启动或停止
+- **WHEN** 用户重复点击启动、停止或健康检查
+- **THEN** 编排操作幂等并返回当前真实状态
+- **AND** 不产生重复 API/worker 进程或重复 Compose project
+
+### Requirement: 真实环境证据必须覆盖打包应用和 Docker 生命周期
+最终验收 MUST 区分 Electron 自动化/Mock、Windows 打包产物、真实 Docker Desktop、真实外部 API 与用户手动证据；当前开发机缺少 Docker 时，对应生命周期 MUST 保持待目标环境验证。
+
+#### Scenario: 本机没有 Docker 命令
+- **WHEN** 自动化使用 fake controller 验证编排但未在真实 Docker Desktop 运行
+- **THEN** 报告可标记编排契约或 Mock 通过
+- **AND** 不得把 MySQL/Redis 真实生命周期、端口绑定或恢复写成已验证
+
 ### Requirement: 每个流水线阶段必须有可审计状态
 系统 MUST 为获取、上下文补全、AI 分析和评分的核心流水线，以及独立的可选通知分支记录 pending、processing、成功、可重试失败、阻断、结果未知或死信，以及 attempt、lease owner/fencing、错误分类、人工重试资格和版本信息。可选通知配置缺失 MUST NOT 把已完成评分的核心流水线标记为失败。
 
@@ -89,7 +110,7 @@
 验收记录 MUST 对每条测试结果区分自动化已验证、Mock 已验证、真实 API 已验证和待人工配置或验证，并 MUST 应用 spec-bound repair lane。
 
 #### Scenario: 外部凭据或部署环境未验证
-- **WHEN** X、AI、飞书、Docker、HTTPS、认证或目标部署缺少真实证据
+- **WHEN** X、AI、飞书、Docker、Windows 打包应用、回环网络边界、认证或目标环境缺少真实证据
 - **THEN** 对应验收项保持待人工或 Mock 状态
 - **AND** 不得标记为真实通过
 
@@ -101,7 +122,7 @@
 #### Scenario: 可选飞书分支加入同一闭环
 - **WHEN** 已配置带安全签名的真实飞书机器人并对上述同一内容启用提醒
 - **THEN** 验收报告追加可串联的 delivery/provider ID 与签名请求结果
-- **AND** 用户能从提醒中的绝对 HTTPS 链接进入同一私有详情；未配置飞书不改变核心网页闭环结论
+- **AND** 提醒包含同一内容 ID 和本机回环详情 URL，并明确只能在运行 Serenity 的同一台电脑打开；未配置飞书不改变核心网页闭环结论
 
 #### Scenario: 真实普通内容保持低打扰
 - **WHEN** 用户预先标注的普通或低价值真实内容完成分析

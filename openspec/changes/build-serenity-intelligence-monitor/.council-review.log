@@ -172,3 +172,46 @@
 ### 判定
 
 `READY_FOR_DEBATE`：当前无未解决 P0/P1；19 AC / 38 TC / 33 Task 的确定性追溯、OpenSpec strict validate、Harness embed-check、council gate 和 `git diff --check` 均通过。匿名互审返回不完整已如实记录，不影响主席对其所有风险项的逐条人工复核。
+
+## 会话 4：`user_accept` 家庭本地版修订重新顾问团审查（2026-07-15）
+
+- reviewed_at_commit: `c72a3c669f2e121c8c4917663121bb0e1fdff0b0`
+- reviewed_files:
+  - proposal.md: `9b5e6ebc54b72107de8836b15dd7c15848a11a46`
+  - design.md: `6816c21823ad0d1f2c26b389aa052757de75b885`
+  - test-checklist.md: `6d8857426135ba5b08d40f6aff78007d51ec3a81`
+  - tasks.md: `371beeb1cd5e3077bc45c9dfb99379301ebeb4c6`
+  - specs/importance-and-notification/spec.md: `46c66af21242fb0dbd16ee3e518f7634905cc7b6`
+  - specs/launcher-and-bootstrap/spec.md: `d1754037b3910980f6e1ff0a4520e2ee71a8f27b`
+  - specs/operations-and-recovery/spec.md: `088e9092bf40a2ce3dda7ddd773ca8d28780fbf1`
+  - specs/private-research-workspace/spec.md: `7dd6e9a9b51a9a63ecea6f50174955bb642950bb`
+  - specs/project-foundation/spec.md: `583fb47c89e18143cdca7569fdf79a9f672d89f9`
+  - specs/research-context-and-card/spec.md: `5e2990b703774d6250aa23c926d809d929696cf0`
+  - specs/serenity-content-ingestion/spec.md: `0ff855284e2ce753703c78d7b9a9f188e1d1a453`
+
+### 审查视角
+
+- 必要性：Electron/GUI/DPAPI/生命周期属于“家庭用户无需开发者操作”这一已确认验收目标的必要闭环；Sites、云端、远程访问和关机后运行已隔离为第二阶段，没有进入任务。
+- 架构：Electron main 是单一可信控制面；preload 窄 IPC、renderer 零 Secret 持久化、`utilityProcess` 运行配置快照和只含 MySQL/Redis 的 Compose 边界一致。
+- AI 契约：Responses-compatible `text.format`、Chat Completions-compatible `response_format`、refusal/不完整输出、requested/actual model、response ID、usage 和费用审计均有 AC/TC/Task。
+- 安全：DPAPI 威胁边界、ACL 失败不降级、回环绑定、Cookie 本地 profile 例外、diagnostic canary 和跨用户恢复重输 Secret 已明确。
+- 可验收性：Windows 打包、真实 Docker/DPAPI 与外部 API 继续保持目标环境/人工证据；fake controller 和 Mock 不得冒充。
+
+### 第一轮发现与处置
+
+1. P1：旧 `research-context-and-card` 仍要求生产只接受 `openai/gpt-5.6-terra`，与双协议 registry/probe 冲突。已改为仅使用已通过 probe 的配置，并保留 `gpt-5.6-terra` 推荐 preset 回归。
+2. P1：旧飞书与部署条款要求绝对 HTTPS 详情链接，和第一版同机回环访问冲突。已统一为“内容 ID + 仅同机可打开的回环 URL”，并补充回环 HTTP/HTTPS Cookie 规则。
+3. P2：Electron `safeStorage` 的真实 DPAPI 行为、Windows ACL、electron-builder 产物和真实 Docker 生命周期无法在当前开发机由规格审查证明，必须保持 TC-20/21/22/23/26 的真实环境待验状态。
+4. P2：OpenAI-compatible 只承诺协议必要子集；第三方 endpoint 的认证、usage、request ID、结构化输出和价格语义只有 probe/真实联调能证明。
+
+### 第二轮复核
+
+- `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`: passed。
+- `check_traceability.py`: passed；26 AC / 52 TC / 50 Task 全部映射。
+- Harness `embed-check`: passed。
+- `git diff --check`: passed。
+- 固定模型 allowlist、家庭生产 `.env`、API/worker 容器、远程 HTTPS 链接等冲突文本只保留在明确标注“修订前历史基线，已被 Group 9～14 取代”的任务记录中，不再构成当前约束。
+
+### 判定
+
+`READY_FOR_DEBATE`：两项 P1 已回写并复核；无未解决 P0/P1。P2 真实环境依赖必须在实施后验收，不能在当前规格阶段降级为已通过。

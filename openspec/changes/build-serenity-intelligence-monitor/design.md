@@ -166,13 +166,14 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 `ResearchCardDraft` 至少包含：忠实翻译、内容类型、`serenity_statements[]`、`other_party_statements[]`、`ai_interpretations[]`、`unverified_inferences[]`、观点变化、entities、evidence、uncertainties、confidence、importance features。每个结论都带来源 content ID 或明确标记为 AI 解释/未验证推断。
 
-### 第一版 OpenAI 实现
+### 第一版 OpenAI-compatible 实现
 
-- 业务层只依赖 `ResearchModelAdapter`；基础设施层实现 `OpenAIResearchModelAdapter`，通过 OpenAI Responses API 调用 `gpt-5.6-terra`。官方模型文档确认该模型支持 Responses API 和 Structured Outputs：<https://developers.openai.com/api/docs/models/gpt-5.6-terra>。
-- `AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra`、`OPENAI_API_KEY`、reasoning effort、deadline、重试和预算从服务端配置读取；模型 ID 不散落在业务代码、prompt 或数据库迁移中。
-- 适配器把 `ResearchCardDraft` 转为严格 JSON Schema/Structured Outputs，并返回统一的文本结果、usage、provider request ID 与模型版本；OpenAI SDK/Responses 类型不得穿透适配器边界。
-- 第一版请求显式不提供任何 tools；不启用 web search、file search、code interpreter 或其他供应商工具，即使目标模型支持这些能力。
-- 生产启用时执行一次脱敏能力检查，确认目标项目可访问 `gpt-5.6-terra` 且严格结构化响应可解析；保存请求配置的模型 ID 与响应返回的实际模型标识。不可用时阻断分析并显示原因，禁止静默换模。
+- 业务层只依赖 `ResearchModelAdapter`；基础设施层通过 `ProviderAdapterRegistry` 注册 Responses-compatible 与 Chat Completions-compatible adapter、OpenAI 官方 preset 和自定义 OpenAI-compatible preset。
+- OpenAI 官方 preset 推荐 `gpt-5.6-terra`，但 model、协议和 base URL 可由 GUI 修改；系统不承诺任意模型或供应商零适配。
+- Responses-compatible 使用 `text.format` 的严格 JSON Schema；Chat Completions-compatible 使用 `response_format` 的 `json_schema`。两者均返回统一的卡片、usage、provider request ID 与 requested/actual model，供应商类型不得穿透适配器边界。
+- 第一版请求显式不提供任何 tools；不启用 web search、file search、code interpreter 或其他供应商工具。
+- 启用前 capability probe 必须验证 URL/认证、模型可调用、requested/actual model、严格 schema、完整卡片与来源约束、response ID、usage、超时/限流/错误分类；失败只允许保存为未启用，不得自动换模型、改协议或降低卡片契约。
+- 官方依据：Structured Outputs 同时适用于 Responses 与 Chat Completions，Responses 使用 `text.format`；结构化输出仍需处理 refusal 和不完整结果：<https://developers.openai.com/api/docs/guides/structured-outputs>。
 
 ### 防 Prompt Injection
 
@@ -187,7 +188,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 - 输入以 `contentVersion + contextHash + promptVersion + modelVersion` 形成分析幂等键，相同输入不重复付费。
 - 调用前通过原子 reservation 检查并占用 `AI_DAILY_BUDGET_CENTS`；达到上限后保持 `blocked` 且 `block_reason=budget`，不得静默切换低质量模型。
 - 保存模型、prompt 版本、token usage、provider request ID、耗时和成本；不保存 API key。
-- 生产实现 MUST 落地已确认的 OpenAI `gpt-5.6-terra`，同时保留 provider/model 配置和适配器边界。若 `OPENAI_API_KEY` 缺失，原文仍归档且网页可检索，分析进入 `blocked/configuration` 并可在配置恢复后续办；不得伪造卡片或静默切换模型。
+- 每次分析保存 provider preset、protocol、base URL host、requested/actual model、local/provider request ID、usage、价格及版本、费用、prompt/schema/probe version。若未启用兼容 AI 配置，原文仍归档且网页可检索，分析进入 `blocked/configuration`；不得伪造卡片或静默切换模型。
 
 ## 重要性评分
 
@@ -202,7 +203,7 @@ React 私有站点 ─► NestJS API ─► MySQL
 
 - `NotificationPolicy` 始终保存“符合提醒条件”的评分事实。仅当 `FEISHU_ENABLED=true` 时创建 delivery；默认禁用时渠道状态为 `disabled`，不创建发送 intent、不入队、不重试、不计入失败/积压。技术 delivery key 继续包含 card/policy version；另以内容事件 ID + 用户提醒策略维护用户感知去重与 cooldown，单纯模型/prompt/策略重算不得再次打扰，只有正文实质编辑、观点实质变化或管理员明确重发才允许新提醒。
 - 飞书是可选提醒而不是使用入口。第一版由提出需求的用户控制的私有飞书群 Webhook 接收，父亲只使用私有网页；不实现个人私聊或任意用户定向发送。
-- 飞书消息使用稳定事件 ID，并只包含保留不确定性标签的分层摘要、重要性理由和由受校验 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；不包含 Token、Webhook、签名密钥、完整 raw payload 或未经验证的 A 股公司结论。
+- 飞书消息使用稳定事件 ID，并只包含保留不确定性标签的分层摘要、重要性理由、内容 ID 和由受校验本机 base URL 生成的回环详情链接；消息明确该链接只能在运行 Serenity 的同一台电脑打开，不暗示手机或跨设备访问。不包含 Token、Webhook、签名密钥、完整 raw payload 或未经验证的 A 股公司结论。
 - 启用开关、Webhook 与安全签名密钥仅从服务端 `FEISHU_ENABLED`、`FEISHU_WEBHOOK_URL`、`FEISHU_SIGNING_SECRET` 读取；启用飞书必须后两者同时存在并按飞书机器人协议为每次请求生成带时间戳的签名，缺一即不发送。请求和错误日志对 URL、签名和密钥完全脱敏。
 - 成功响应保存 provider message ID；明确拒绝、连接建立前失败、429、5xx 按分类重试；请求已经发送但响应超时/进程在发送后落库前崩溃时进入 `outcome_unknown`，不自动重发，由管理员核对后显式处理。只有真实联调证明 provider 支持幂等/结果查询时才能收紧为自动补偿。
 - `FEISHU_ENABLED=false` 时状态页显示渠道已禁用但不显示故障；`FEISHU_ENABLED=true` 且 Webhook 或签名密钥缺失时才创建/保留 `blocked/configuration` 状态。两种情况下归档、OpenAI 分析、评分、搜索和网页查看均继续运行。
@@ -274,7 +275,7 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 ### 真实 API 与人工验收
 
 - X：需要 Developer 账号、credits、Bearer Token 和政策确认；记录真实获取证据与资源成本。
-- AI：使用真实 OpenAI `gpt-5.6-terra`、API Key 和预算；抽查 Responses API 严格结构化输出、翻译、证据引用、不确定性与注入边界。
+- AI：使用已通过 probe 的真实配置和预算；分别记录 Responses-compatible 或 Chat Completions-compatible 协议、requested/actual model、严格结构化输出、翻译、证据引用、不确定性与注入边界。
 - 飞书：仅在用户选择启用时配置真实机器人 Webhook 与安全签名密钥，验证签名请求、单条高价值通知和去重；未启用不阻塞核心网页闭环。
 - 认证/部署：在最终私有部署环境验证 HTTPS、Secure Cookie、重启恢复和网络访问边界。
 - Docker 当前不可用，因此容器验证必须标为待人工/目标环境验证，不能由本地 Mock 代替。
@@ -286,10 +287,10 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 1. 先确定服务端可导入 `shared/` 与 `drizzle/` 的 TypeScript/ESM 构建策略，并为 API、worker 分别生成可运行产物与构建后导入测试。
 2. 生成、审查并通过显式 `db:migrate` 在空库应用 Drizzle migration；生产禁止用 `db:push` 代替版本化迁移，执行前记录备份/停用同步步骤，失败时停止 API/worker 并恢复应用版本或向前修复。
 3. 以幂等 bootstrap 将稳定 X user ID 绑定到 `@aleabitoreddit`，handle 变化只更新显示值，身份不随 handle 漂移。
-4. 配置 MySQL、Redis、管理员密码摘要、Session Secret、`APP_BASE_URL`、外部 deadline/并发/lease/最大 attempt/上下文与 payload 上限；未配置真实外部服务时生产同步保持关闭。
-5. 通过独立 `dev:worker`/`start:worker` 与 Compose/process supervisor 启动 API 和 worker，验证 liveness、readiness、worker heartbeat、优雅退出和 reconciliation；API 健康但 worker 缺失时状态页必须告警。
+4. 由 GUI 配置 MySQL/Redis 本地连接、两名家庭账号、Session Secret、外部服务与运行上限；Electron main 把 Secret 存入 DPAPI vault，并通过私有进程 IPC 传递运行快照。
+5. 启动器只用 Compose 管理 MySQL/Redis，并用 Electron `utilityProcess` 启动 API/worker；验证 liveness、readiness、worker heartbeat、优雅退出和 reconciliation。
 6. 配置 X 凭据和预算并记录政策确认人、时间、政策版本及允许 tombstone 字段后启用单账号轮询。
-7. 配置 OpenAI `gpt-5.6-terra` 并完成真实分析联调；如启用飞书，再同时配置 Webhook 与安全签名密钥完成可选通知联调。任何一步失败均保留在状态页，不回滚已归档事实；飞书缺失不阻塞网页闭环。
+7. 通过 GUI 配置 AI preset/protocol/base URL/model/价格/预算并通过 probe；如启用飞书，再同时配置 Webhook 与安全签名密钥完成可选通知联调。任何一步失败均保留在状态页，不回滚已归档事实。
 8. 本地无 Docker 时，单元/Mock 测试可继续；MySQL/Redis 跨进程恢复、Node 20 镜像与目标部署证据保持待 CI/目标环境验证，不得以内存 Mock 替代。
 
 ## Repair lane
@@ -301,6 +302,57 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 - 第 1、2 类未关闭前不得归档；修复不得通过降低断言、伪造 Mock 或把待人工项标记通过来收敛。
 
 ## 实现路径概述
+
+### 2026-07-15 家庭本地版交付修订
+
+本节取代与固定模型、手工 `.env`、开发者命令和 API/worker 容器运行方式冲突的旧条款；未受影响的研究流水线、网页、X、评分和可选飞书设计继续有效。
+
+#### Electron 组件和信任边界
+
+- `desktop/main/`：bootstrap、DPAPI vault、环境检查、Compose、migration、`utilityProcess`、备份、诊断、窗口和托盘。
+- `desktop/preload/`：只暴露 `getSetupStatus`、`runEnvironmentChecks`、`saveSettings`、`probeAI`、`startSerenity`、`stopSerenity`、`getHealth`、`openWorkspace`、`createBackup`、`exportDiagnostics`；禁止通用 `ipcRenderer`、文件系统、shell 和进程执行接口。
+- `desktop/renderer/`：首次设置和启动器管理 UI；生产窗口启用 `contextIsolation`、sandbox、严格 CSP，关闭 Node integration。
+- 现有 `client/`：父亲和家庭用户日常使用的本机私有网页，不承担 Secret 配置。
+
+Secret 输入只在当前控件内短暂存在，提交后清空。IPC 读取、诊断和设置摘要只返回 `configured`、更新时间和允许的脱敏标识。renderer 不把 Secret 写入 `localStorage`、`sessionStorage`、IndexedDB、URL、路由状态、剪贴板、错误对象或持久化表单缓存。
+
+#### 配置库和 DPAPI vault
+
+配置目录固定在 `%LOCALAPPDATA%\Serenity`。非敏感元数据与加密 vault 分离；Electron main 使用 `safeStorage`，Windows 上由 DPAPI 保护，并把目录 ACL 限制为当前用户。若加密或 ACL 设置失败，保存必须失败且给出中文说明，禁止退回明文。
+
+两名家庭账号在 main 内使用随机盐与现有 `scrypt` 契约生成摘要；密码原值不写盘、不回显。修改某账号密码后撤销该 actor 的会话。DPAPI 只隔离其他 Windows 用户，不能抵御同一用户权限下的恶意程序，操作文档必须明确这一边界。
+
+API/worker 不通过 `.env`、命令行参数或 Docker inspect 接收 Secret。Electron main 解密后，把一次性 `RuntimeConfigSnapshot` 通过受控 `utilityProcess` 私有 IPC 传入；开发/测试命令仍可使用 `.env.example`，但不是家庭生产路径。
+
+#### 环境检查和服务生命周期
+
+环境检查覆盖 Windows 版本、Docker Desktop、Docker engine、Compose、虚拟化、端口、磁盘空间和目录权限。Docker 缺失时 GUI 仍可运行，显示组件用途、官方安装入口和“重新检查”，不静默安装。
+
+Compose 只运行 MySQL 与 Redis，只绑定 `127.0.0.1` 的随机或已验证端口。启动器使用固定 Serenity project name，不得停止 Docker Desktop 或其他 Compose project。API/worker 使用 Electron `utilityProcess` 运行打包内 Node 运行时。
+
+启动顺序：目录/端口检查 → Docker engine → MySQL/Redis 健康 → 幂等 migration → API 健康 → worker heartbeat → 打开网页。停止顺序：停止接收新任务 → worker 到可恢复边界 → API → Serenity 容器。关闭窗口缩入托盘；只有明确“停止 Serenity 并退出”执行停止顺序。
+
+#### 首次设置和日常管理
+
+首次设置在数据库未启动时可用，依次完成环境检查、两个家庭账号、AI、可选 X、可选飞书和完成页。X 默认关闭，未配置时零真实请求并显示“X 未配置，尚未进行真实同步”。飞书默认跳过；启用必须同时填写 Webhook 与签名密钥并通过签名测试。
+
+完成页分别显示 MySQL、Redis、AI、X、飞书的成功、跳过或失败。日常界面提供启动、停止、健康检查、打开网页、修改设置、备份和脱敏诊断；错误统一映射为环境缺失、权限不足、端口占用、Docker 未运行、依赖不健康、migration 失败、API/worker 启动失败、外部未配置、认证失败、模型不存在、结构化输出不兼容、限流、预算阻断、provider 暂时不可用和通知结果未知。
+
+#### AI registry 和 probe
+
+GUI 字段包括 provider preset、protocol、base URL、API Key、model、reasoning、输入/输出价格、单次预算和每日预算。自定义 URL 禁止用户名、密码、query 和 fragment；非回环地址必须 HTTPS。
+
+`ProviderAdapterRegistry` 根据 `providerPreset + protocol` 构造 adapter。本轮只实现 OpenAI 官方 preset、自定义 OpenAI-compatible preset、Responses-compatible 和 Chat Completions-compatible；Anthropic/Gemini 原生协议只保留注册扩展点。
+
+probe 验证 URL/协议/认证、requested/actual model、严格 JSON Schema、完整研究卡片与来源约束、response ID、usage、超时/限流/错误分类。actual model 与 requested model 不同不得静默通过；GUI 显示两者，无法解释的替换直接阻断。失败配置可保存为未启用，但 worker 不得使用。
+
+#### 备份、诊断和延期边界
+
+备份包含 MySQL 一致性导出、非敏感配置清单、版本信息和 DPAPI 密文副本。Redis 不是长期事实来源。跨电脑或 Windows 用户恢复数据库和非敏感配置后必须重新输入 Secret。
+
+诊断包包含版本、健康、端口、容器状态、最近脱敏错误类别和日志片段；导出前执行 canary Secret 扫描，命中即拒绝导出。
+
+第一版网页只供同一台 Windows 电脑访问。Sites、电脑关机后持续运行、云端 API/worker/MySQL/Redis、云端 KMS、远程 HTTPS/安全访问、云端备份和云厂商选择延期到第二阶段；当前不创建 `.openai/hosting.json`，不发布 Sites，不选择 Azure/AWS/GCP。
 
 > 下列路径和符号均为 design 阶段预判，“猜测”不代表已实现。
 
@@ -441,10 +493,17 @@ NestJS 静态交付 MUST 对非 `/api/**` 且非真实静态文件的 GET 请求
 | AC-17 | AI 成本与版本；外部用量表 | 硬预算和版本审计 |
 | AC-18 | 测试与验收策略 | 四类证据严格区分 |
 | AC-19 | 真实 API 与人工验收；部署与迁移顺序 | 同一业务事件贯穿核心网页闭环，飞书按配置追加验证 |
+| AC-20 | Electron 组件；首次设置与日常管理 | GUI-only 首启与自包含 Windows 产物 |
+| AC-21 | 环境检查和服务生命周期 | Docker 缺失时仍可中文引导 |
+| AC-22 | 配置库和 DPAPI vault；Electron 信任边界 | 窄 IPC 与 Secret 零回显 |
+| AC-23 | 环境检查和服务生命周期 | Serenity 专属 Compose 与 utilityProcess |
+| AC-24 | AI registry 和 probe | 双协议、requested/actual model 与严格门禁 |
+| AC-25 | 首次设置和日常管理 | X/飞书默认关闭且零真实副作用 |
+| AC-26 | 备份、诊断和延期边界 | DPAPI 恢复边界与 canary 拒绝导出 |
 
 ## 自审结论
 
-- 19 条 AC 均有模块、数据流和验证路径，未把 Filtered Stream、多个账号、外部网页抓取、A 股公司级映射或多通知渠道扩大进本 change。
+- 26 条 AC 均有模块、数据流和验证路径；Sites、云端、远程访问、关机后运行、多个 X 账号、外部网页抓取、A 股公司级映射或多通知渠道均未扩大进本 change。
 - 所有外部调用均位于适配器边界；真实 X、AI、飞书、Docker 和部署验证均未被设计文档误写为已通过。
 - repair lane 已覆盖规范回写、最小修复、范围扩展和环境问题四类路径。
 - 当前无阻止进入代码检索和 test-checklist 的设计级硬阻塞；生产启用仍受外部凭据、预算、政策与部署环境人工确认约束。

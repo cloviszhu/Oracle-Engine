@@ -16,7 +16,7 @@ Change ID：`build-serenity-intelligence-monitor`
 
 ## 背景与动机
 
-当前仓库只具备可安装、可测试、可构建的 React/NestJS 工程基础，尚未实现任何 Serenity 监控业务。此 change 要为家庭内部的 A 股产业研究建立第一阶段单信息源闭环：合规获取 Serenity（@aleabitoreddit）的帖子、回复与引用上下文，保留原始证据，通过 OpenAI `gpt-5.6-terra` 生成边界清晰的中文研究卡片，并以私有网页作为主要使用入口。飞书只承担可选的重要消息提醒，未配置时不得影响网页归档、AI 分析、搜索和查看。
+当前仓库已经完成第一阶段单信息源研究闭环的本地实现与 Mock/自动化验证，但现有交付仍要求开发者编辑 `.env`、生成密码摘要并执行多条命令，不能作为家庭用户的最终使用方式。本 change 继续在同一范围内补齐 Windows 自包含启动器、GUI 首次设置、安全配置、服务编排和可配置 AI 兼容性门禁；私有网页仍是主要入口，飞书仍只承担可选提醒。
 
 本次属于场景 A（新需求），采用 Harness L2 驾驶模式。proposal 确认前不实现业务代码；外部 API、AI 模型、通知、认证、存储与部署必须位于清晰适配器边界后。
 
@@ -564,6 +564,20 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 卡住了？
 
 按审查建议修订后继续评审。私有网页作为主要使用入口，爸爸不需要使用飞书；飞书仅作为可选的重要消息提醒渠道，第一版可以先把提醒发给我。未配置飞书时，网页归档、AI 分析、搜索和查看功能仍应正常运行。若接入飞书，请启用安全签名。AI 第一版使用 OpenAI gpt-5.6-terra，并继续通过适配器和配置隔离，确保以后可以更换模型或供应商。请按此方案推进。
+
+### 2026-07-15 `user_accept` 验收修订原话
+
+> 当前实现的开发者配置流程过于复杂，不能作为家庭用户的最终交付方式。普通使用路径不得要求手工编辑 `.env` 或执行多条命令。
+>
+> 采用自包含 `.exe` 方案。当前 `build-serenity-intelligence-monitor` change 先完成家庭本地版的可交付闭环。
+>
+> Sites 主网页、电脑关机后持续运行、云端 API/worker/MySQL/Redis、KMS、远程安全访问和云厂商选择属于明显扩大的第二阶段需求。当前 change 完成前不要新建或实施云端 change；暂不选择 Azure/AWS/GCP，也不要实际部署 Sites。
+>
+> AI 第一版需要支持 OpenAI Responses-compatible 与 OpenAI Chat Completions-compatible 两种协议、OpenAI 官方 preset 和自定义 OpenAI-compatible preset。`gpt-5.6-terra` 是推荐默认值，不再强制；启用前必须通过 capability probe，不满足契约时明确阻断，不自动换模型、改协议或降低卡片契约。
+>
+> X 默认关闭且允许无凭据完成向导；飞书默认跳过。未配置时不得发起真实请求或制造失败积压。
+>
+> 完成修订规格审查、独立代码复核、完整自动化测试和 `test_verify` 后重新回到 `user_accept` 等我验收。当前不得 complete `user_accept`，不得归档。
 <!-- HARNESS:USER_VOICE_END -->
 
 ## 需求分析
@@ -586,6 +600,10 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - 实时或准实时获取与定期补偿相结合的可靠性设计。
 - 外部 API、AI、通知、认证和存储的适配器边界。
 - 验收后的 spec-bound repair lane：第 1 类问题做最小修复；第 2 类先补规范与测试清单；第 3 类另开 change；第 4 类先复现和解释。
+- Windows 自包含 Electron `.exe`、数据库未启动时可用的 GUI 首次设置向导，以及托盘生命周期。
+- Docker/Compose/虚拟化/端口/磁盘/目录权限的中文环境检查；只管理 Serenity 自己的 MySQL、Redis、API 与 worker。
+- Electron `safeStorage`/Windows DPAPI vault、窄 IPC、两名家庭账号的随机盐 `scrypt` 摘要、备份和脱敏诊断。
+- OpenAI Responses-compatible 与 Chat Completions-compatible adapter registry，以及启用前 capability probe。
 
 ### 明确不在本 change 范围
 
@@ -594,12 +612,13 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - 微信个人号自动化、QQ/微信 Hook、浏览器 Cookie/模拟登录抓取、原生移动 App。
 - 面向公众的 SaaS、多租户或超出单信息源闭环的提前抽象。
 - 在 License 未明确前复制参考仓库的代码或数据。
+- Sites 主网页、电脑关机后持续运行、云端 API/worker/MySQL/Redis、云端 KMS、远程 HTTPS/安全访问、云端备份和 Azure/AWS/Google Cloud 选择；这些只记录为第二阶段约束，本轮不创建 change、不实现、不部署。
 
 ### 默认假设与约束
 
 - 优先复用 React 19 + Vite 7、NestJS 11、Drizzle/MySQL、BullMQ/Redis、Vitest 与现有部署骨架，不重建项目或替换技术栈。
 - 第一阶段只实现一个可选生产通知渠道；其他渠道只保留明确、最小的适配器扩展点。`FEISHU_ENABLED=false` 为默认值：禁用时不创建 delivery、不入队、不重试、不计入失败积压，只保留“符合提醒条件”的评分事实；只有显式启用后配置不完整才进入待配置状态。网页归档、OpenAI 分析、搜索和查看始终不依赖飞书。
-- AI 第一版固定使用 OpenAI `gpt-5.6-terra`，经服务端适配器调用 Responses API 并使用严格结构化输出；provider、model 和凭据均由配置注入，业务层不得依赖 OpenAI SDK 类型。
+- AI 第一版支持 OpenAI Responses-compatible 与 Chat Completions-compatible 两种协议；OpenAI 官方 preset 推荐 `gpt-5.6-terra`，但 model、协议和 base URL 可由 GUI 配置。业务层只依赖 `ResearchModelAdapter`，启用必须通过 capability probe。
 - X Developer 账号、credits、Bearer Token、OpenAI API Key、飞书 Webhook/签名密钥、私有部署和认证尚未配置，不阻塞 SDD，但会限制相应真实联调和最终验收；飞书缺失不限制核心网页闭环验收。
 - Mock、自动化测试、真实外部 API 联调和人工配置/验收必须分别记录，禁止互相冒充。
 - 参考仓库当前未发现明确 License，只能参考高层方法，不作为生产实时数据源，也不复制代码或数据。
@@ -613,7 +632,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - `openspec/COVERAGE.md` 对当前 10 个工程骨架元素报告 100% 覆盖，同时明确业务能力尚无代码；因此不存在可复用的同义业务 capability，也不应把新需求并入 `project-foundation`。
 - `openspec/changes/` 除归档目录外只有当前 `build-serenity-intelligence-monitor`，没有冲突、重叠或待续做的旧 change。
 - 当前前端只是初始化占位页；后端只有静态资源托管和 `GET /api/health`；Drizzle schema 为空；MySQL/Redis 仅有配置读取和 Compose 基线，尚未建立连接、队列或业务表。
-- `.env.example` 与 Compose 仅有初始化占位变量，其中 `AI_API_KEY` 必须在实施时统一迁移为 `OPENAI_API_KEY`，并补齐 `AI_PROVIDER`、`OPENAI_MODEL`、`FEISHU_ENABLED`、`FEISHU_SIGNING_SECRET`、两个家庭账号摘要与 `APP_BASE_URL`；不得长期保留两套同义变量。
+- `.env.example` 只保留开发/测试路径；家庭生产路径由 Electron main 解密 vault 后通过私有进程 IPC 传递运行配置快照，不把 Secret 写入 `.env`、命令行参数、Docker inspect 或普通环境文件。
 - Capability 决策：复用 `project-foundation` 作为不变的工程前提；本 change 新增五个业务 capability，不写 `MODIFIED project-foundation`，避免把业务要求混入基础规格。
 - 扫描未发现会阻止 proposal 确认的冲突。
 
@@ -625,7 +644,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - [ ] **AC-3** `[AI自测]`：重复轮询、补偿拉取、任务重试或服务重启不会产生重复内容、重复研究卡片或重复通知；幂等键、游标和通知去重均有可重复测试。
 - [ ] **AC-4** `[AI自测]`：内容编辑、删除或变为不可访问时，系统按明确状态机更新记录，保留政策允许的审计元数据与处理历史，并能安全重处理；策略不得违反 X 内容展示和开发者政策。
 - [ ] **AC-5** `[AI自测]`：中文研究卡片至少包含原文、忠实翻译、内容类型、Serenity 核心判断、历史观点变化、公司/Ticker/主题、明确证据、不确定性、AI 置信度和即时提醒结论，并以结构化字段区分 Serenity 原话、他人内容、AI 解释和未验证推断。
-- [ ] **AC-6** `[用户手动]`：使用 OpenAI `gpt-5.6-terra` 的真实 Responses API 调用抽查研究卡片时，输出通过严格结构化契约；翻译未把猜测写成事实，AI 未声称读取未实际获取的外链，未擅自生成未经证据验证的 A 股受益公司名单，观点变化证据不足时明确说明无法判断。
+- [ ] **AC-6** `[用户手动]`：使用已通过 capability probe 的真实 AI 配置抽查研究卡片时，输出通过严格结构化契约；OpenAI 官方 preset 以 `gpt-5.6-terra` 作为推荐回归样本但不是唯一合法模型。翻译不得把猜测写成事实，AI 不得声称读取未实际获取的外链或擅自生成无证据 A 股受益名单。
 - [ ] **AC-7** `[AI自测]`：重要性由可配置的结构化规则和可解释分项共同决定；高价值 fixture 进入通知队列，普通/低价值 fixture 仅归档，阈值变化可测试且不由模型任意覆盖。
 - [ ] **AC-8** `[AI自测]`：通知具有稳定去重键、发送状态、失败原因和可重试机制；明确区分确认失败与发送结果未知，模拟发送失败、超时与重试后不静默丢失，也不会对结果未知的发送进行盲目自动重发。
 - [ ] **AC-9** `[用户手动]`：飞书是可选的重要消息提醒渠道。显式启用并配置真实飞书机器人时必须使用安全签名，高价值内容能向提出需求的用户控制的私有飞书群发送一条不泄露 Secret、可追溯到私有详情页的提醒；默认禁用时不创建发送任务或失败积压，网页归档、OpenAI 分析、搜索和查看仍正常运行；显式启用但缺少 Webhook 或签名密钥时才显示通知待配置。
@@ -633,12 +652,19 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - [ ] **AC-11** `[回写后测]`：用户可对研究卡片提交“重要、已知、不相关、继续跟踪、翻译有误、分析有误”等反馈，反馈可追溯到用户、卡片和时间且不会篡改原始内容。
 - [ ] **AC-12** `[回写后测]`：运行状态页区分 ingestion run 的轮询/补偿模式，并展示 ingest、上下文补全、AI 分析、重要性评分、可选通知和 worker heartbeat；失败/阻断/结果未知任务包含可理解原因与符合资格的恢复入口。健康环境下，从首次成功观察到一条 X 内容到其研究卡片可在网页查看的默认目标为 30 分钟，实际耗时和超目标原因必须可见。
 - [ ] **AC-13** `[AI自测]`：模拟数据源中断、限流、上下文补全失败、模型失败、通知失败和进程重启后，任务状态可恢复或进入明确的终态/死信处理，不存在静默成功或静默丢失。
-- [ ] **AC-14** `[用户手动]`：来自帖子、引用、网页和历史档案的文本被作为不可信数据封装；自动化测试证明模型无工具/Secret 通道和输出校验边界，真实 OpenAI `gpt-5.6-terra` 固定对抗样本的人工抽查证明恶意文本未成为事实结论；Mock 不得冒充真实模型语义验证。
+- [ ] **AC-14** `[用户手动]`：来自帖子、引用、网页和历史档案的文本被作为不可信数据封装；自动化测试证明模型无工具/Secret 通道和输出校验边界，已启用真实模型的固定对抗样本人工抽查证明恶意文本未成为事实结论；Mock 不得冒充真实模型语义验证。
 - [ ] **AC-15** `[AI自测]`：前端产物、普通 API 正文、日志、错误页、测试快照和 Git 扫描均不泄露 Token、Webhook、第三方/金融 Cookie、管理员凭据、可复用会话 Token 或证券账户信息；允许认证接口设置符合 HttpOnly、SameSite 与 Secure 策略的本站会话 Cookie，允许保存公开 X 来源标识和内部 actor ID；Secret 只从服务端配置读取，缺失时失败可见。
 - [ ] **AC-16** `[AI自测]`：系统不存在券商、证券账户、持仓导入、行情交易、自动买卖指令、浏览器 Cookie/模拟登录抓取或微信/QQ Hook 接口；相关越界输入被拒绝或仅作为不可信研究文本处理。
-- [ ] **AC-17** `[AI自测]`：AI 与 X 调用记录供应商/模型或 API 版本、调用状态和可审计的成本计量；预算或速率上限触发时停止新增外部调用并显示原因，不以静默降质兜底。
+- [ ] **AC-17** `[AI自测]`：AI 与 X 调用记录 provider preset、protocol、base URL host、requested/actual model 或 API 版本、local/provider request ID、usage、价格版本与费用；预算或速率上限触发时停止新增外部调用并显示原因，不以静默降质兜底。
 - [ ] **AC-18** `[用户手动]`：最终验收报告逐项区分自动化测试、Mock、真实 X/OpenAI API、可选的真实飞书 API 和待人工配置/验证；Docker、部署、认证或所需外部凭据未实际验证的部分不得标记为通过，未启用飞书不得导致核心网页闭环判定失败。
-- [ ] **AC-19** `[用户手动]`：使用同一条真实 Serenity 内容贯穿 X 获取、回复/引用上下文、OpenAI `gpt-5.6-terra`、研究卡片、重要性评分和同一私有详情页，所有阶段 ID 可追溯；若已配置带安全签名的飞书，再验证其提醒指向同一详情页。父亲不打开 X、不阅读英文原文，仅凭中文卡片即可准确回答“发生了什么、谁说的、证据是什么、哪里不确定”。另用一条真实普通/低价值内容验证其可检索但不发送提醒，并人工走通登录、筛选、反馈与状态查看。缺少核心真实外部凭据或目标环境时本项保持未验收，但飞书未配置不阻塞核心闭环。
+- [ ] **AC-19** `[用户手动]`：使用同一条真实 Serenity 内容贯穿 X 获取、回复/引用上下文、已通过 probe 的真实 AI、研究卡片、重要性评分和同一私有详情页，所有阶段 ID 可追溯；若已配置带安全签名的飞书，再验证其提醒指向同一详情页。父亲不打开 X、不阅读英文原文，仅凭中文卡片即可准确回答“发生了什么、谁说的、证据是什么、哪里不确定”。
+- [ ] **AC-20** `[用户手动]`：在全新 Windows 用户目录中运行自包含 `.exe`，目标电脑无需安装 Node；数据库尚未启动时 GUI 仍可打开，并能只通过界面完成首次设置、启动 Serenity 和打开本机私有网页，正常路径不要求终端或手工编辑 `.env`。
+- [ ] **AC-21** `[AI自测]`：启动器以中文检查 Windows、Docker Desktop、Docker engine、Compose、虚拟化、端口、磁盘空间和目录权限；Docker 缺失或未运行时保持 GUI 可用，说明用途、官方安装入口与复查动作，不静默安装或伪装健康。
+- [ ] **AC-22** `[AI自测]`：Electron main 使用 `safeStorage`/Windows DPAPI 保存 Secret，preload 只暴露窄 IPC；Secret 不进入 renderer 持久化、URL、日志、错误详情、Git、命令行参数、普通环境文件或 Docker inspect，保存后读取接口只返回是否已配置。
+- [ ] **AC-23** `[AI自测]`：启动器按固定顺序管理 Serenity 自己的 MySQL、Redis、migration、API、worker 与健康检查；关闭窗口缩入托盘，只有明确“停止 Serenity 并退出”才停止服务，且不得关闭 Docker Desktop 或其他 Compose project。
+- [ ] **AC-24** `[AI自测]`：GUI 可配置 provider preset、协议、base URL、API Key、model、reasoning、输入/输出价格、单次预算和每日预算；Responses-compatible 与 Chat Completions-compatible 均有契约测试，启用前 probe 验证认证、requested/actual model、严格 schema、完整卡片、来源、response ID、usage 和错误分类，不兼容时阻断且不自动降级。
+- [ ] **AC-25** `[AI自测]`：X 默认关闭并可无凭据完成向导，未配置时零真实请求且明确显示“X 未配置，尚未进行真实同步”；飞书默认跳过，未配置时零 delivery、零通知任务和零失败积压，启用时 Webhook 与签名密钥必须成对填写并通过签名测试。
+- [ ] **AC-26** `[用户手动]`：启动器可创建 MySQL 一致性备份、非敏感配置清单、版本信息和 DPAPI 密文副本，并可导出只含脱敏健康/错误信息的诊断包；跨电脑或 Windows 用户恢复时必须重新输入 Secret，诊断 canary 命中时拒绝导出。
 <!-- HARNESS:AC_LIST_END -->
 
 ## 关联 Spec
@@ -654,6 +680,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - `importance-and-notification`：结构化重要性判断、可解释评分、通知选择与通知去重。
 - `private-research-workspace`：私有访问、归档检索、时间线、详情、筛选与用户反馈。
 - `operations-and-recovery`：处理状态、错误追踪、重试恢复、成本可见性与运行状态。
+- `launcher-and-bootstrap`：Windows 自包含启动器、GUI bootstrap、环境检查、配置安全和服务生命周期。
 
 最终 capability 边界将在 design/specs 阶段结合现有代码与审查结果收敛；不因初始拆分主动扩大范围。
 
@@ -674,7 +701,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 1. X 获取方式：以周期轮询 + 游标/时间窗补偿为稳定基线，还是加入 Filtered Stream；真实套餐、credits、速率限制与内容展示政策以实际账号验证为准。
 2. 内容生命周期：编辑、删除、不可访问内容保存哪些审计字段、是否继续展示正文、保留期限及政策约束。
 3. 私有认证：已确定两个预配置家庭账号、同一权限、无注册/多角色；部署时仍需配置各自密码摘要、HTTPS 外网边界和凭据轮换操作。
-4. AI 成本与运行参数：OpenAI `gpt-5.6-terra` 已确定；仍需在实施/部署时配置预算上限、reasoning effort、超限行为、模型版本记录和重试边界。
+4. AI 成本与运行参数：`gpt-5.6-terra` 仅作为 OpenAI 官方推荐 preset；预算、reasoning、价格和 model 由 GUI 配置，只有 probe 通过的配置可启用。
 5. 飞书机器人：可选渠道与安全签名已确定；仍需在部署时配置接收目标、Webhook、签名密钥、限流、失败重试和消息去重。
 6. 部署环境：服务器/云环境、MySQL/Redis 可用性、HTTPS、域名、备份、日志与监控；Docker 缺失时的验证替代方案。
 7. 历史数据：参考仓库 License 未明确时，仅用官方 X API 获取的历史范围，还是等待授权后再考虑导入。
@@ -687,8 +714,8 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - X 获取：以官方用户帖子接口的周期轮询、游标和重叠时间窗补偿作为可靠基线；仅在套餐、credits 和稳定性验证支持时加入 Filtered Stream，实时通道不能替代补偿。
 - 内容生命周期：保存平台 ID、状态变化和处理审计；正文展示/保留服从 X 政策，删除或不可访问内容默认在私有站点隐藏正文并保留最小 tombstone 元数据，最终细节由 design 核对政策后确定。
-- 私有认证：第一阶段为父亲和提出需求的用户各配置一个同权限家庭账号，无公开注册、无角色系统、服务端 Redis 会话和强 Session Secret；密码只以 `scrypt` 摘要配置。凭据轮换时撤销该 actor 全部会话，生产外网访问必须使用 HTTPS。
-- AI：第一版落地 `OpenAIResearchModelAdapter`，通过 Responses API 调用 `gpt-5.6-terra` 的严格结构化输出且不启用工具；`AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra` 与凭据/预算均由服务端配置注入。业务层只依赖 `ResearchModelAdapter`，以后可替换模型或供应商；预算超限时停止分析并显示待处理，不自动换低质量模型。
+- 私有认证：第一阶段为父亲和提出需求的用户各配置一个同权限家庭账号，无公开注册、无角色系统、服务端 Redis 会话和强 Session Secret；密码由 GUI 在 main 内生成 `scrypt` 摘要。凭据轮换时撤销该 actor 全部会话；第一版本机回环 profile 不开放外网，HTTPS 时 Cookie 必须 Secure，经验证的回环 HTTP 例外不得监听非回环地址。
+- AI：第一版落地 `ProviderAdapterRegistry`、Responses-compatible 与 Chat Completions-compatible adapter；OpenAI 官方 preset 推荐 `gpt-5.6-terra`，自定义 preset 可配置协议、base URL 与 model。业务层只依赖 `ResearchModelAdapter`；预算超限或 probe 不兼容时停止分析并显示待处理，不自动换模型、改协议或降低卡片契约。
 - 通知：私有网页是主要入口；飞书自定义机器人是唯一可选生产提醒渠道，第一版通过提出需求的用户控制的私有飞书群 Webhook 接收，父亲无需使用。默认 `FEISHU_ENABLED=false` 且不创建 delivery；启用飞书必须同时配置 Webhook 与安全签名密钥。QQ/邮件仅保留适配器边界，不在本 change 实现。
 - 部署：单实例应用 + MySQL 8 + Redis 7 为第一阶段目标，不引入多租户或高可用集群；Docker/Compose 在有可用环境后补真实验证。
 - 历史数据：参考仓库 License 未明确期间不复制或导入其代码和数据，只参考高层方法；历史关联首先使用官方 API 实际可得范围。

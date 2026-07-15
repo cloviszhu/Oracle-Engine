@@ -173,3 +173,90 @@
 
 - 当前 commit: `f6302ecc34e21f0d51e47f34ea19220b9f6dcada`
 - 差异说明: 最新审查会话记录的 proposal、design、tasks、test-checklist 与 council log 文件哈希逐项完全一致；commit 差异仅由审查基线提交 `38a1912` 和 Harness `user_confirm` 状态检查点 `f6302ec` 产生，不包含行为、接口、spec、tasks 或 TC 的实质变更，因此按 COORD-6 放行实现。
+
+## Debate Session 2026-07-15T10:05:20Z
+
+- scenario: B（`user_accept` 反馈触发的现有 change 需求变更；Harness progress 保持原 scenario A）
+- reviewed_at_commit: `c72a3c669f2e121c8c4917663121bb0e1fdff0b0`
+- reviewed_files:
+  - proposal.md: `9b5e6ebc54b72107de8836b15dd7c15848a11a46`
+  - design.md: `6816c21823ad0d1f2c26b389aa052757de75b885`
+  - tasks.md: `371beeb1cd5e3077bc45c9dfb99379301ebeb4c6`
+  - test-checklist.md: `6d8857426135ba5b08d40f6aff78007d51ec3a81`
+  - .council-review.log: `d319cfc2fd097f6dad1aa53ff11f0bb2adff8399`
+- rounds: 2
+- status: CONVERGED
+
+### 第 1 轮
+
+- 确定性追溯通过，但人工对照用户修订原话、旧 delta spec 和旧 tasks 历史发现 2 个 P1：
+  1. `research-context-and-card` 的旧 requirement 仍把 `openai/gpt-5.6-terra` 作为唯一批准组合，与新双协议 registry/probe 冲突。
+  2. 飞书、详情深链和部署验收仍要求绝对 HTTPS URL，与第一版仅同机回环访问冲突，并会让手机端提醒被误解为可直接打开网页。
+- 处置：将模型 requirement 改为“仅使用已通过 probe 的 Responses-compatible/Chat Completions-compatible 配置”，把 `gpt-5.6-terra` 保留为 OpenAI 官方推荐 preset 回归；将通知统一为内容 ID + 本机回环 URL + 仅同机可打开说明，并补足回环 HTTP/HTTPS Cookie 规则。
+
+### 第 2 轮
+
+- `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`: passed。
+- `check_traceability.py`: passed；26 AC / 52 TC / 50 Task 全部闭环。
+- Harness `embed-check`: passed；`git diff --check`: passed。
+- 人工复核 Group 9～14 均为未完成状态，旧 Group 1～8 只保留历史实现；固定模型、家庭生产 `.env`、API/worker 容器和远程 HTTPS 链接冲突均已明确被修订任务取代。
+- 人工复核第二阶段边界：Sites、关机后持续运行、云端服务/KMS、远程访问、云端备份和云厂商选择没有进入 AC、TC 或 Task。
+- 未发现未解决 P0/P1。
+
+## 追溯链路校验
+
+### R1: TC 全覆盖
+
+- 总 TC 数: 52
+- 已覆盖: 52
+- 未覆盖: 无
+
+### R2: Task 全用
+
+- 总 Task 数: 50
+- 已标注覆盖: 50
+- 未标注: 无
+
+### R3: AC 闭环
+
+| AC | 对应 TC | 对应 Task |
+|---|---|---|
+| AC-1 | TC-1.1, TC-1.2 | Task 2.1, Task 2.4, Task 8.1 |
+| AC-2 | TC-2.1, TC-2.2 | Task 3.1, Task 3.4 |
+| AC-3 | TC-3.1, TC-3.2 | Task 1.2, Task 2.2, Task 7.1 |
+| AC-4 | TC-4.1, TC-4.2 | Task 2.3, Task 2.4 |
+| AC-5 | TC-5.1, TC-5.2 | Task 3.2, Task 3.4, Task 12.2 |
+| AC-6 | TC-6.1, TC-6.2 | Task 3.3, Task 12.2, Task 12.3 |
+| AC-7 | TC-7.1, TC-7.2 | Task 4.1 |
+| AC-8 | TC-8.1, TC-8.2 | Task 8.4, Task 8.6 |
+| AC-9 | TC-9.1, TC-9.2 | Task 8.5, Task 13.2 |
+| AC-10 | TC-10.1, TC-10.2 | Task 5.1, Task 6.1, Task 10.2, Task 13.3 |
+| AC-11 | TC-11.1, TC-11.2 | Task 5.3, Task 6.4 |
+| AC-12 | TC-12.1, TC-12.2 | Task 5.4, Task 6.4, Task 11.3, Task 13.3 |
+| AC-13 | TC-13.1, TC-13.2 | Task 7.1, Task 7.2 |
+| AC-14 | TC-14.1, TC-14.2 | Task 7.3, Task 12.2 |
+| AC-15 | TC-15.1, TC-15.2 | Task 1.4, Task 7.3, Task 10.1, Task 10.3 |
+| AC-16 | TC-16.1, TC-16.2 | Task 7.3 |
+| AC-17 | TC-17.1, TC-17.2 | Task 7.4, Task 12.1, Task 12.3 |
+| AC-18 | TC-18.1, TC-18.2 | Task 8.2, Task 14.2, Task 14.3 |
+| AC-19 | TC-19.1, TC-19.2 | Task 8.7, Task 12.2, Task 14.2 |
+| AC-20 | TC-20.1, TC-20.2 | Task 9.1, Task 9.2, Task 10.2, Task 11.3, Task 13.1, Task 14.2 |
+| AC-21 | TC-21.1, TC-21.2 | Task 11.1, Task 13.1, Task 14.2 |
+| AC-22 | TC-22.1, TC-22.2 | Task 9.1, Task 10.1, Task 10.3, Task 14.1 |
+| AC-23 | TC-23.1, TC-23.2 | Task 9.1, Task 11.2, Task 11.3 |
+| AC-24 | TC-24.1, TC-24.2 | Task 12.1, Task 12.2, Task 12.3, Task 13.1 |
+| AC-25 | TC-25.1, TC-25.2 | Task 13.2, Task 13.3 |
+| AC-26 | TC-26.1, TC-26.2 | Task 14.1, Task 14.2, Task 14.3 |
+
+### 分歧与处置
+
+- P0: 无。
+- P1: 无；首轮两项冲突已回写并在第二轮复核通过。
+- P2/P3:
+  1. 当前开发机没有 Docker 命令；真实 Windows `.exe`、Docker Desktop、DPAPI/ACL、回环绑定和备份恢复证据必须在目标环境补齐。
+  2. 真实 X、真实 AI、自定义 endpoint 和可选真实飞书尚未验证；Mock 只能证明协议与错误分类。
+  3. “OpenAI-compatible”只承诺 probe 覆盖的必要子集；不同 endpoint 的认证、结构化输出、usage、request ID、限流和价格语义不做零适配承诺。
+  4. 飞书提醒中的回环 URL 只能在运行 Serenity 的同一台电脑打开；跨设备或公网访问延期。
+  5. Sites、关机后持续运行、云端服务/KMS、远程访问和云厂商选择继续延期，不创建或实施 change。
+- 用户裁决原话: 已完整保留在 proposal 的“2026-07-15 `user_accept` 验收修订原话”。
+- 风险说明: 规格收敛不等于功能实现或真实环境通过；Group 9～14 在用户确认前不得实施，完成后必须重新独立代码复核、完整验证和 Harness `test_verify`，再回到 `user_accept`。

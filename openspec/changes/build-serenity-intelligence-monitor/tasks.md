@@ -599,7 +599,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 1.1: 建立业务配置、容量和运行时边界契约
 
 - [x] [完成] Task 1.1
-  - 实现细节: 以 Zod 定义数据库、Redis、两个同权限家庭账号（actor/用户名/`scrypt` 摘要）、会话、`APP_BASE_URL`、X、`AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra`、`OPENAI_API_KEY`、OpenAI 预算、`CORE_VISIBILITY_SLO_MINUTES=30`、`FEISHU_ENABLED=false`、可选 `FEISHU_WEBHOOK_URL` 与必配配对的 `FEISHU_SIGNING_SECRET`、生产同步/政策确认、阈值、轮询/补偿/lease/最大 attempt、外部 deadline、worker 并发和上下文/输入输出/raw payload 上限；第一版生产配置只接受 `openai/gpt-5.6-terra`，错误 provider/model 直接阻断启动/分析，不静默替换；区分核心生产必填、可选通知配置与测试注入，不回显实际值，不保留旧 `AI_API_KEY` 同义入口。
+  - 实现细节: 修订前历史基线以 Zod 定义数据库、Redis、两个账号、会话、X、固定 OpenAI preset、预算、飞书和运行上限；该任务已验证的配置解析仍保留，但“生产只接受 `openai/gpt-5.6-terra`”与家庭 `.env` 入口已被 Group 10/12 的 GUI 快照、registry 和 probe 修订任务取代，不再作为最终约束。
   - **覆盖测试用例**: TC-15.1, TC-15.2, TC-17.2
 ### Task 1.2: 定义 Drizzle 业务 schema、版本历史、状态机和迁移
 
@@ -813,7 +813,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 8.5: 实现可选且强制安全签名的飞书适配器
 
 - [x] [完成] Task 8.5
-  - 实现细节: 飞书第一版只向提出需求用户控制的私有飞书群发送重要提醒，不实现个人私聊/任意定向。显式启用时要求 Webhook 与签名密钥成对存在，并按平台协议生成带时间戳安全签名；发送保留来源/不确定性标签的分层摘要、重要性理由和由 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；完全脱敏 Webhook/签名，区分明确失败与结果未知。默认禁用时不创建任务；QQ/邮件不实现。
+  - 实现细节: 飞书第一版只向提出需求用户控制的私有飞书群发送重要提醒，不实现个人私聊/任意定向。显式启用时要求 Webhook 与签名密钥成对存在并生成带时间戳安全签名；修订前绝对 HTTPS 详情链接假设由 Group 13 改为内容 ID + 仅同机可打开的回环 URL。完全脱敏 Webhook/签名，区分明确失败与结果未知；默认禁用时不创建任务。
   - **覆盖测试用例**: TC-9.1, TC-9.2, TC-15.1, TC-17.1
 
 ### Task 8.6: 增加禁用、误配置、签名、重复和结果未知测试
@@ -825,9 +825,161 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 ### Task 8.7: 执行同一真实内容闭环和浏览器人工验收
 
 - [x] [完成] Task 8.7
-  - 实现细节: 若用户提供核心凭据与目标环境，以同一真实内容追踪 X→context→OpenAI `gpt-5.6-terra`→score→绝对 HTTPS 私有详情，另用真实普通内容校准低打扰；技术验收者核对来源、provider 审计和阶段 ID，父亲再用自己的账号且不打开 X/英文，仅凭中文卡片回答发生了什么、谁说的、证据与不确定性；同时验证两个家庭账号、搜索/筛选、actor 可追溯反馈、状态和固定 Prompt Injection 样本。若已配置带安全签名的飞书，再把 delivery 加入同一链路；默认禁用时记录渠道 disabled，不阻塞核心网页闭环。缺少核心依赖时明确保留未验收，不用 Mock/截图样例/本地非容器运行替代。
+  - 实现细节: 修订前该任务定义了同一真实内容端到端人工验收，但因核心凭据与目标环境缺失保持待验。Group 12/14 将 AI 阶段改为已通过 probe 的真实配置，将详情改为同机回环 URL，并在 Windows 打包应用与真实 Docker 目标环境重新执行；旧 Mock/截图/本地非容器结果仍不得冒充。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2, TC-10.1, TC-11.1, TC-12.1, TC-14.2, TC-18.1, TC-18.2, TC-19.1, TC-19.2
 
 - [x] [自测] 先运行 `pnpm test -- server/notifications server/infrastructure/notifications` 验证禁用/误配置/签名/超时，再按顺序运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、`python "C:\Users\zhuhongyu06\.codex\skills\spec-review-debate\scripts\check_traceability.py" "openspec/changes/build-serenity-intelligence-monitor"`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；全部退出码为 0，追溯报告 `passed=true`，未验证外部证据保持待测
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，逐项确认完成单账号可靠闭环且所有外部未验证项被如实保留
 - [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 8`
+
+> 2026-07-15 修订说明：Group 1～8 保留为已完成的原始研究闭环历史；其中固定 `openai/gpt-5.6-terra`、家庭生产 `.env`、API/worker 容器运行和开发者命令交付假设由 Group 9～14 取代。未受影响的获取、上下文、卡片、评分、网页、反馈和可选飞书实现不得重做。
+
+## Group 9: Electron 壳、共享 IPC 契约与 Windows 打包
+
+[验收映射] AC-20, AC-22, AC-23
+
+### Task 9.1: 建立 Electron main/preload/renderer 与窄 IPC
+
+- [ ] [完成] Task 9.1
+  - 实现细节: 新建 `desktop/main/`、`desktop/preload/`、`desktop/renderer/` 与 `shared/desktop/contracts.ts`；生产窗口启用 `contextIsolation`、sandbox、严格 CSP，关闭 Node integration；只暴露设置状态、环境检查、保存、probe、启停、健康、打开网页、备份和诊断方法，禁止通用 IPC、文件系统、shell 和进程执行。
+  - **覆盖测试用例**: TC-20.1, TC-20.2, TC-22.1, TC-22.2, TC-23.1
+
+### Task 9.2: 配置 Electron 构建和自包含 Windows 产物
+
+- [ ] [完成] Task 9.2
+  - 实现细节: 增加 `electron.vite.config.ts`、`electron-builder.yml`、桌面构建/测试脚本与依赖；打包编译后的 API、worker、React 网页、Compose 资源和 Electron Node 运行时，目标电脑无需安装 Node；安装产物进入 Secret 扫描。
+  - **覆盖测试用例**: TC-20.1, TC-20.2, TC-22.1
+
+- [ ] [自测] 运行 `pnpm test -- desktop/renderer desktop/main shared/desktop`、`pnpm check`、`pnpm build:desktop` 和安装产物 Secret 扫描；产物可启动且 preload 越权接口测试全部失败关闭
+- [ ] [原声对账] 确认普通使用不要求 Node、终端或 `.env`，第一版仍只支持 Windows 本机
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 9`
+
+## Group 10: DPAPI vault、家庭账号和运行配置快照
+
+[验收映射] AC-10, AC-15, AC-20, AC-22
+
+### Task 10.1: 实现非敏感配置库和 DPAPI vault
+
+- [ ] [完成] Task 10.1
+  - 实现细节: 在 `%LOCALAPPDATA%\Serenity` 分离非敏感元数据与加密 vault；使用 Electron `safeStorage` 和当前用户 ACL，失败时明确阻断且不回退明文；所有 IPC 读取只返回 `configured`、更新时间和脱敏标识。
+  - **覆盖测试用例**: TC-15.1, TC-15.2, TC-22.1, TC-22.2
+
+### Task 10.2: 通过 GUI 生成两个账号摘要并撤销会话
+
+- [ ] [完成] Task 10.2
+  - 实现细节: main 接收两个不同用户名/密码，使用随机盐和现有 `scrypt` 契约生成摘要并丢弃明文引用；同密码摘要不同；修改任一密码后撤销该 actor 会话；设置读取不返回摘要或密码。
+  - **覆盖测试用例**: TC-10.1, TC-20.1, TC-20.2, TC-22.1
+
+### Task 10.3: 用私有进程 IPC 取代家庭生产 `.env`
+
+- [ ] [完成] Task 10.3
+  - 实现细节: 将 `server/infrastructure/runtime-config.ts` 拆为开发环境入口与 `RuntimeConfigSnapshot` 校验；Electron main 解密后只向受控 `utilityProcess` 发送一次性快照；Secret 不进入命令行、普通环境文件、Docker inspect 或日志。
+  - **覆盖测试用例**: TC-15.1, TC-15.2, TC-22.1, TC-22.2, TC-23.1
+
+- [ ] [自测] 运行 `pnpm test -- desktop/config server/infrastructure/runtime-config.test.ts server/auth` 与 `pnpm audit:secrets`；canary 在 IPC/renderer/日志/错误/配置元数据/命令行零命中
+- [ ] [原声对账] 明确 DPAPI 不抵御同一 Windows 用户权限下恶意程序，跨用户恢复必须重输 Secret
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 10`
+
+## Group 11: 环境检查、Compose 和受控服务生命周期
+
+[验收映射] AC-12, AC-20, AC-21, AC-23
+
+### Task 11.1: 实现中文环境检查器
+
+- [ ] [完成] Task 11.1
+  - 实现细节: 检查 Windows 版本、Docker Desktop、engine、Compose、虚拟化、端口、磁盘和目录权限；每项返回稳定 code、pass/warning/fail、中文说明和下一步操作；Docker 缺失时提供官方入口与复查，不静默安装。
+  - **覆盖测试用例**: TC-21.1, TC-21.2
+
+### Task 11.2: 将 Compose 收敛为回环 MySQL/Redis
+
+- [ ] [完成] Task 11.2
+  - 实现细节: 修改 `docker-compose.yml` 只运行 MySQL/Redis，端口只绑定 `127.0.0.1` 的随机或已验证值；使用固定 Serenity project name，禁止停止 Docker Desktop、其他 project 或其他容器。
+  - **覆盖测试用例**: TC-20.1, TC-21.2, TC-23.1, TC-23.2
+
+### Task 11.3: 实现 migration、API/worker `utilityProcess` 编排
+
+- [ ] [完成] Task 11.3
+  - 实现细节: 启动顺序为目录/端口→Docker→MySQL/Redis 健康→幂等 migration→API 健康→worker heartbeat→打开网页；停止顺序为停止新任务→worker 可恢复边界→API→Serenity 容器；关闭窗口缩入托盘，重复启停幂等。
+  - **覆盖测试用例**: TC-12.1, TC-12.2, TC-20.1, TC-23.1, TC-23.2
+
+- [ ] [自测] 运行 `pnpm test -- desktop/environment desktop/runtime server/infrastructure/worker-runtime.test.ts`；fake controller 覆盖逐阶段失败与非 Serenity 容器保护
+- [ ] [原声对账] 当前开发机没有 Docker，Mock 只证明编排契约，真实生命周期保持目标环境待验
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 11`
+
+## Group 12: AI provider registry、双协议 adapter 和 capability probe
+
+[验收映射] AC-5, AC-6, AC-14, AC-17, AC-19, AC-24
+
+### Task 12.1: 扩展运行配置和 ProviderAdapterRegistry
+
+- [ ] [完成] Task 12.1
+  - 实现细节: GUI/共享契约支持 provider preset、protocol、base URL、API Key、model、reasoning、输入/输出价格、单次/每日预算；registry 注册 OpenAI 官方与自定义 preset、Responses-compatible 与 Chat Completions-compatible；原生 Anthropic/Gemini 只保留扩展边界。
+  - **覆盖测试用例**: TC-17.1, TC-17.2, TC-24.1, TC-24.2
+
+### Task 12.2: 实现双协议严格结构化 adapter
+
+- [ ] [完成] Task 12.2
+  - 实现细节: Responses-compatible 使用 `text.format`，Chat Completions-compatible 使用 `response_format`；统一处理 refusal、不完整输出、卡片/source schema、response ID、usage、requested/actual model、429、超时、5xx 与认证错误；显式禁用 tools。
+  - **覆盖测试用例**: TC-5.1, TC-5.2, TC-6.1, TC-6.2, TC-14.1, TC-14.2, TC-24.1, TC-24.2
+
+### Task 12.3: 实现 capability probe 和审计迁移
+
+- [ ] [完成] Task 12.3
+  - 实现细节: 验证 URL/HTTPS、认证、模型、requested/actual model、严格 schema、完整卡片、来源、response ID、usage 和稳定错误分类；失败可保存为未启用但 worker 不使用；持久化 provider/protocol/host/request IDs/usage/价格版本/费用/prompt/schema/probe version。
+  - **覆盖测试用例**: TC-6.1, TC-17.1, TC-17.2, TC-24.1, TC-24.2
+
+- [ ] [自测] 运行 `pnpm test -- server/research server/infrastructure/ai`、`pnpm check`、`pnpm lint`；`gpt-5.6-terra` 官方 preset 回归快照通过，任一缺失能力均阻断且无自动 fallback
+- [ ] [原声对账] 不宣称任意模型零适配；价格只用用户配置，不从模型名猜测
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 12`
+
+## Group 13: GUI 首次设置、可选 X/飞书和日常管理
+
+[验收映射] AC-9, AC-10, AC-20, AC-21, AC-24, AC-25
+
+### Task 13.1: 实现数据库未启动时可用的首次设置向导
+
+- [ ] [完成] Task 13.1
+  - 实现细节: 向导依次呈现环境、两个账号、AI、X、飞书和完成页；AI 启用必须 probe；Secret 提交后清空且重新编辑不回显；完成页分别显示 MySQL/Redis/AI/X/飞书的成功、跳过或失败。
+  - **覆盖测试用例**: TC-20.1, TC-20.2, TC-21.1, TC-21.2, TC-22.1, TC-24.1, TC-24.2
+
+### Task 13.2: 落实 X/飞书默认关闭与显式测试门禁
+
+- [ ] [完成] Task 13.2
+  - 实现细节: X 默认关闭，未配置零真实请求/零同步任务并显示固定中文状态；启用需要 Token、政策确认和连接测试。飞书默认跳过，未配置零 delivery/任务/积压；启用需 Webhook 与签名密钥成对填写并通过签名测试。
+  - **覆盖测试用例**: TC-9.2, TC-25.1, TC-25.2
+
+### Task 13.3: 实现启动器日常管理和本机网页状态
+
+- [ ] [完成] Task 13.3
+  - 实现细节: 提供启动、停止、健康检查、打开网页、修改设置、备份、诊断入口；网页只绑定回环地址；启动器与网页同步显示 X 未真实同步、AI 未启用、飞书 disabled 和服务健康。
+  - **覆盖测试用例**: TC-10.1, TC-12.1, TC-12.2, TC-20.1, TC-23.1, TC-25.1
+
+- [ ] [自测] 运行 `pnpm test -- desktop/renderer client server/ingestion server/notifications`；GUI-only 首启、跳过路径、误配置和固定中文状态全部可判定
+- [ ] [原声对账] 父亲继续只用私有网页；X/飞书可跳过；第一版不开放跨设备或公网访问
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 13`
+
+## Group 14: 备份、脱敏诊断、目标环境验证和文档收敛
+
+[验收映射] AC-18, AC-20, AC-21, AC-22, AC-23, AC-24, AC-25, AC-26
+
+### Task 14.1: 实现一致性备份、恢复清单和脱敏诊断
+
+- [ ] [完成] Task 14.1
+  - 实现细节: 导出 MySQL 一致性备份、非敏感配置、版本和 DPAPI 密文副本；Redis 不作为可移植事实；跨电脑/用户要求重输 Secret。诊断仅含版本、健康、端口、容器、脱敏错误/日志，canary 命中即拒绝导出。
+  - **覆盖测试用例**: TC-22.1, TC-26.1, TC-26.2
+
+### Task 14.2: 执行 Windows 打包应用与真实 Docker 目标环境验收
+
+- [ ] [完成] Task 14.2
+  - 实现细节: 在带 Docker Desktop 的 Windows 目标环境执行全新 user-data GUI 首启、启动/停止、健康、migration、worker heartbeat、打开网页、备份恢复和安装产物扫描；无环境时必须保持待验，不得用 fake controller 冒充。
+  - **覆盖测试用例**: TC-18.1, TC-18.2, TC-20.1, TC-20.2, TC-21.2, TC-23.1, TC-23.2, TC-26.1
+
+### Task 14.3: 更新状态、项目地图、操作和验收文档
+
+- [ ] [完成] Task 14.3
+  - 实现细节: 更新 `README.md`、`docs/STATUS.md`、`docs/PROJECT_MAP.md`、`docs/OPERATIONS.md` 和验收报告；删除“准备进入 test_verify”等过时状态；严格区分自动化、Mock、真实 API、Windows/Docker 目标环境和用户手动证据，不提前声称修订功能已实现。
+  - **覆盖测试用例**: TC-18.1, TC-18.2, TC-26.1, TC-26.2
+
+- [ ] [自测] 运行 OpenSpec strict validate、追溯检查、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`、Electron 打包和安装产物扫描；完成独立代码复核后重新运行 Harness `test_verify`
+- [ ] [原声对账] Sites、云端、远程访问、关机后持续运行和云厂商选择只记延期约束，不创建/实施 change，不增加 `.openai/hosting.json`
+- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 14`

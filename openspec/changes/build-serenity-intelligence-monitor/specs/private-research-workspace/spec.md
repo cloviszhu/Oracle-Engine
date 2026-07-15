@@ -1,12 +1,33 @@
 ## ADDED Requirements
 
+### Requirement: 第一版私有网页必须只绑定本机回环地址
+家庭本地版第一版 MUST 只允许同一台 Windows 电脑通过回环地址访问私有网页；跨设备、公网和远程 HTTPS 访问 MUST 延期到后续 change。
+
+#### Scenario: 启动器打开私有网页
+- **WHEN** API 健康且认证用户选择“打开 Serenity”
+- **THEN** 系统浏览器打开经验证的本机回环 URL
+- **AND** API 和网页不得监听局域网或公网地址
+
+#### Scenario: 局域网设备尝试访问
+- **WHEN** 其他设备尝试连接家庭本地版端口
+- **THEN** 服务不接受非回环连接
+- **AND** UI 不把跨设备访问描述为当前已支持能力
+
+### Requirement: 设置和网页不得回显外部 Secret
+私有网页 MUST NOT 提供外部 Secret 读取接口；启动器设置页重新打开时 MUST 只显示是否已配置和允许的脱敏标识。
+
+#### Scenario: 用户重新编辑 AI、X 或飞书设置
+- **WHEN** 用户打开已有配置
+- **THEN** Secret 字段为空并显示已配置状态
+- **AND** 保存未修改的 Secret 不要求 renderer 读取或缓存原值
+
 ### Requirement: 私有站点必须使用两个同权限家庭账号的服务端会话
 系统 MUST 为父亲与提出需求的用户分别支持一个预配置家庭账号，两个账号权限相同且反馈 actor 独立；系统 MUST 禁止公开注册和角色管理，并 MUST 使用服务端会话保护除健康检查和登录外的全部 API 与页面数据。
 
 #### Scenario: 管理员登录成功
 - **WHEN** 任一预配置家庭用户提交自己的正确用户名和密码
 - **THEN** 系统使用恒定时间密码校验并建立有期限的 Redis 会话
-- **AND** 会话绑定该 actor，Cookie 设置 HttpOnly、SameSite=Strict 且生产环境设置 Secure
+- **AND** 会话绑定该 actor，Cookie 设置 HttpOnly、SameSite=Strict；HTTPS 时必须设置 Secure，仅经验证的回环 HTTP 本地 profile 可省略 Secure 且不得监听非回环地址
 
 #### Scenario: 两名家庭用户分别提交反馈
 - **WHEN** 父亲与提出需求的用户分别登录并对同一卡片提交反馈
@@ -88,8 +109,8 @@
 ### Requirement: 私有站点深链接必须可直接打开
 系统 MUST 对非 API 的客户端路由提供 SPA fallback，同时 MUST 保持 API 与静态资源的真实 404 语义。
 
-#### Scenario: 从飞书打开详情绝对链接
-- **WHEN** 已认证或完成登录后的用户直接访问 `/intelligence/:id`、`/timeline` 或 `/status`
+#### Scenario: 从本机链接打开详情
+- **WHEN** 已认证或完成登录后的用户在运行 Serenity 的同一台电脑访问 `/intelligence/:id`、`/timeline` 或 `/status`
 - **THEN** NestJS 返回 React 应用并恢复目标路由
 - **AND** 页面加载对应私有数据而不是返回服务器 404
 
