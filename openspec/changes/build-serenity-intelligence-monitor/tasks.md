@@ -860,25 +860,25 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 10.1: 实现非敏感配置库和 DPAPI vault
 
-- [ ] [完成] Task 10.1
+- [x] [完成] Task 10.1
   - 实现细节: 在 `%LOCALAPPDATA%\Serenity` 分离非敏感元数据与加密 vault；使用 Electron `safeStorage` 和当前用户 ACL，失败时明确阻断且不回退明文；所有 IPC 读取只返回 `configured`、更新时间和脱敏标识。
   - **覆盖测试用例**: TC-15.1, TC-15.2, TC-22.1, TC-22.2
 
 ### Task 10.2: 通过 GUI 生成两个账号摘要并撤销会话
 
-- [ ] [完成] Task 10.2
+- [x] [完成] Task 10.2
   - 实现细节: main 接收两个不同用户名/密码，使用随机盐和现有 `scrypt` 契约生成摘要并丢弃明文引用；同密码摘要不同；修改任一密码后撤销该 actor 会话；设置读取不返回摘要或密码。
   - **覆盖测试用例**: TC-10.1, TC-20.1, TC-20.2, TC-22.1
 
 ### Task 10.3: 用私有进程 IPC 取代家庭生产 `.env`
 
-- [ ] [完成] Task 10.3
+- [x] [完成] Task 10.3
   - 实现细节: 将 `server/infrastructure/runtime-config.ts` 拆为开发环境入口与 `RuntimeConfigSnapshot` 校验；Electron main 解密后只向受控 `utilityProcess` 发送一次性快照；Secret 不进入命令行、普通环境文件、Docker inspect 或日志。
   - **覆盖测试用例**: TC-15.1, TC-15.2, TC-22.1, TC-22.2, TC-23.1
 
-- [ ] [自测] 运行 `pnpm test -- desktop/config server/infrastructure/runtime-config.test.ts server/auth` 与 `pnpm audit:secrets`；canary 在 IPC/renderer/日志/错误/配置元数据/命令行零命中
-- [ ] [原声对账] 明确 DPAPI 不抵御同一 Windows 用户权限下恶意程序，跨用户恢复必须重输 Secret
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 10`
+- [x] [自测] 运行 `pnpm test -- desktop/config server/infrastructure/runtime-config.test.ts server/auth` 与 `pnpm audit:secrets`；canary 在 IPC/renderer/日志/错误/配置元数据/命令行零命中
+- [x] [原声对账] 明确 DPAPI 不抵御同一 Windows 用户权限下恶意程序，跨用户恢复必须重输 Secret
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 10`
 
 ## Group 11: 环境检查、Compose 和受控服务生命周期
 

@@ -160,6 +160,55 @@ export interface RuntimeConfig {
   };
 }
 
+const runtimeConfigSnapshotSchema = z.object({
+  nodeEnv: z.enum(['development', 'test', 'production']),
+  port: z.number().int().positive().max(65_535),
+  databaseUrl: z.string().url().startsWith('mysql://'),
+  redisUrl: z.string().url().startsWith('redis://'),
+  familyAccounts: z.array(familyAccountSchema).length(2),
+  session: z.object({ secret: z.string().min(32), ttlSeconds: z.number().int().positive().max(2_592_000) }).strict(),
+  appBaseUrl: z.string().url(),
+  x: z.object({
+    bearerToken: z.string().min(1).optional(),
+    productionSyncEnabled: z.boolean(),
+    policyConfirmed: z.boolean(),
+    pollIntervalSeconds: z.number().int().positive(),
+    compensationIntervalSeconds: z.number().int().positive(),
+  }).strict(),
+  ai: z.object({
+    provider: z.literal('openai'),
+    model: z.literal('gpt-5.6-terra'),
+    apiKey: z.string().min(1).optional(),
+    dailyBudgetCents: z.number().int().nonnegative(),
+    inputCostPerMillionCents: z.number().nonnegative().optional(),
+    outputCostPerMillionCents: z.number().nonnegative().optional(),
+    maxRequestCostCents: z.number().nonnegative().optional(),
+    reasoningEffort: z.enum(['low', 'medium', 'high']),
+  }).strict(),
+  feishu: z.discriminatedUnion('enabled', [
+    z.object({ enabled: z.literal(false), cooldownSeconds: z.number().int().positive() }).strict(),
+    z.object({ enabled: z.literal(true), webhookUrl: z.string().url(), signingSecret: z.string().min(1), cooldownSeconds: z.number().int().positive() }).strict(),
+  ]),
+  coreVisibilitySloMinutes: z.number().int().positive(),
+  importance: z.object({ threshold: z.number().min(0).max(100), minimumConfidence: z.number().min(0).max(1) }).strict(),
+  work: z.object({
+    leaseSeconds: z.number().int().positive(),
+    maxAttempts: z.number().int().positive(),
+    externalDeadlineMs: z.number().int().positive(),
+    concurrency: z.number().int().positive(),
+    maxContextItems: z.number().int().positive(),
+    maxInputChars: z.number().int().positive(),
+    maxOutputChars: z.number().int().positive(),
+    maxRawPayloadBytes: z.number().int().positive(),
+  }).strict(),
+}).strict();
+
+export type RuntimeConfigSnapshot = RuntimeConfig;
+
+export function parseRuntimeConfigSnapshot(input: unknown): RuntimeConfigSnapshot {
+  return runtimeConfigSnapshotSchema.parse(input);
+}
+
 export function parseRuntimeConfig(environment: Record<string, string | undefined>): RuntimeConfig {
   if (environment.AI_API_KEY !== undefined) {
     throw new Error('AI_API_KEY is not supported; use OPENAI_API_KEY');

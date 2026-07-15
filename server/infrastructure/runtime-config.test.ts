@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRuntimeConfig, summarizeRuntimeConfig } from './runtime-config.js';
+import { parseRuntimeConfig, parseRuntimeConfigSnapshot, summarizeRuntimeConfig } from './runtime-config.js';
 
 const validEnvironment = {
   NODE_ENV: 'test',
@@ -90,5 +90,12 @@ describe('runtime configuration', () => {
     expect(summary).not.toContain('x-canary');
     expect(summary).not.toContain('digest');
     expect(summary).toContain('gpt-5.6-terra');
+  });
+
+  it('validates a private in-memory runtime snapshot without relying on process environment', () => {
+    const environmentConfig = parseRuntimeConfig(validEnvironment);
+    expect(parseRuntimeConfigSnapshot(structuredClone(environmentConfig))).toEqual(environmentConfig);
+    expect(() => parseRuntimeConfigSnapshot({ ...environmentConfig, port: 70_000 })).toThrow(/port/i);
+    expect(() => parseRuntimeConfigSnapshot({ ...environmentConfig, unexpectedSecret: 'canary' })).toThrow();
   });
 });
