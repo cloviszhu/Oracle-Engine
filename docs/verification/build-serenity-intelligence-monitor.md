@@ -44,12 +44,12 @@
 | TC-8.2 | AI 自测 | Mock 已验证 | Mock 通过 | `server/notifications/notification-delivery.service.test.ts`、`server/notifications/delivery-recovery.test.ts`、`server/operations/drizzle-operations.service.test.ts` | 2026-07-15 | fixture，无真实 ID | 无真实发送 | 本地 Vitest |
 | TC-9.1 | 用户手动 | 待人工配置或验证 | 待验收：无签名飞书目标和真实发送 | 待补 | — | — | — | 待部署 |
 | TC-9.2 | AI 自测 | Mock 已验证 | Mock 通过 | `server/pipeline/core-pipeline.service.test.ts`、`server/operations/operations.service.test.ts` | 2026-07-15 | fixture，无真实 ID | 无真实发送 | 本地 Vitest |
-| TC-10.1 | 用户手动 | Mock 已验证 | 自动化 UI/接口 Mock 通过；双人现场待验收 | `client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 jsdom |
-| TC-10.2 | AI 自测 | 自动化已验证 | 通过 | `server/content/private-api.controller.test.ts`、`server/content/content-query.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
-| TC-11.1 | 用户手动 | Mock 已验证 | 自动化 Mock 通过；双人现场待验收 | `server/feedback/feedback.service.test.ts`、`client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 Vitest/jsdom |
-| TC-11.2 | AI 自测 | 自动化已验证 | 通过 | `server/feedback/feedback.service.test.ts`、`server/content/private-api.controller.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
-| TC-12.1 | 用户手动 | Mock 已验证 | 自动化 Mock 通过；部署现场待验收 | `server/operations/operations.service.test.ts`、`client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 Vitest/jsdom |
-| TC-12.2 | AI 自测 | Mock 已验证 | Mock 通过 | `server/operations/operations.service.test.ts`、`server/infrastructure/runtime-config.test.ts` | 2026-07-15 | fixture，无真实 ID | 0 | 本地 Vitest |
+| TC-10.1 | 回写后测 | Mock 已验证 | 待运行验证；已有 UI Mock 证据，双人现场未执行 | `client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 jsdom |
+| TC-10.2 | 回写后测 | 自动化已验证 | 待运行验证；已有接口边界证据 | `server/content/private-api.controller.test.ts`、`server/content/content-query.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-11.1 | 回写后测 | Mock 已验证 | 待运行验证；已有追加反馈 Mock 证据，双人现场未执行 | `server/feedback/feedback.service.test.ts`、`client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 Vitest/jsdom |
+| TC-11.2 | 回写后测 | 自动化已验证 | 待运行验证；已有非法载荷拒绝证据 | `server/feedback/feedback.service.test.ts`、`server/content/private-api.controller.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-12.1 | 回写后测 | Mock 已验证 | 待运行验证；已有状态页 Mock 证据，部署现场未执行 | `server/operations/operations.service.test.ts`、`client/src/App.test.tsx` | 2026-07-15 | 不适用 | 0 | 本地 Vitest/jsdom |
+| TC-12.2 | 回写后测 | Mock 已验证 | 待运行验证；已有阻断与配置摘要证据 | `server/operations/operations.service.test.ts`、`server/infrastructure/runtime-config.test.ts` | 2026-07-15 | fixture，无真实 ID | 0 | 本地 Vitest |
 | TC-13.1 | AI 自测 | Mock 已验证 | Mock 通过 | `server/infrastructure/work/coordination.test.ts`、`server/infrastructure/work/dispatcher.test.ts`、`server/notifications/notification-dispatcher.test.ts` | 2026-07-15 | fixture，无真实 ID | 0 | 本地 Vitest |
 | TC-13.2 | AI 自测 | Mock 已验证 | Mock 通过 | `server/infrastructure/work/state-machine.test.ts`、`server/notifications/notification-delivery.service.test.ts`、`server/notifications/drizzle-notification.repository.test.ts`、`server/operations/drizzle-operations.service.test.ts` | 2026-07-15 | fixture，无真实 ID | 0 | 本地 Vitest |
 | TC-14.1 | AI 自测 | Mock 已验证 | Mock 通过 | `server/security/capability-boundary.test.ts`、`server/infrastructure/ai/openai-research.adapter.test.ts` | 2026-07-15 | mock response IDs | 无真实调用 | 本地 Vitest |

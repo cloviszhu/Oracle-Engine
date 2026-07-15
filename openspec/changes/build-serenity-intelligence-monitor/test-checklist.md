@@ -5,7 +5,7 @@
 > 生成日期: 2026-07-10
 > 生成方式: 独立 QA 分段生成 + 主代理复核
 
-> 当前所有用例状态均为“待测”。下文“类型”表示执行方式；“证据类别”在执行前只表示预期证明力，执行后必须另填唯一实际类别：`自动化已验证`、`Mock 已验证`、`真实 API 已验证`、`待人工配置或验证`。`用户手动` 不是证明力类别。
+> 初始生成时所有用例均为“待测”；当前结果以文末 `test_verify 执行记录（2026-07-15）` 和“验收总结”为准。下文“类型”表示执行方式；“证据类别”在执行前只表示预期证明力，执行后必须另填唯一实际类别：`自动化已验证`、`Mock 已验证`、`真实 API 已验证`、`待人工配置或验证`。`用户手动` 不是证明力类别。
 
 ---
 
@@ -622,6 +622,55 @@
 
 ---
 
+## test_verify 执行记录（2026-07-15）
+
+执行环境：Windows 本地工作区，提交 `c3a532d`；`pnpm check`、44 个测试文件/188 个测试、`pnpm lint`、`pnpm build`、Secret 审计、OpenSpec 严格校验和追溯校验均通过。Mock/自动化结果不替代真实外部 API、Docker/HTTPS 或家庭人工验收。
+
+| TC | 类型 | test_verify 结果 | 关键证据（file:line） |
+|---|---|---|---|
+| TC-1.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:29` |
+| TC-1.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:30` |
+| TC-2.1 | AI 自测 | ✅ Mock 通过 | `server/context/context-builder.test.ts:5`、`:40` |
+| TC-2.2 | AI 自测 | ✅ Mock 通过 | `server/context/context-builder.test.ts:27`、`server/context/context-completion.service.test.ts:10` |
+| TC-3.1 | AI 自测 | ✅ Mock 通过 | `server/pipeline/core-pipeline.service.test.ts:119`、`server/notifications/notification-reservation.service.test.ts:85` |
+| TC-3.2 | AI 自测 | ✅ Mock 通过 | `server/ingestion/poll-source.service.test.ts:39`、`server/infrastructure/work/coordination.test.ts:11` |
+| TC-4.1 | AI 自测 | ✅ Mock 通过 | `server/ingestion/content-lifecycle.test.ts:15` |
+| TC-4.2 | AI 自测 | ✅ Mock 通过 | `server/ingestion/content-lifecycle.test.ts:26`、`server/ingestion/content-lifecycle.service.test.ts:15` |
+| TC-5.1 | AI 自测 | ✅ Mock 通过 | `server/research/research-contract.test.ts:42`、`server/research/drizzle-research-analysis.repository.test.ts:20` |
+| TC-5.2 | AI 自测 | ✅ Mock 通过 | `server/research/research-contract.test.ts:46`、`:80` |
+| TC-6.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:39` |
+| TC-6.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:40` |
+| TC-7.1 | AI 自测 | ✅ 自动化通过 | `server/importance/importance-scorer.test.ts:23`、`:40` |
+| TC-7.2 | AI 自测 | ✅ 自动化通过 | `server/importance/importance-scorer.test.ts:53`、`:69` |
+| TC-8.1 | AI 自测 | ✅ Mock 通过 | `server/notifications/notification-reservation.service.test.ts:30`、`:85`、`server/notifications/notification-candidate-dispatcher.test.ts:6` |
+| TC-8.2 | AI 自测 | ✅ Mock 通过 | `server/notifications/notification-delivery.service.test.ts:39`、`:75`、`server/notifications/delivery-recovery.test.ts:5` |
+| TC-9.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:45` |
+| TC-9.2 | AI 自测 | ✅ Mock 通过 | `server/notifications/notification-reservation.service.test.ts:18`、`server/pipeline/core-pipeline.service.test.ts:174` |
+| TC-10.1 | 回写后测 | 🔶 待运行验证 | `client/src/App.test.tsx:27`（已有组件证据，现场双账号仍未执行） |
+| TC-10.2 | 回写后测 | 🔶 待运行验证 | `server/content/private-api.controller.test.ts:17`、`server/content/content-query.test.ts:18` |
+| TC-11.1 | 回写后测 | 🔶 待运行验证 | `server/feedback/feedback.service.test.ts:5`、`client/src/App.test.tsx:48` |
+| TC-11.2 | 回写后测 | 🔶 待运行验证 | `server/feedback/feedback.service.test.ts:17`、`server/content/private-api.controller.test.ts:17` |
+| TC-12.1 | 回写后测 | 🔶 待运行验证 | `server/operations/operations.service.test.ts:5`、`client/src/App.test.tsx:1` |
+| TC-12.2 | 回写后测 | 🔶 待运行验证 | `server/operations/operations.service.test.ts:33`、`server/infrastructure/runtime-config.test.ts:19` |
+| TC-13.1 | AI 自测 | ✅ Mock 通过 | `server/infrastructure/work/coordination.test.ts:11`、`server/notifications/notification-dispatcher.test.ts:5` |
+| TC-13.2 | AI 自测 | ✅ Mock 通过 | `server/infrastructure/work/state-machine.test.ts:12`、`server/notifications/drizzle-notification.repository.test.ts:91`、`server/operations/drizzle-operations.service.test.ts:24` |
+| TC-14.1 | AI 自测 | ✅ Mock 通过 | `server/security/capability-boundary.test.ts:7`、`server/infrastructure/ai/openai-research.adapter.test.ts:28` |
+| TC-14.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:56` |
+| TC-15.1 | AI 自测 | ✅ 自动化通过 | `scripts/audit-secrets.mjs:1`、`server/infrastructure/logging/redaction.test.ts:5` |
+| TC-15.2 | AI 自测 | ✅ 自动化通过 | `server/infrastructure/runtime-config.test.ts:19`、`:44`、`server/infrastructure/ai/openai-research.adapter.test.ts:19` |
+| TC-16.1 | AI 自测 | ✅ Mock 通过 | `server/security/capability-boundary.test.ts:7`、`server/research/research-contract.test.ts:25` |
+| TC-16.2 | AI 自测 | ✅ 自动化通过 | `server/security/capability-boundary.test.ts:44`、`:60`、`:68` |
+| TC-17.1 | AI 自测 | ✅ Mock 通过 | `server/infrastructure/x/x-api.client.test.ts:14`、`:35`、`server/infrastructure/ai/openai-research.adapter.test.ts:28` |
+| TC-17.2 | AI 自测 | ✅ Mock 通过 | `server/research/drizzle-budget.guard.test.ts:32`、`:49`、`server/research/research-analysis.service.test.ts:37` |
+| TC-18.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:63` |
+| TC-18.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:64` |
+| TC-19.1 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:65` |
+| TC-19.2 | 用户手动 | 📋 待用户验证 | `docs/verification/build-serenity-intelligence-monitor.md:66` |
+
+原声对账：私有网页保持主入口；父亲无需飞书；飞书默认关闭、启用时强制签名且只作为需求提出者私有群的重要提醒；关闭时网页归档、OpenAI 分析、搜索和查看不受影响；第一版模型固定为 `openai/gpt-5.6-terra`，供应商边界仍由适配器与配置隔离；无交易、券商、持仓、Cookie/Hook 或客户端抓取扩展。独立代码复核未发现剩余 Critical/Important。
+
+踩坑检查：原文件缺失；本轮将已修复的容器 ESM、跨层详情 ID、生产通知编排、发送中断歧义和审计化人工恢复记录到 `docs/project-pitfalls.md`。
+
 ## Repair lane 验收规则
 
 1. **第 1 类——实现未满足既有规范**：仅在当前 change 内做最小修复；必须新增命中原失败路径的回归测试并重跑受影响 AC。不得借修复扩大目标范围。
@@ -644,26 +693,26 @@
 | 验收项 | 用例数 | 通过 | 失败 | 待测 |
 |---|---:|---:|---:|---:|
 | AC-1 | 2 | 0 | 0 | 2 |
-| AC-2 | 2 | 0 | 0 | 2 |
-| AC-3 | 2 | 0 | 0 | 2 |
-| AC-4 | 2 | 0 | 0 | 2 |
-| AC-5 | 2 | 0 | 0 | 2 |
+| AC-2 | 2 | 2 | 0 | 0 |
+| AC-3 | 2 | 2 | 0 | 0 |
+| AC-4 | 2 | 2 | 0 | 0 |
+| AC-5 | 2 | 2 | 0 | 0 |
 | AC-6 | 2 | 0 | 0 | 2 |
-| AC-7 | 2 | 0 | 0 | 2 |
-| AC-8 | 2 | 0 | 0 | 2 |
-| AC-9 | 2 | 0 | 0 | 2 |
+| AC-7 | 2 | 2 | 0 | 0 |
+| AC-8 | 2 | 2 | 0 | 0 |
+| AC-9 | 2 | 1 | 0 | 1 |
 | AC-10 | 2 | 0 | 0 | 2 |
 | AC-11 | 2 | 0 | 0 | 2 |
 | AC-12 | 2 | 0 | 0 | 2 |
-| AC-13 | 2 | 0 | 0 | 2 |
-| AC-14 | 2 | 0 | 0 | 2 |
-| AC-15 | 2 | 0 | 0 | 2 |
-| AC-16 | 2 | 0 | 0 | 2 |
-| AC-17 | 2 | 0 | 0 | 2 |
+| AC-13 | 2 | 2 | 0 | 0 |
+| AC-14 | 2 | 1 | 0 | 1 |
+| AC-15 | 2 | 2 | 0 | 0 |
+| AC-16 | 2 | 2 | 0 | 0 |
+| AC-17 | 2 | 2 | 0 | 0 |
 | AC-18 | 2 | 0 | 0 | 2 |
 | AC-19 | 2 | 0 | 0 | 2 |
-| **总计** | **38** | **0** | **0** | **38** |
+| **总计** | **38** | **22** | **0** | **16** |
 
-**验收结论**：待测  
-**验收人**：_(验收阶段填写)_  
-**验收时间**：_(验收阶段填写)_
+**验收结论**：22 个 `[AI自测]` 全部通过；6 个 `[回写后测]` 标记待运行验证；10 个 `[用户手动]` 待用户验证。无 AI 自测失败，可以进入 `user_accept`，但真实外部与现场项目在完成前不得归档为已验收。
+**验收人**：Codex 主代理 + 独立评审子代理（Group 8 代码复核与 test_verify 机械复核）
+**验收时间**：2026-07-15
