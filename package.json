@@ -19,6 +19,7 @@
     "audit:secrets": "node scripts/audit-secrets.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx server/infrastructure/database/migrate.ts",
+    "source:bootstrap": "tsx scripts/bootstrap-serenity.ts",
     "db:test:seed": "cross-env NODE_ENV=test tsx scripts/seed-test-state.ts",
     "db:test:clean": "cross-env NODE_ENV=test tsx scripts/cleanup-test-database.ts",
     "queue:test:clean": "cross-env NODE_ENV=test tsx scripts/cleanup-test-queue.ts",

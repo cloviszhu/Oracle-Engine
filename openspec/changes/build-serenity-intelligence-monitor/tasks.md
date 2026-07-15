@@ -625,7 +625,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 按顺序运行 `pnpm db:generate`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`；每条命令退出码均为 0，migration 存在且不含默认 Secret，构建后 API/worker 入口可解析
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认本组只建立当前单源闭环所需数据与基础设施，无业务范围扩张
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 1`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 1`
 
 ## Group 2: Serenity 官方获取、归档与内容生命周期
 
@@ -633,27 +633,27 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 2.1: 实现 X 官方 API 适配器与脱敏契约测试
 
-- [ ] [完成] Task 2.1
+- [x] [完成] Task 2.1
   - 实现细节: 实现账号解析、用户内容分页和批量 lookup，读取 `since_id`、pagination token、replies、referenced tweets、conversation 与 edit history 字段；对 429、5xx、认证、权限和预算错误分类，禁止模拟登录或 Cookie 抓取。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-13.1, TC-13.2, TC-15.1, TC-17.1, TC-17.2
 ### Task 2.2: 实现 Serenity 身份 bootstrap、轮询、游标和补偿
 
-- [ ] [完成] Task 2.2
+- [x] [完成] Task 2.2
   - 实现细节: 幂等解析并绑定稳定 X user ID 与当前 handle；固定单账号 scheduler/job ID；逐页 upsert 内容和关系，按 source 单写 lease/CAS 和 BigInt 水位比较只在全页成功后单调推进游标；实现重叠补偿、持久工作意图投递与用量记录。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-13.1, TC-17.1
 ### Task 2.3: 实现内容版本、删除确认和政策门禁
 
-- [ ] [完成] Task 2.3
+- [x] [完成] Task 2.3
   - 实现细节: 以 payload hash/edit ID 幂等追加不可变版本并只重处理新版本；暂态缺项进入 verification pending，只有明确/连续确认才按字段级删除矩阵清理内容版本、派生卡片/索引/通知证据中的受限正文；保留最小 tombstone。生产同步要求记录确认人、时间、政策版本与允许字段。
   - **覆盖测试用例**: TC-4.1, TC-4.2, TC-15.1
 ### Task 2.4: 增加 X 获取、幂等和生命周期 fixture 测试
 
-- [ ] [完成] Task 2.4
+- [x] [完成] Task 2.4
   - 实现细节: 覆盖两页中断、重复轮询、补偿、重启、429、认证阻断、编辑重复、删除/不可访问清理和原始响应脱敏；Mock 证据不得标成真实 API。
   - **覆盖测试用例**: TC-1.2, TC-3.1, TC-3.2, TC-4.1, TC-4.2, TC-13.1, TC-13.2
 
-- [ ] [自测] 按顺序运行 `pnpm test -- server/ingestion server/infrastructure/x`、`pnpm check`、`pnpm lint`、`pnpm audit:secrets`；退出码均为 0，重复/并发游标不回退，暂态 lookup 不清理正文，Mock 不被标为真实 API
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认只使用官方服务端接口并覆盖帖子、回复、引用、补偿和生命周期
+- [x] [自测] 按顺序运行 `pnpm test -- server/ingestion server/infrastructure/x`、`pnpm check`、`pnpm lint`、`pnpm audit:secrets`；退出码均为 0，重复/并发游标不回退，暂态 lookup 不清理正文，Mock 不被标为真实 API
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认只使用官方服务端接口并覆盖帖子、回复、引用、补偿和生命周期
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 2`
 
 ## Group 3: 上下文图、结构化 AI 研究卡片与证据边界
