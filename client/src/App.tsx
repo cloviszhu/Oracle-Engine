@@ -361,6 +361,11 @@ function OperationsPanel({ status, notice, onRetry }: { status: JsonRecord; noti
     <section className="operations-page">
       <header className="page-header"><div><p className="kicker">System pulse</p><h2>运行状态</h2></div><p>这里显示能否正常归档和分析，不展示任何配置值。</p></header>
       <div className="core-status"><span className="pulse-dot" /><div><h3>{core?.status === 'succeeded' ? '核心流水线正常' : '核心流水线需要关注'}</h3><p>归档、上下文、AI 分析和重要性评分独立于提醒渠道。</p></div></div>
+      <div className="stage-grid integration-state-grid">
+        <article><span>X 数据源</span><strong>X 未真实同步</strong><small>未配置时不会发起真实请求</small></article>
+        <article><span>研究模型</span><strong>AI 未启用</strong><small>启用前必须通过能力验证</small></article>
+        <article><span>可选提醒</span><strong>飞书 disabled</strong><small>不影响网页归档与查看</small></article>
+      </div>
       <div className="stage-grid">
         {['ingest', 'context', 'analysis', 'score'].map((name) => {
           const stage = stages.find((item) => item.stage === name);

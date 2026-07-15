@@ -3,7 +3,8 @@ import { join } from 'node:path';
 
 export interface LauncherMetadata {
   version: 1;
-  ai?: { provider: string; protocol: 'responses' | 'chat-completions'; model: string; baseUrl?: string };
+  accountsConfigured?: boolean;
+  ai?: { enabled: boolean; provider: string; protocol: 'responses' | 'chat_completions'; model: string; baseUrl?: string };
   x?: { enabled: boolean; sourceId?: string };
   feishu?: { enabled: boolean };
   updatedAt?: string;

@@ -85,6 +85,9 @@ describe('private research workspace', () => {
     await userEvent.click(await screen.findByRole('button', { name: '运行状态' }));
     expect(await screen.findByText('可选提醒未启用')).toBeTruthy();
     expect(screen.getByText('核心流水线正常')).toBeTruthy();
+    expect(screen.getByText('X 未真实同步')).toBeTruthy();
+    expect(screen.getByText('AI 未启用')).toBeTruthy();
+    expect(screen.getByText('飞书 disabled')).toBeTruthy();
   });
 
   it('shows an auditable manual retry action for blocked notifications', async () => {

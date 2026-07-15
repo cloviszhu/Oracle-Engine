@@ -938,25 +938,25 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 13.1: 实现数据库未启动时可用的首次设置向导
 
-- [ ] [完成] Task 13.1
+- [x] [完成] Task 13.1
   - 实现细节: 向导依次呈现环境、两个账号、AI、X、飞书和完成页；AI 启用必须 probe；Secret 提交后清空且重新编辑不回显；完成页分别显示 MySQL/Redis/AI/X/飞书的成功、跳过或失败。
   - **覆盖测试用例**: TC-20.1, TC-20.2, TC-21.1, TC-21.2, TC-22.1, TC-24.1, TC-24.2
 
 ### Task 13.2: 落实 X/飞书默认关闭与显式测试门禁
 
-- [ ] [完成] Task 13.2
+- [x] [完成] Task 13.2
   - 实现细节: X 默认关闭，未配置零真实请求/零同步任务并显示固定中文状态；启用需要 Token、政策确认和连接测试。飞书默认跳过，未配置零 delivery/任务/积压；启用需 Webhook 与签名密钥成对填写并通过签名测试。
   - **覆盖测试用例**: TC-9.2, TC-25.1, TC-25.2
 
 ### Task 13.3: 实现启动器日常管理和本机网页状态
 
-- [ ] [完成] Task 13.3
+- [x] [完成] Task 13.3
   - 实现细节: 提供启动、停止、健康检查、打开网页、修改设置、备份、诊断入口；网页只绑定回环地址；启动器与网页同步显示 X 未真实同步、AI 未启用、飞书 disabled 和服务健康。
   - **覆盖测试用例**: TC-10.1, TC-12.1, TC-12.2, TC-20.1, TC-23.1, TC-25.1
 
-- [ ] [自测] 运行 `pnpm test -- desktop/renderer client server/ingestion server/notifications`；GUI-only 首启、跳过路径、误配置和固定中文状态全部可判定
-- [ ] [原声对账] 父亲继续只用私有网页；X/飞书可跳过；第一版不开放跨设备或公网访问
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 13`
+- [x] [自测] 运行 `pnpm test -- desktop/renderer client server/ingestion server/notifications`；GUI-only 首启、跳过路径、误配置和固定中文状态全部可判定
+- [x] [原声对账] 父亲继续只用私有网页；X/飞书可跳过；第一版不开放跨设备或公网访问
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 13`
 
 ## Group 14: 备份、脱敏诊断、目标环境验证和文档收敛
 

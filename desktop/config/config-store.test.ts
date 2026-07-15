@@ -12,7 +12,7 @@ describe('ConfigStore', () => {
     const directory = await mkdtemp(join(tmpdir(), 'serenity-config-'));
     roots.push(directory);
     const store = new ConfigStore(directory);
-    await store.save({ version: 1, ai: { provider: 'openai', protocol: 'responses', model: 'gpt-5.6-terra' } });
+    await store.save({ version: 1, ai: { enabled: true, provider: 'openai', protocol: 'responses', model: 'gpt-5.6-terra' } });
     expect(await store.load()).toMatchObject({ version: 1, ai: { model: 'gpt-5.6-terra' } });
     expect(await readFile(join(directory, 'settings.json'), 'utf8')).not.toContain('apiKey');
     await expect(store.save({ version: 1, apiKey: 'canary' } as never)).rejects.toThrow(/敏感字段/);
