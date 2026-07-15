@@ -1,0 +1,11 @@
+:root { font-family: Inter, "Microsoft YaHei", system-ui, sans-serif; color: #e8edf7; background: #101622; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 760px; min-height: 560px; background: radial-gradient(circle at 20% 10%, #20365d, #101622 55%); }
+.launcher-shell { min-height: 100vh; padding: 64px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 48px; align-items: center; }
+.launcher-hero h1 { margin: 12px 0; font-size: 48px; letter-spacing: -1.5px; }
+.launcher-hero p { max-width: 520px; color: #b4c0d4; font-size: 18px; line-height: 1.7; }
+.eyebrow { color: #7ed7c4; font-weight: 700; letter-spacing: 3px; }
+.launcher-card { padding: 32px; border: 1px solid #31415f; border-radius: 24px; background: rgba(20, 30, 47, .86); box-shadow: 0 24px 60px rgba(0,0,0,.3); }
+.launcher-card h2 { margin-top: 0; font-size: 28px; }
+.launcher-card p { color: #b4c0d4; }
+.status-chip { display: inline-flex; margin-top: 22px; padding: 8px 12px; border-radius: 999px; color: #8de3d2; background: #173b3b; }

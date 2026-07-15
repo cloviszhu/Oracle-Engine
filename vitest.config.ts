@@ -11,6 +11,13 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['client/**/*.test.tsx', 'server/**/*.test.ts', 'shared/**/*.test.ts', 'drizzle/**/*.test.ts'],
+    include: [
+      'client/**/*.test.tsx',
+      'desktop/**/*.test.ts',
+      'desktop/**/*.test.tsx',
+      'server/**/*.test.ts',
+      'shared/**/*.test.ts',
+      'drizzle/**/*.test.ts',
+    ],
   },
 });

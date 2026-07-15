@@ -840,19 +840,19 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 9.1: 建立 Electron main/preload/renderer 与窄 IPC
 
-- [ ] [完成] Task 9.1
+- [x] [完成] Task 9.1
   - 实现细节: 新建 `desktop/main/`、`desktop/preload/`、`desktop/renderer/` 与 `shared/desktop/contracts.ts`；生产窗口启用 `contextIsolation`、sandbox、严格 CSP，关闭 Node integration；只暴露设置状态、环境检查、保存、probe、启停、健康、打开网页、备份和诊断方法，禁止通用 IPC、文件系统、shell 和进程执行。
   - **覆盖测试用例**: TC-20.1, TC-20.2, TC-22.1, TC-22.2, TC-23.1
 
 ### Task 9.2: 配置 Electron 构建和自包含 Windows 产物
 
-- [ ] [完成] Task 9.2
+- [x] [完成] Task 9.2
   - 实现细节: 增加 `electron.vite.config.ts`、`electron-builder.yml`、桌面构建/测试脚本与依赖；打包编译后的 API、worker、React 网页、Compose 资源和 Electron Node 运行时，目标电脑无需安装 Node；安装产物进入 Secret 扫描。
   - **覆盖测试用例**: TC-20.1, TC-20.2, TC-22.1
 
-- [ ] [自测] 运行 `pnpm test -- desktop/renderer desktop/main shared/desktop`、`pnpm check`、`pnpm build:desktop` 和安装产物 Secret 扫描；产物可启动且 preload 越权接口测试全部失败关闭
-- [ ] [原声对账] 确认普通使用不要求 Node、终端或 `.env`，第一版仍只支持 Windows 本机
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 9`
+- [x] [自测] 运行 `pnpm test -- desktop/renderer desktop/main shared/desktop`、`pnpm check`、`pnpm build:desktop` 和安装产物 Secret 扫描；产物可启动且 preload 越权接口测试全部失败关闭
+- [x] [原声对账] 确认普通使用不要求 Node、终端或 `.env`，第一版仍只支持 Windows 本机
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 9`
 
 ## Group 10: DPAPI vault、家庭账号和运行配置快照
 

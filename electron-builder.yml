@@ -1,0 +1,19 @@
+appId: com.serenity.family
+productName: Serenity
+directories:
+  output: release
+files:
+  - out/**
+extraResources:
+  - from: dist/server
+    to: app/server
+  - from: dist/public
+    to: app/public
+  - from: docker-compose.yml
+    to: docker-compose.yml
+win:
+  target:
+    - target: portable
+      arch: [x64]
+  artifactName: Serenity-${version}-${arch}.${ext}
+asar: true

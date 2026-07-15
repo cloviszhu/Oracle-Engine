@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node", "electron"], "noEmit": true },
+  "include": ["desktop/**/*.ts", "desktop/**/*.tsx", "shared/desktop/**/*.ts", "electron.vite.config.ts"]
+}
