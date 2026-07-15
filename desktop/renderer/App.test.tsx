@@ -39,9 +39,9 @@ describe('launcher shell', () => {
     expect(screen.getByText('飞书 disabled')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: '跳过飞书' }));
     await userEvent.click(screen.getByRole('button', { name: '保存并完成' }));
-    expect(await screen.findByText('设置已保存')).toBeInTheDocument();
+    expect(await screen.findByText('日常管理')).toBeInTheDocument();
     expect((launcher as { saveSettings: ReturnType<typeof vi.fn> }).saveSettings).toHaveBeenCalledWith(expect.objectContaining({
-      ai: undefined, x: { enabled: false, policyConfirmed: false }, feishu: { enabled: false },
+      ai: expect.objectContaining({ enabled: false }), x: { enabled: false, policyConfirmed: false }, feishu: { enabled: false },
     }));
     expect((launcher as { probeAI: ReturnType<typeof vi.fn> }).probeAI).not.toHaveBeenCalled();
   });
@@ -60,5 +60,29 @@ describe('launcher shell', () => {
     for (const name of ['启动服务', '停止服务', '健康检查', '打开私有网页', '创建备份', '导出诊断']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
+  });
+
+  it('loads non-sensitive existing settings for safe modification without requiring old passwords', async () => {
+    const launcher = {
+      getSetupStatus: vi.fn().mockResolvedValue({
+        configured: true, ai: { enabled: true, configured: true }, x: { enabled: true, configured: true }, feishu: { enabled: true, configured: true },
+        editable: {
+          familyAccounts: [{ actorId: 'father', username: 'father' }, { actorId: 'requester', username: 'requester' }],
+          ai: { enabled: true, providerPreset: 'custom', protocol: 'chat_completions', baseUrl: 'https://models.example.test', model: 'family-model', reasoning: 'medium', inputCostPerMillionCents: 1, outputCostPerMillionCents: 2, maxRequestCostCents: 3, dailyBudgetCents: 4 },
+          x: { enabled: true, policyConfirmed: true }, feishu: { enabled: true },
+        },
+      }),
+      runEnvironmentChecks: vi.fn().mockResolvedValue([{ code: 'windows-version', label: 'Windows 版本', status: 'pass', message: '系统版本受支持' }]),
+      startSerenity: vi.fn(), stopSerenity: vi.fn(), getHealth: vi.fn(), openWorkspace: vi.fn(), createBackup: vi.fn(), exportDiagnostics: vi.fn(),
+    } as never;
+    render(<App launcher={launcher} />);
+    await userEvent.click(await screen.findByRole('button', { name: '修改设置' }));
+    await userEvent.click(screen.getByRole('button', { name: '运行环境检查' }));
+    await userEvent.click(await screen.findByRole('button', { name: '下一步' }));
+    expect(screen.getByLabelText('账号 1 用户名')).toHaveValue('father');
+    expect(screen.getByLabelText('账号 1 密码')).toHaveValue('');
+    expect(screen.getByRole('button', { name: '下一步' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('button', { name: '下一步' }));
+    expect(screen.getByRole('button', { name: '测试 AI 连接' })).toBeEnabled();
   });
 });

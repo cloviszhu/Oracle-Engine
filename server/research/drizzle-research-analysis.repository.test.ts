@@ -40,13 +40,14 @@ describe('research audit persistence mapping', () => {
     const audited = toExternalUsageRecord('usage-2', {
       ...result,
       audit: {
-        protocol: 'chat_completions' as const, providerHost: 'models.example.test',
+        providerPreset: 'custom' as const, protocol: 'chat_completions' as const, providerHost: 'models.example.test',
         pricingVersion: 'user-2026-07-15', promptVersion: 'research-prompt-v1',
-        schemaVersion: 'research-card-v1', probeVersion: '1',
+        schemaVersion: 'research-card-v1', probeVersion: '1', probePassedAt: '2026-07-15T00:00:00.000Z',
       },
     }, new Date('2026-07-15T00:00:00Z'));
     expect(audited).toMatchObject({
       apiVersion: 'chat-completions-v1', protocol: 'chat_completions', providerHost: 'models.example.test',
+      providerPreset: 'custom', probePassedAt: new Date('2026-07-15T00:00:00.000Z'),
       pricingVersion: 'user-2026-07-15', promptVersion: 'research-prompt-v1',
       schemaVersion: 'research-card-v1', probeVersion: '1',
     });

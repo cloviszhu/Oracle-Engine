@@ -64,8 +64,33 @@
 | TC-18.2 | 用户手动 | 待人工配置或验证 | 待验收：机械规则已写入，尚无人工作证驳回演练 | 本文件 | — | — | — | 待人工复核 |
 | TC-19.1 | 用户手动 | 待人工配置或验证 | 待验收：缺真实 X/OpenAI/HTTPS/爸爸参与 | 待补 | — | — | — | 待部署 |
 | TC-19.2 | 用户手动 | 待人工配置或验证 | 待验收：缺真实普通内容与冷启动现场 | 待补 | — | — | — | 待部署 |
+| TC-20.1 | 用户手动 | 待人工配置或验证 | portable 已构建并冒烟；全新 user-data + Docker GUI 首启待验 | `docs/verification/windows-docker-target.md` | 2026-07-15 | 不适用 | 0 | 待目标机 |
+| TC-20.2 | 用户手动 | 待人工配置或验证 | 中断恢复和无 Node 目标机现场待验 | `docs/verification/windows-docker-target.md` | — | 不适用 | 0 | 待目标机 |
+| TC-21.1 | AI 自测 | 自动化已验证 | 通过 | `desktop/environment/environment-checker.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-21.2 | AI 自测 | 自动化已验证 | 通过；真实 Docker 缺失路径保持待目标机复核 | `desktop/environment/environment-checker.test.ts`、`desktop/runtime/compose-layout.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-22.1 | AI 自测 | 自动化已验证 | 通过 | `desktop/config/secret-vault.test.ts`、`desktop/config/config-store.test.ts`、`desktop/main/launcher-settings.service.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-22.2 | AI 自测 | 自动化已验证 | 通过 | `desktop/config/secret-vault.test.ts`、`desktop/preload/index.test.ts`、`desktop/main/window-manager.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-23.1 | AI 自测 | 自动化已验证 | 编排契约通过；真实进程/容器生命周期待目标机 | `desktop/runtime/service-orchestrator.test.ts`、`desktop/runtime/utility-process-manager.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-23.2 | AI 自测 | 自动化已验证 | 失败关闭和固定 Compose project 通过 | `desktop/runtime/service-orchestrator.test.ts`、`desktop/runtime/compose-controller.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
+| TC-24.1 | AI 自测 | Mock 已验证 | 双协议严格 schema、probe 和运行门禁通过 | `server/infrastructure/ai/compatible-research.adapter.test.ts`、`server/infrastructure/ai/capability-probe.test.ts`、`desktop/main/launcher-settings.service.test.ts` | 2026-07-15 | mock request IDs | 模拟费用 | 本地 Vitest |
+| TC-24.2 | AI 自测 | Mock 已验证 | 不安全 URL、模型不一致和能力缺失均阻断，无 fallback | `server/infrastructure/ai/provider-adapter.registry.test.ts`、`server/infrastructure/ai/compatible-research.adapter.test.ts` | 2026-07-15 | mock request IDs | 无真实调用 | 本地 Vitest |
+| TC-25.1 | AI 自测 | Mock 已验证 | 默认跳过路径通过 | `desktop/renderer/App.test.tsx`、`desktop/main/settings-policy.test.ts` | 2026-07-15 | 无真实 ID | 无真实调用 | 本地 jsdom/Vitest |
+| TC-25.2 | AI 自测 | Mock 已验证 | 缺项和连接失败阻断通过 | `desktop/main/settings-policy.test.ts` | 2026-07-15 | 无真实 ID | 无真实调用 | 本地 Vitest |
+| TC-26.1 | 用户手动 | 待人工配置或验证 | 流式原子备份契约通过；真实 MySQL/DPAPI 恢复待验 | `desktop/maintenance/backup.service.test.ts`、`docs/verification/windows-docker-target.md` | 2026-07-15 | 不适用 | 0 | 待目标机 |
+| TC-26.2 | AI 自测 | 自动化已验证 | 原始数据 canary 命中时无文件，普通日志脱敏后导出 | `desktop/maintenance/diagnostics.service.test.ts` | 2026-07-15 | 不适用 | 0 | 本地 Vitest |
 
 ## 真实验收填写模板
+
+## 2026-07-15 家庭本地版修订验证补记
+
+- Group 9：Electron 窄 IPC、CSP、托盘、`build:desktop`、portable 打包和启动冒烟通过；证据位于 `desktop/main`、`desktop/preload`、`desktop/renderer`、`shared/desktop`。
+- Group 10：非敏感配置/DPAPI vault 分离、随机盐账号摘要、一次性运行快照和 Secret canary 测试通过；真实 Windows DPAPI 跨用户恢复仍待目标机。
+- Group 11：环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、阶段编排和非 Serenity 容器保护的自动化测试通过；当前机 `docker-cli-missing`，真实生命周期保持待验。
+- Group 12：Responses-compatible 与 Chat Completions-compatible 严格 schema、refusal/incomplete/error 分类、registry 无 fallback、capability probe 和 migration `0005_burly_slipstream.sql` 通过 Mock 验证；无真实 provider 调用。
+- Group 13：GUI-only 首启跳过路径、账号输入、AI probe 门禁、X/飞书默认关闭、日常管理入口和网页固定中文状态通过 jsdom/组件测试。
+- Group 14：一致性备份契约、Redis 排除、跨用户重输 Secret 清单、诊断脱敏和 canary 拒绝导出通过自动化测试。真实数据库恢复见 `windows-docker-target.md`，状态待验。
+
+本补记只提升自动化/Mock/Windows 打包证据，不改变表中真实 X、AI、飞书、Docker 和家庭人工验收的“待验”分类。
 
 对每个待验收 TC 复制以下记录，完成后再更新上表：
 

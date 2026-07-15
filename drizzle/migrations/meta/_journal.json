@@ -43,6 +43,13 @@
       "when": 1784113506381,
       "tag": "0005_burly_slipstream",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1784118614008,
+      "tag": "0006_flashy_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

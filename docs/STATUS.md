@@ -4,46 +4,36 @@
 
 ## 当前阶段
 
-`build-serenity-intelligence-monitor` 的原始 8 组研究闭环已完成本地实现、Mock/自动化验证和一次 `test_verify`，但用户在 Harness `user_accept` 判定家庭交付方式不合格。当前正在修订同一 change 的书面规格：新增 Electron 自包含 Windows 启动器、GUI 首次设置、DPAPI vault、受控服务生命周期、双协议 AI registry/probe、备份和脱敏诊断；Group 9～14 尚未实施，当前不得完成 `user_accept` 或归档。
+`build-serenity-intelligence-monitor` 仍位于 Harness `user_accept` 修订车道。用户已批准 Group 9～14 方案；Group 9～13 已按组提交，Group 14 的可离线实现已在当前工作树完成。不得将本状态解释为最终用户验收或归档完成。
 
-## 已有能力
+## 已实现
 
-- 两个同权限家庭账号、服务端 Redis 会话、CSRF/同源保护和私有 API
-- 最新情报、时间线、组合筛选、分层详情、六类反馈和运行状态网页
-- X 官方 API 单账号适配器、稳定身份 bootstrap、分页/补偿、版本与生命周期归档
-- 有界上下文、现有 OpenAI `gpt-5.6-terra` Responses 严格结构化适配器、原子预算与用量审计；它将由可配置双协议 registry/probe 修订任务取代
-- 版本化可解释重要性评分和提醒候选事实
-- 默认关闭的飞书提醒；评分候选生产扫描、事务 reservation、冷却/去重、带审计的人工恢复、强制安全签名和结果未知保护
-- MySQL migration、BullMQ worker、容器入口、Secret/能力边界审计
+- Electron main/preload/renderer、窄 IPC、严格 CSP、托盘与 Windows portable 打包
+- GUI 首次设置和日常管理；普通用户无需 Node、终端或家庭生产 `.env`
+- `%LOCALAPPDATA%\Serenity` 非敏感配置与 `safeStorage`/DPAPI vault 分离，ACL 失败时禁止保存
+- 两个家庭账号随机盐 scrypt 摘要、改密会话撤销边界、一次性私有运行快照
+- 中文环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、幂等服务顺序和 `utilityProcess` 管理契约
+- OpenAI 官方 preset 与自定义 HTTPS preset；Responses/Chat Completions 双协议严格结构化 adapter、capability probe 和完整审计字段
+- X/飞书默认关闭；未配置时固定显示“X 未真实同步”“飞书 disabled”，不创建真实请求或通知工作
+- MySQL 一致性备份、非敏感配置、版本与 DPAPI 密文副本；Redis 明确不作为可移植事实
+- 诊断导出仅包含版本、健康、端口、容器和脱敏日志；Secret canary 命中时拒绝导出
 
-## 验证证据
+## 已验证
 
-- `pnpm check`：通过
-- `pnpm test`：44 个测试文件、188 个测试全部通过
-- `pnpm lint`：通过
-- `pnpm build`：通过，生成 `dist/public` 和 `dist/server/main.js`
-- `pnpm audit:secrets`：输出 `secret-audit-ok`
-- 通知专项：关闭/误配置/签名固定向量/候选预留/并发/中断恢复/超时/人工恢复/重试成功均通过 Mock 测试
-- 验收报告：`docs/verification/build-serenity-intelligence-monitor.md`
+- Group 9～14 相关单元、组件、边界和失败关闭测试通过
+- `pnpm check`、`pnpm lint`、`pnpm build:desktop`、`pnpm audit:secrets` 通过
+- `release/Serenity-0.1.0-x64.exe` 可生成并通过本机启动冒烟
+- OpenSpec strict validate 通过；追溯检查覆盖 26 个 AC、52 个 TC 和 50 个任务，结果 `passed=true`
+- 独立代码复核最终结论 `Ready: Yes`，未留 Critical 或 Important 问题
 
-## 已完成的规格与实现工作
+## 待真实验证
 
-- 19 条验收标准、38 条测试用例、8 个任务组、33 个可追溯任务
-- X 官方轮询/补偿、上下文、内容版本、恢复和成本边界设计
-- 私有网页主入口、单管理员会话、搜索/详情/反馈/状态设计
-- OpenAI `gpt-5.6-terra` Responses API 适配器与严格结构化输出方案
-- 可选飞书提醒；启用时强制安全签名，未配置时不阻塞归档、AI、搜索和查看
-- 失败可见/可恢复、外部文本不可信、无交易/Hook/客户端抓取边界测试
-
-## 尚未真实验证
-
-- Docker/Compose 构建和运行、生产 HTTPS 部署
-- 真实 X Developer 凭据、credits、政策复核和内容闭环
-- 真实 OpenAI `gpt-5.6-terra` 质量、usage 和成本
-- 可选的真实签名飞书发送
-- 两个家庭账号现场操作和爸爸中文理解验收
-- Electron Windows `.exe`、GUI-only 首启、DPAPI vault、真实 Docker 生命周期、备份恢复和脱敏诊断均尚未实现或验证
+- 当前开发机没有 Docker CLI，未执行真实 MySQL/Redis、migration、API、worker heartbeat、停止/恢复闭环
+- 未使用真实 X、AI 或飞书凭据；Mock 证据不代表真实 API
+- DPAPI/ACL 已实现并由注入测试验证，仍需在目标 Windows 用户下执行真实保存与跨用户恢复测试
+- 备份恢复仍需在目标 Docker 环境完成数据库恢复演练
+- 两个家庭账号现场操作与爸爸中文理解验收
 
 ## 下一步
 
-完成 OpenSpec strict validate、AC→TC→Task 追溯检查、重新顾问团审查与 debate，把 Group 9～14 和审查结论交给用户确认；确认前不写实现代码。后续实现完成后必须重新独立复核、运行完整验证与 Harness `test_verify`，再回到 `user_accept`。
+在目标 Windows + Docker Desktop 环境执行 `docs/verification/windows-docker-target.md`。补齐真实生命周期证据后重新运行 Harness `test_verify`，再返回 `user_accept`；不得提前归档、发布或推送。

@@ -12,5 +12,7 @@ describe('AI capability probe', () => {
     await expect(runCapabilityProbe(adapter, 'custom-model')).resolves.toMatchObject({ compatible: true, probeVersion: '1' });
     const missingUsage = { analyze: async () => ({ ...(await adapter.analyze()), usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } }) };
     await expect(runCapabilityProbe(missingUsage, 'custom-model')).resolves.toMatchObject({ compatible: false, category: 'usage_missing' });
+    const silentAlias = { analyze: async () => ({ ...(await adapter.analyze()), actualModel: 'custom-model-2026-07-15' }) };
+    await expect(runCapabilityProbe(silentAlias, 'custom-model')).resolves.toMatchObject({ compatible: false, category: 'model_mismatch' });
   });
 });

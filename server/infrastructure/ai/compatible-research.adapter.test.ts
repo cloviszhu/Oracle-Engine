@@ -9,7 +9,7 @@ const envelope = buildResearchEnvelope({
 });
 const testCredential = 'compatible-test-credential';
 const base = {
-  provider: 'custom', baseUrl: 'https://models.example.test', apiKey: testCredential,
+  providerPreset: 'custom' as const, provider: 'custom', baseUrl: 'https://models.example.test', apiKey: testCredential,
   model: 'custom-model', reasoningEffort: 'medium' as const, inputCostPerMillionCents: 100,
   outputCostPerMillionCents: 200, pricingVersion: 'user-2026-07-15',
 };
@@ -31,7 +31,9 @@ describe('CompatibleResearchModelAdapter', () => {
     expect(request.tools).toEqual([]);
     expect(request).toHaveProperty(schemaField);
     expect(JSON.stringify(request)).toContain('"strict":true');
+    if (protocol === 'chat_completions') expect(request).not.toHaveProperty('response_format.json_schema.type');
     expect(result).toMatchObject({ actualModel: 'custom-model', providerRequestId: expect.any(String), usage: { totalTokens: 30 } });
+    expect(result.requestId).not.toBe('request-1');
   });
 
   it.each([

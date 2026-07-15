@@ -387,6 +387,7 @@ export const externalUsage = mysqlTable(
   {
     id: id('id').primaryKey(),
     provider: varchar('provider', { length: 32 }).notNull(),
+    providerPreset: varchar('provider_preset', { length: 32 }),
     operation: varchar('operation', { length: 64 }).notNull(),
     apiVersion: varchar('api_version', { length: 128 }),
     protocol: varchar('protocol', { length: 32 }),
@@ -404,6 +405,7 @@ export const externalUsage = mysqlTable(
     promptVersion: varchar('prompt_version', { length: 64 }),
     schemaVersion: varchar('schema_version', { length: 64 }),
     probeVersion: varchar('probe_version', { length: 32 }),
+    probePassedAt: datetime('probe_passed_at', { mode: 'date', fsp: 3 }),
     occurredAt: datetime('occurred_at', { mode: 'date', fsp: 3 }).notNull(),
   },
   (table) => [index('external_usage_provider_time_idx').on(table.provider, table.occurredAt)],

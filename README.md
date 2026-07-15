@@ -2,7 +2,7 @@
 
 仅供家庭内部使用的海外产业研究辅助系统。私有网页是主要入口：归档 Serenity 内容，通过统一 AI 适配器生成分层中文研究卡片，并提供搜索、详情、反馈和运行状态。OpenAI 官方 preset 推荐 `gpt-5.6-terra`；修订目标还支持通过 probe 的 Responses-compatible 与 Chat Completions-compatible 配置。飞书只承担可选的重要提醒。
 
-当前 `build-serenity-intelligence-monitor` 的原始研究闭环已完成本地实现和 Mock/自动化验证；用户在 `user_accept` 要求补齐自包含 Windows `.exe`、GUI 配置、安全 vault 和服务管理。该修订仍处于规格/任务重新评审阶段，尚未实现，不能视为家庭交付闭环已通过。
+`build-serenity-intelligence-monitor` 的研究闭环与家庭本地版 Group 9～13 已实现；Group 14 的备份、诊断、文档和 Windows 可携带产物已完成本地自动化验证。当前开发机没有 Docker，因此真实 Docker 生命周期、真实外部 API、备份恢复和家庭人工验收仍保持待验，尚未完成最终 `user_accept`。
 
 ## 技术基线
 
@@ -12,6 +12,7 @@
 - Drizzle ORM + MySQL 8
 - BullMQ + Redis 7
 - Vitest + ESLint
+- Electron 37 + electron-vite + electron-builder
 
 ## 本地命令
 
@@ -21,6 +22,8 @@ pnpm check
 pnpm test
 pnpm lint
 pnpm build
+pnpm build:desktop
+pnpm dist:desktop
 pnpm audit:secrets
 pnpm dev
 ```
@@ -32,7 +35,7 @@ pnpm dev
 
 ## 配置
 
-`.env.example` 仅供开发和测试。修订后的家庭生产路径将由 Electron GUI 与 Windows DPAPI vault 管理配置，不要求普通用户手工编辑 `.env` 或生成密码摘要。不得提交 `.env`、API Token、Webhook 或 Cookie。
+`.env.example` 仅供开发和测试。家庭生产路径由 Electron GUI 与 Windows DPAPI vault 管理配置，不要求普通用户手工编辑 `.env` 或生成密码摘要。不得提交 `.env`、API Token、Webhook 或 Cookie。
 
 当前开发者运行步骤和未来家庭启动器边界见 `docs/OPERATIONS.md`。爸爸只需使用网页，不需要飞书。
 
@@ -47,4 +50,4 @@ pnpm dev
 
 ## 下一步
 
-完成家庭本地版规格、TC、Group 9～14 的严格校验与重新评审，交由用户确认；确认前不写修订实现代码。
+在带 Docker Desktop 的 Windows 目标机执行 `docs/verification/windows-docker-target.md`，补齐真实生命周期证据后重新进行 Harness `test_verify`，再回到 `user_accept`。

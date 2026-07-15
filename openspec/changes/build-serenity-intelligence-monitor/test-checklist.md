@@ -835,3 +835,14 @@
 **验收结论**：22 个 `[AI自测]` 全部通过；6 个 `[回写后测]` 标记待运行验证；10 个 `[用户手动]` 待用户验证。无 AI 自测失败，可以进入 `user_accept`，但真实外部与现场项目在完成前不得归档为已验收。
 **验收人**：Codex 主代理 + 独立评审子代理（Group 8 代码复核与 test_verify 机械复核）
 **验收时间**：2026-07-15
+
+## 家庭本地版修订自动化预检记录（2026-07-15）
+
+本记录覆盖 AC-20～AC-26 的可离线部分，尚未替代 Harness `test_verify`，也不提升真实 Docker、真实外部 API 或家庭人工证据类别。
+
+- `pnpm test`：67 个测试文件、249 个测试全部通过。
+- `pnpm check`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`：通过。
+- OpenSpec strict validate：通过。
+- 追溯检查：26/26 AC、52/52 TC、50/50 tasks，`passed=true`。
+- 独立复核首轮及修复复核提出的启动链路、回环绑定、AI Key 换址绑定、不安全 URL、Chat schema、probe 门禁、会话撤销、X 账号、诊断 canary 与备份原子性问题均已关闭；最终结论 `Ready: Yes`。
+- TC-20.1、TC-20.2、TC-26.1 以及 TC-23 的真实 Docker 生命周期仍按 `docs/verification/windows-docker-target.md` 保持待验；Task 14.2、Group 14 自测和最终 Git checkpoint 不提前勾选。

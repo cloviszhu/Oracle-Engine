@@ -1,8 +1,8 @@
 # Serenity 配置、启动与真实联调
 
-> 状态说明（2026-07-15）：本文件下方命令是当前开发者/测试路径，不是家庭最终交付方式。已确认的修订目标是自包含 Electron Windows `.exe`：普通用户通过 GUI 配置，Secret 由 `safeStorage`/DPAPI vault 保存，API/worker 由启动器管理。Group 9～14 尚未实施，因此不得把目标流程写成已可用。
+> 状态说明（2026-07-15）：Electron 家庭本地路径已实现并生成 Windows portable 产物；当前开发机没有 Docker CLI，真实服务生命周期仍待目标环境验证。下方开发者命令不是家庭用户操作步骤。
 
-## 0. 家庭本地版目标流程（待实现）
+## 0. 家庭本地版目标流程
 
 1. 运行自包含 `.exe`，无需安装 Node、打开终端或编辑 `.env`。
 2. GUI 检查 Docker Desktop、Compose、虚拟化、端口、磁盘和权限；缺少 Docker 时显示中文安装与复查说明。
@@ -10,7 +10,7 @@
 4. 启动器只用 Compose 管理 Serenity MySQL/Redis，并用 `utilityProcess` 管理 API/worker。
 5. 一键启动、停止、检查健康、打开本机私有网页、备份和导出脱敏诊断。
 
-OpenAI 官方 preset 推荐 `gpt-5.6-terra`，但家庭 GUI 将支持 Responses-compatible 与 Chat Completions-compatible、自定义 base URL/model 和 capability probe。Sites、云端、远程访问及关机后持续运行延期到后续 change。
+OpenAI 官方 preset 推荐 `gpt-5.6-terra`；家庭 GUI 已支持 Responses-compatible 与 Chat Completions-compatible、自定义 HTTPS base URL/model 和 capability probe。任一能力缺失都会阻断启用，不自动 fallback。价格只取用户配置，不从模型名猜测。Sites、云端、远程访问及关机后持续运行延期到后续 change。
 
 本文是 `build-serenity-intelligence-monitor` 的固定运维入口。系统只供家庭内部使用；爸爸只使用私有网页。飞书是可选的重要提醒渠道，第一版仅允许发送到需求提出者控制的私有群，不支持个人私聊或任意定向。
 

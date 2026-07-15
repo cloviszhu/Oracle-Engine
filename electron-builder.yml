@@ -5,10 +5,10 @@ directories:
 files:
   - out/**
 extraResources:
-  - from: dist/server
-    to: app/server
-  - from: dist/public
-    to: app/public
+  - from: dist
+    to: dist
+  - from: drizzle/migrations
+    to: drizzle/migrations
   - from: docker-compose.yml
     to: docker-compose.yml
 win:

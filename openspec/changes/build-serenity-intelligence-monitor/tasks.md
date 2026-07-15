@@ -964,7 +964,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 14.1: 实现一致性备份、恢复清单和脱敏诊断
 
-- [ ] [完成] Task 14.1
+- [x] [完成] Task 14.1
   - 实现细节: 导出 MySQL 一致性备份、非敏感配置、版本和 DPAPI 密文副本；Redis 不作为可移植事实；跨电脑/用户要求重输 Secret。诊断仅含版本、健康、端口、容器、脱敏错误/日志，canary 命中即拒绝导出。
   - **覆盖测试用例**: TC-22.1, TC-26.1, TC-26.2
 
@@ -973,13 +973,14 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 - [ ] [完成] Task 14.2
   - 实现细节: 在带 Docker Desktop 的 Windows 目标环境执行全新 user-data GUI 首启、启动/停止、健康、migration、worker heartbeat、打开网页、备份恢复和安装产物扫描；无环境时必须保持待验，不得用 fake controller 冒充。
   - **覆盖测试用例**: TC-18.1, TC-18.2, TC-20.1, TC-20.2, TC-21.2, TC-23.1, TC-23.2, TC-26.1
+  - 待验记录（2026-07-15）：当前开发机 `docker-cli-missing`；Windows portable 已打包并通过启动冒烟，但真实 Docker 生命周期、DPAPI/ACL、备份恢复和 worker heartbeat 必须按 `docs/verification/windows-docker-target.md` 在目标机补证，fake controller 不计完成。
 
 ### Task 14.3: 更新状态、项目地图、操作和验收文档
 
-- [ ] [完成] Task 14.3
+- [x] [完成] Task 14.3
   - 实现细节: 更新 `README.md`、`docs/STATUS.md`、`docs/PROJECT_MAP.md`、`docs/OPERATIONS.md` 和验收报告；删除“准备进入 test_verify”等过时状态；严格区分自动化、Mock、真实 API、Windows/Docker 目标环境和用户手动证据，不提前声称修订功能已实现。
   - **覆盖测试用例**: TC-18.1, TC-18.2, TC-26.1, TC-26.2
 
 - [ ] [自测] 运行 OpenSpec strict validate、追溯检查、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`、Electron 打包和安装产物扫描；完成独立代码复核后重新运行 Harness `test_verify`
-- [ ] [原声对账] Sites、云端、远程访问、关机后持续运行和云厂商选择只记延期约束，不创建/实施 change，不增加 `.openai/hosting.json`
+- [x] [原声对账] Sites、云端、远程访问、关机后持续运行和云厂商选择只记延期约束，不创建/实施 change，不增加 `.openai/hosting.json`
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 14`

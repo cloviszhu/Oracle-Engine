@@ -1,4 +1,5 @@
 import { researchCardJsonSchema } from '../../../shared/contracts/research-card.js';
+import { randomUUID } from 'node:crypto';
 import { sourceIdsFromEnvelope, validateResearchCardDraft, type ResearchEnvelope } from '../../research/research-contract.js';
 import type { ResearchModelAdapter, ResearchModelResult } from '../../research/research-model.adapter.js';
 
@@ -14,6 +15,7 @@ export class ProviderAdapterError extends Error {
 }
 
 export interface CompatibleResearchOptions {
+  providerPreset: 'openai' | 'custom';
   provider: string;
   protocol: CompatibleProtocol;
   baseUrl: string;
@@ -23,6 +25,8 @@ export interface CompatibleResearchOptions {
   inputCostPerMillionCents: number;
   outputCostPerMillionCents: number;
   pricingVersion: string;
+  probeVersion?: string;
+  probePassedAt?: string;
   fetch?: Fetch;
   deadlineMs?: number;
 }
@@ -41,7 +45,7 @@ export class CompatibleResearchModelAdapter implements ResearchModelAdapter {
   constructor(private readonly options: CompatibleResearchOptions) {
     let url: URL;
     try { url = new URL(options.baseUrl); } catch { throw new ProviderAdapterError('configuration', false); }
-    if (url.protocol !== 'https:' || !options.apiKey.trim() || !options.provider.trim() || !options.model.trim()) {
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || !options.apiKey.trim() || !options.provider.trim() || !options.model.trim()) {
       throw new ProviderAdapterError('configuration', false);
     }
     if (![options.inputCostPerMillionCents, options.outputCostPerMillionCents].every((value) => Number.isFinite(value) && value >= 0)) {
@@ -68,7 +72,7 @@ export class CompatibleResearchModelAdapter implements ResearchModelAdapter {
     if (!response.ok) throw classifyStatus(response.status);
     const body = await safeJson(response);
     const actualModel = text(body.model);
-    if (!actualModel || (actualModel !== this.options.model && !actualModel.startsWith(`${this.options.model}-`))) {
+    if (!actualModel || actualModel !== this.options.model) {
       throw new ProviderAdapterError('capability', false, response.status);
     }
     const outputText = this.options.protocol === 'responses' ? extractResponsesText(body) : extractChatText(body);
@@ -80,25 +84,27 @@ export class CompatibleResearchModelAdapter implements ResearchModelAdapter {
     const providerRequestId = text(body.id);
     if (!providerRequestId) throw new ProviderAdapterError('invalid_output', true, response.status);
     const usage = usageFromBody(body, this.options.protocol);
-    const requestId = response.headers.get('x-request-id') ?? undefined;
+    const requestId = randomUUID();
     return {
       draft, provider: this.options.provider, requestedModel: this.options.model, actualModel,
       providerRequestId, requestId, usage,
       costCents: (usage.inputTokens * this.options.inputCostPerMillionCents + usage.outputTokens * this.options.outputCostPerMillionCents) / 1_000_000,
       audit: {
         protocol: this.options.protocol,
+        providerPreset: this.options.providerPreset,
         providerHost: new URL(this.baseUrl).host,
         pricingVersion: this.options.pricingVersion,
         promptVersion: 'research-prompt-v1',
         schemaVersion: 'research-card-v1',
-        probeVersion: '1',
+        probeVersion: this.options.probeVersion,
+        probePassedAt: this.options.probePassedAt,
       },
     };
   }
 }
 
-function strictSchema() {
-  return { type: 'json_schema', name: 'research_card_draft', strict: true, schema: researchCardJsonSchema };
+function strictSchemaDefinition() {
+  return { name: 'research_card_draft', strict: true, schema: researchCardJsonSchema };
 }
 
 function responsesRequest(options: CompatibleResearchOptions, envelope: ResearchEnvelope) {
@@ -106,7 +112,7 @@ function responsesRequest(options: CompatibleResearchOptions, envelope: Research
     model: options.model, instructions: SYSTEM_INSTRUCTIONS,
     input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ untrusted_data: envelope }) }] }],
     reasoning: { effort: options.reasoningEffort ?? 'medium' }, tools: [],
-    text: { format: strictSchema() }, store: false,
+    text: { format: { type: 'json_schema', ...strictSchemaDefinition() } }, store: false,
   };
 }
 
@@ -115,7 +121,7 @@ function chatRequest(options: CompatibleResearchOptions, envelope: ResearchEnvel
     model: options.model,
     messages: [{ role: 'system', content: SYSTEM_INSTRUCTIONS }, { role: 'user', content: JSON.stringify({ untrusted_data: envelope }) }],
     tools: [], tool_choice: 'none',
-    response_format: { type: 'json_schema', json_schema: strictSchema() },
+    response_format: { type: 'json_schema', json_schema: strictSchemaDefinition() },
   };
 }
 

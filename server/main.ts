@@ -9,7 +9,8 @@ async function bootstrap(): Promise<void> {
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
   const port = Number.parseInt(process.env.PORT ?? '3000', 10);
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port, '127.0.0.1');
+  (process as NodeJS.Process & { parentPort?: { postMessage(message: unknown): void } }).parentPort?.postMessage({ type: 'ready', role: 'api' });
 }
 
 void bootstrap();

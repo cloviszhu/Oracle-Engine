@@ -59,6 +59,8 @@ const environmentSchema = z
     AI_DAILY_BUDGET_CENTS: z.coerce.number().int().nonnegative().max(10_000_000).default(0),
     AI_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
     AI_PRICING_VERSION: z.string().trim().min(1).max(64).default('user-config-v1'),
+    AI_PROBE_VERSION: optionalString,
+    AI_PROBE_PASSED_AT: optionalString,
     FEISHU_ENABLED: booleanString,
     FEISHU_WEBHOOK_URL: optionalString,
     FEISHU_SIGNING_SECRET: optionalString,
@@ -97,19 +99,18 @@ const environmentSchema = z
         message: 'FEISHU_WEBHOOK_URL and FEISHU_SIGNING_SECRET are required when Feishu is enabled',
       });
     }
-    const aiModel = value.AI_MODEL ?? value.OPENAI_MODEL ?? 'gpt-5.6-terra';
     const aiApiKey = value.AI_PROVIDER_API_KEY ?? value.OPENAI_API_KEY;
-    if (value.AI_PROVIDER_PRESET === 'openai' && (
-      value.AI_PROVIDER !== 'openai' || value.AI_PROTOCOL !== 'responses' || aiModel !== 'gpt-5.6-terra' || value.AI_BASE_URL
-    )) {
-      context.addIssue({ code: 'custom', message: 'AI_PROVIDER, AI_PROTOCOL and OPENAI_MODEL for the OpenAI official preset must use openai/responses/gpt-5.6-terra without AI_BASE_URL' });
+    if (value.AI_PROVIDER_PRESET === 'openai' && value.AI_PROVIDER !== 'openai') {
+      context.addIssue({ code: 'custom', message: 'AI_PROVIDER must use openai for the OpenAI official preset' });
     }
     if (value.AI_PROVIDER_PRESET === 'custom' && (!value.AI_BASE_URL || !value.AI_MODEL)) {
       context.addIssue({ code: 'custom', message: 'AI_BASE_URL and AI_MODEL are required for a custom provider preset' });
     }
     if (value.AI_BASE_URL) {
       try {
-        if (new URL(value.AI_BASE_URL).protocol !== 'https:') context.addIssue({ code: 'custom', message: 'AI_BASE_URL must use HTTPS' });
+        const url = new URL(value.AI_BASE_URL);
+        if (url.protocol !== 'https:') context.addIssue({ code: 'custom', message: 'AI_BASE_URL must use HTTPS' });
+        if (url.username || url.password || url.search || url.hash) context.addIssue({ code: 'custom', message: 'AI_BASE_URL must not contain credentials, query parameters, or fragments' });
       } catch { context.addIssue({ code: 'custom', message: 'AI_BASE_URL must be a valid HTTPS URL' }); }
     }
     if (value.AI_PROVIDER_API_KEY && value.OPENAI_API_KEY) {
@@ -170,6 +171,8 @@ export interface RuntimeConfig {
     maxRequestCostCents?: number;
     reasoningEffort: 'low' | 'medium' | 'high';
     pricingVersion: string;
+    probeVersion?: string;
+    probePassedAt?: string;
   };
   feishu:
     | { enabled: false; cooldownSeconds: number }
@@ -216,6 +219,8 @@ const runtimeConfigSnapshotSchema = z.object({
     maxRequestCostCents: z.number().nonnegative().optional(),
     reasoningEffort: z.enum(['low', 'medium', 'high']),
     pricingVersion: z.string().min(1).max(64),
+    probeVersion: z.string().min(1).max(64).optional(),
+    probePassedAt: z.string().datetime().optional(),
   }).strict(),
   feishu: z.discriminatedUnion('enabled', [
     z.object({ enabled: z.literal(false), cooldownSeconds: z.number().int().positive() }).strict(),
@@ -234,11 +239,17 @@ const runtimeConfigSnapshotSchema = z.object({
     maxRawPayloadBytes: z.number().int().positive(),
   }).strict(),
 }).strict().superRefine((value, context) => {
-  if (value.ai.providerPreset === 'openai' && (
-    value.ai.provider !== 'openai' || value.ai.protocol !== 'responses' || value.ai.model !== 'gpt-5.6-terra' || value.ai.baseUrl
-  )) context.addIssue({ code: 'custom', message: 'Invalid OpenAI official preset snapshot', path: ['ai'] });
+  if (value.ai.providerPreset === 'openai' && value.ai.provider !== 'openai') {
+    context.addIssue({ code: 'custom', message: 'Invalid OpenAI official preset snapshot', path: ['ai', 'provider'] });
+  }
   if (value.ai.providerPreset === 'custom' && !value.ai.baseUrl) {
     context.addIssue({ code: 'custom', message: 'Custom provider snapshot requires HTTPS baseUrl', path: ['ai', 'baseUrl'] });
+  }
+  if (value.ai.baseUrl) {
+    const url = new URL(value.ai.baseUrl);
+    if (url.username || url.password || url.search || url.hash) {
+      context.addIssue({ code: 'custom', message: 'AI baseUrl must not contain credentials, query parameters, or fragments', path: ['ai', 'baseUrl'] });
+    }
   }
 });
 
@@ -281,6 +292,8 @@ export function parseRuntimeConfig(environment: Record<string, string | undefine
       maxRequestCostCents: value.AI_MAX_REQUEST_COST_CENTS,
       reasoningEffort: value.AI_REASONING_EFFORT,
       pricingVersion: value.AI_PRICING_VERSION,
+      probeVersion: value.AI_PROBE_VERSION,
+      probePassedAt: value.AI_PROBE_PASSED_AT,
     },
     feishu: value.FEISHU_ENABLED
       ? {

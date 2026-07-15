@@ -13,6 +13,8 @@ export interface ProviderAdapterConfig {
   inputCostPerMillionCents: number;
   outputCostPerMillionCents: number;
   pricingVersion?: string;
+  probeVersion?: string;
+  probePassedAt?: string;
 }
 
 export class ProviderAdapterRegistry {
@@ -22,20 +24,26 @@ export class ProviderAdapterRegistry {
   resolve(config: ProviderAdapterConfig): { adapter: ResearchModelAdapter; descriptor: { preset: string; protocol: CompatibleProtocol; host: string; model: string } } {
     let baseUrl: string;
     if (config.preset === 'openai') {
-      if (config.provider !== 'openai' || config.protocol !== 'responses' || config.model !== 'gpt-5.6-terra' || config.baseUrl) {
-        throw new ProviderAdapterError('configuration', false, undefined, 'OpenAI 官方预设固定使用 Responses、官方地址和 gpt-5.6-terra');
-      }
-      baseUrl = 'https://api.openai.com';
+      if (config.provider !== 'openai') throw new ProviderAdapterError('configuration', false);
+      baseUrl = normalizeProviderBaseUrl(config.baseUrl || 'https://api.openai.com');
     } else {
       if (!config.baseUrl) throw new ProviderAdapterError('configuration', false);
-      baseUrl = config.baseUrl;
+      baseUrl = normalizeProviderBaseUrl(config.baseUrl);
     }
-    let url: URL;
-    try { url = new URL(baseUrl); } catch { throw new ProviderAdapterError('configuration', false); }
-    if (url.protocol !== 'https:') throw new Error('自定义 AI 服务地址必须使用 HTTPS');
+    const url = new URL(baseUrl);
     const adapter = new CompatibleResearchModelAdapter({
-      ...config, baseUrl, pricingVersion: config.pricingVersion ?? 'user-config-v1', fetch: this.fetch,
+      ...config, providerPreset: config.preset, baseUrl, pricingVersion: config.pricingVersion ?? 'user-config-v1', fetch: this.fetch,
     });
     return { adapter, descriptor: { preset: config.preset, protocol: config.protocol, host: url.host, model: config.model } };
   }
+}
+
+export function normalizeProviderBaseUrl(value: string): string {
+  let url: URL;
+  try { url = new URL(value); } catch { throw new ProviderAdapterError('configuration', false); }
+  if (url.protocol !== 'https:') throw new ProviderAdapterError('configuration', false, undefined, 'AI 服务地址必须使用 HTTPS');
+  if (url.username || url.password || url.search || url.hash) {
+    throw new ProviderAdapterError('configuration', false, undefined, 'AI 服务地址不得包含凭据、查询参数或片段');
+  }
+  return url.toString().replace(/\/+$/, '');
 }

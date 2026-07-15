@@ -11,12 +11,14 @@ export interface ResearchModelResult {
   usage: { inputTokens: number; outputTokens: number; totalTokens: number };
   costCents: number;
   audit?: {
+    providerPreset: 'openai' | 'custom';
     protocol: 'responses' | 'chat_completions';
     providerHost: string;
     pricingVersion: string;
     promptVersion?: string;
     schemaVersion: string;
     probeVersion?: string;
+    probePassedAt?: string;
   };
 }
 

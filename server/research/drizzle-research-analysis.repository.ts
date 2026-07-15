@@ -64,11 +64,13 @@ export function toExternalUsageRecord(
     costCents: result.costCents.toFixed(4),
     ...(result.audit ? {
       protocol: result.audit.protocol,
+      providerPreset: result.audit.providerPreset,
       providerHost: result.audit.providerHost,
       pricingVersion: result.audit.pricingVersion,
       promptVersion: result.audit.promptVersion,
       schemaVersion: result.audit.schemaVersion,
       probeVersion: result.audit.probeVersion,
+      probePassedAt: result.audit.probePassedAt ? new Date(result.audit.probePassedAt) : undefined,
     } : {}),
     occurredAt,
   };

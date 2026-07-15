@@ -27,7 +27,7 @@ describe('server and worker delivery layout', () => {
     });
   });
 
-  it('keeps legacy AI key aliases and embedded compose passwords out of delivery config', async () => {
+  it('keeps legacy AI aliases and application secrets out of infrastructure-only Compose', async () => {
     const environmentExample = await readFile('.env.example', 'utf8');
     const compose = await readFile('docker-compose.yml', 'utf8');
 
@@ -37,6 +37,8 @@ describe('server and worker delivery layout', () => {
     expect(environmentExample).not.toMatch(new RegExp(`^${legacyKeyName}=`, 'm'));
     expect(compose).not.toMatch(new RegExp(`^\\s*${legacyKeyName}:`, 'm'));
     expect(compose).not.toContain('local-root-only');
-    expect(compose).toContain('worker:');
+    expect(compose).not.toContain('SESSION_SECRET');
+    expect(compose).not.toMatch(/^\s{2}(api|worker):/m);
+    expect(compose).toContain('127.0.0.1:${SERENITY_MYSQL_PORT:-33060}:3306');
   });
 });

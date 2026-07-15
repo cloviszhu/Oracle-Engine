@@ -42,6 +42,7 @@ await checkInfrastructureReadiness({
   redisPing: () => redis.ping(),
 });
 await writeHeartbeat('ready');
+(process as NodeJS.Process & { parentPort?: { postMessage(message: unknown): void } }).parentPort?.postMessage({ type: 'ready', role: 'worker' });
 
 let notificationConnection: ReturnType<typeof createRedisConnection> | undefined;
 let notificationWorker: Worker<{ deliveryId: string }> | undefined;

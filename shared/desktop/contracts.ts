@@ -42,6 +42,13 @@ export interface AISettingsInput {
   maxRequestCostCents: number;
   dailyBudgetCents: number;
 }
+export const aiSettingsInputSchema = z.object({
+  enabled: z.boolean(), providerPreset: z.enum(['openai', 'custom']), protocol: z.enum(['responses', 'chat_completions']),
+  baseUrl: z.string().max(2_048), apiKey: z.string().max(4_096).optional(), model: z.string().trim().min(1).max(128),
+  reasoning: z.enum(['low', 'medium', 'high']), inputCostPerMillionCents: z.number().finite().nonnegative().max(100_000_000),
+  outputCostPerMillionCents: z.number().finite().nonnegative().max(100_000_000), maxRequestCostCents: z.number().finite().nonnegative().max(100_000_000),
+  dailyBudgetCents: z.number().int().nonnegative().max(10_000_000),
+}).strict();
 export interface FamilyAccountInput { actorId: string; username: string; password?: string }
 export interface LauncherSettingsInput {
   familyAccounts: FamilyAccountInput[];
@@ -49,12 +56,24 @@ export interface LauncherSettingsInput {
   x?: { enabled: boolean; token?: string; policyConfirmed: boolean };
   feishu?: { enabled: boolean; webhookUrl?: string; signingSecret?: string };
 }
+export const launcherSettingsInputSchema = z.object({
+  familyAccounts: z.array(z.object({ actorId: z.string().trim().min(1).max(64), username: z.string().trim().min(1).max(64), password: z.string().max(256).optional() }).strict()).length(2),
+  ai: aiSettingsInputSchema.optional(),
+  x: z.object({ enabled: z.boolean(), token: z.string().max(4_096).optional(), policyConfirmed: z.boolean() }).strict().optional(),
+  feishu: z.object({ enabled: z.boolean(), webhookUrl: z.string().max(2_048).optional(), signingSecret: z.string().max(4_096).optional() }).strict().optional(),
+}).strict();
 export interface SetupStatus {
   configured: boolean;
   accountsConfigured?: boolean;
   ai?: SecretConfiguredState & { enabled: boolean };
   x?: SecretConfiguredState & { enabled: boolean };
   feishu?: SecretConfiguredState & { enabled: boolean };
+  editable?: {
+    familyAccounts: Array<{ actorId: string; username: string }>;
+    ai?: Omit<AISettingsInput, 'apiKey'>;
+    x: { enabled: boolean; policyConfirmed: boolean };
+    feishu: { enabled: boolean };
+  };
 }
 export interface CapabilityProbeResult {
   compatible: boolean;

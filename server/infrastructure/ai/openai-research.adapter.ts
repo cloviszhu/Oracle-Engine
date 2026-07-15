@@ -46,7 +46,7 @@ export type ResearchModelCapability =
 
 export function createResearchModelCapability(
   config: Pick<RuntimeConfig['ai'], 'provider' | 'model' | 'apiKey' | 'dailyBudgetCents' | 'inputCostPerMillionCents' | 'outputCostPerMillionCents' | 'maxRequestCostCents' | 'reasoningEffort'>
-    & Partial<Pick<RuntimeConfig['ai'], 'providerPreset' | 'protocol' | 'baseUrl' | 'pricingVersion'>>,
+    & Partial<Pick<RuntimeConfig['ai'], 'providerPreset' | 'protocol' | 'baseUrl' | 'pricingVersion' | 'probeVersion' | 'probePassedAt'>>,
 ): ResearchModelCapability {
   if (!config.apiKey) return { enabled: false, reason: 'not_configured' };
   if (
@@ -57,30 +57,20 @@ export function createResearchModelCapability(
     throw new OpenAIResearchError('configuration', false);
   }
   const providerPreset = config.providerPreset ?? 'openai';
-  const protocol = config.protocol ?? 'responses';
-  if (providerPreset === 'openai' && config.model !== 'gpt-5.6-terra') {
-    throw new OpenAIResearchError('configuration', false);
-  }
-  const adapter = providerPreset === 'openai'
-    ? new OpenAIResearchModelAdapter({
-        apiKey: config.apiKey,
-        model: config.model as 'gpt-5.6-terra',
-        reasoningEffort: config.reasoningEffort,
-        inputCostPerMillionCents: config.inputCostPerMillionCents,
-        outputCostPerMillionCents: config.outputCostPerMillionCents,
-      })
-    : new ProviderAdapterRegistry().resolve({
-        preset: providerPreset,
-        provider: config.provider,
-        protocol,
-        baseUrl: config.baseUrl,
-        apiKey: config.apiKey,
-        model: config.model,
-        reasoningEffort: config.reasoningEffort,
-        inputCostPerMillionCents: config.inputCostPerMillionCents,
-        outputCostPerMillionCents: config.outputCostPerMillionCents,
-        pricingVersion: config.pricingVersion,
-      }).adapter;
+  const adapter = new ProviderAdapterRegistry().resolve({
+    preset: providerPreset,
+    provider: config.provider,
+    protocol: config.protocol ?? 'responses',
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    model: config.model,
+    reasoningEffort: config.reasoningEffort,
+    inputCostPerMillionCents: config.inputCostPerMillionCents,
+    outputCostPerMillionCents: config.outputCostPerMillionCents,
+    pricingVersion: config.pricingVersion,
+    probeVersion: config.probeVersion,
+    probePassedAt: config.probePassedAt,
+  }).adapter;
   return {
     enabled: true,
     adapter,

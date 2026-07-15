@@ -8,11 +8,11 @@
 | `server/auth/`、`server/content/`、`server/feedback/`、`server/operations/` | 私有 API 能力 | 家庭会话、检索/详情、反馈和安全状态 DTO |
 | `server/ingestion/`、`server/context/`、`server/research/`、`server/importance/` | 核心研究流水线 | X 归档、上下文、结构化 AI、预算和评分边界 |
 | `server/notifications/` | 可选通知业务 | 评分候选扫描、reservation、冷却/去重、dispatch、attempt、恢复审计和结果未知状态 |
-| `server/infrastructure/` | 数据库、队列和外部适配器 | X、OpenAI、飞书签名、Redis/BullMQ、配置和日志脱敏 |
-| `desktop/`（修订任务待实现） | Electron 家庭本地启动器 | main/preload/renderer、DPAPI vault、环境检查、Compose/utilityProcess、备份和诊断 |
-| `shared/` | 前后端共享类型和常量 | 基础状态、错误和研究卡片契约 |
-| `drizzle/` | MySQL schema 与 migration | 19 张业务/审计表和版本化迁移 |
-| `openspec/` | SDD 规格和 change | `build-serenity-intelligence-monitor` 在 `user_accept` 反馈后修订规格，Group 9～14 待用户确认 |
+| `server/infrastructure/` | 数据库、队列和外部适配器 | X、双协议 AI registry/probe、飞书签名、Redis/BullMQ、运行快照和日志脱敏 |
+| `desktop/` | Electron 家庭本地启动器 | main/preload/renderer、DPAPI vault、环境检查、Compose/utilityProcess、备份和诊断 |
+| `shared/` | 前后端与桌面共享类型 | 基础状态、错误、研究卡片和窄 IPC 契约 |
+| `drizzle/` | MySQL schema 与 migration | 19 张业务/审计表、双协议 AI 审计字段和版本化迁移 |
+| `openspec/` | SDD 规格和 change | `build-serenity-intelligence-monitor` 修订实现完成至目标环境待验，仍停留 `user_accept` |
 | `docs/` | 状态、运维和验收 | 状态、项目地图、运维说明和逐 TC 验收记录 |
 
 ## 变更指引

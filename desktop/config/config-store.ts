@@ -4,9 +4,16 @@ import { join } from 'node:path';
 export interface LauncherMetadata {
   version: 1;
   accountsConfigured?: boolean;
-  ai?: { enabled: boolean; provider: string; protocol: 'responses' | 'chat_completions'; model: string; baseUrl?: string };
-  x?: { enabled: boolean; sourceId?: string };
-  feishu?: { enabled: boolean };
+  ai?: {
+    enabled: boolean; providerPreset: 'openai' | 'custom'; provider: string;
+    protocol: 'responses' | 'chat_completions'; model: string; baseUrl?: string;
+    reasoningEffort: 'low' | 'medium' | 'high'; inputCostPerMillionCents: number;
+    outputCostPerMillionCents: number; maxRequestCostCents: number; dailyBudgetCents: number;
+    authBinding?: string;
+    probe?: { fingerprint: string; actualModel: string; providerRequestId: string; passedAt: string; probeVersion: string };
+  };
+  x?: { enabled: boolean; policyConfirmed?: boolean; sourceId?: string };
+  feishu?: { enabled: boolean; cooldownSeconds?: number };
   updatedAt?: string;
 }
 

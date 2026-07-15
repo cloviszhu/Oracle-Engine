@@ -28,14 +28,12 @@ describe('runtime configuration', () => {
     expect(config.familyAccounts).toHaveLength(2);
   });
 
-  it('rejects an unapproved provider, model, and legacy AI key alias', () => {
+  it('rejects an unapproved provider and legacy key alias while allowing an explicit official model override', () => {
     const legacyKeyName = ['AI', 'API', 'KEY'].join('_');
     expect(() => parseRuntimeConfig({ ...validEnvironment, AI_PROVIDER: 'other' })).toThrow(
       /AI_PROVIDER/,
     );
-    expect(() => parseRuntimeConfig({ ...validEnvironment, OPENAI_MODEL: 'fallback-model' })).toThrow(
-      /OPENAI_MODEL/,
-    );
+    expect(parseRuntimeConfig({ ...validEnvironment, OPENAI_MODEL: 'family-approved-model' }).ai.model).toBe('family-approved-model');
     expect(() => parseRuntimeConfig({ ...validEnvironment, [legacyKeyName]: `legacy-${'secret'}` })).toThrow(
       /AI_API_KEY/,
     );
