@@ -61,11 +61,21 @@ describe('runtime configuration', () => {
     );
   });
 
+  it('requires explicit pricing when OpenAI calls are enabled', () => {
+    expect(() => parseRuntimeConfig({
+      ...validEnvironment,
+      OPENAI_API_KEY: `openai-${'canary'}`,
+    })).toThrow(/OPENAI_INPUT_COST.*OPENAI_OUTPUT_COST.*AI_MAX_REQUEST_COST/);
+  });
+
   it('summarizes configuration without returning credentials or account digests', () => {
     const approvedKeyName = ['OPENAI', 'API', 'KEY'].join('_');
     const config = parseRuntimeConfig({
       ...validEnvironment,
       [approvedKeyName]: `openai-${'canary'}`,
+      OPENAI_INPUT_COST_PER_MILLION_CENTS: '250',
+      OPENAI_OUTPUT_COST_PER_MILLION_CENTS: '1500',
+      AI_MAX_REQUEST_COST_CENTS: '25',
       X_API_BEARER_TOKEN: 'x-canary',
     });
 

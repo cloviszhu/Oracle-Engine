@@ -4,6 +4,10 @@ const optionalString = z.preprocess(
   (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
   z.string().trim().min(1).optional(),
 );
+const optionalNonnegativeNumber = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z.coerce.number().nonnegative().max(100_000_000).optional(),
+);
 const booleanString = z
   .enum(['true', 'false'])
   .default('false')
@@ -44,6 +48,9 @@ const environmentSchema = z
     AI_PROVIDER: z.literal('openai'),
     OPENAI_MODEL: z.literal('gpt-5.6-terra'),
     OPENAI_API_KEY: optionalString,
+    OPENAI_INPUT_COST_PER_MILLION_CENTS: optionalNonnegativeNumber,
+    OPENAI_OUTPUT_COST_PER_MILLION_CENTS: optionalNonnegativeNumber,
+    AI_MAX_REQUEST_COST_CENTS: optionalNonnegativeNumber,
     AI_DAILY_BUDGET_CENTS: z.coerce.number().int().nonnegative().max(10_000_000).default(0),
     AI_REASONING_EFFORT: z.enum(['low', 'medium', 'high']).default('medium'),
     FEISHU_ENABLED: booleanString,
@@ -83,6 +90,16 @@ const environmentSchema = z
         message: 'FEISHU_WEBHOOK_URL and FEISHU_SIGNING_SECRET are required when Feishu is enabled',
       });
     }
+    if (value.OPENAI_API_KEY && (
+      value.OPENAI_INPUT_COST_PER_MILLION_CENTS === undefined
+      || value.OPENAI_OUTPUT_COST_PER_MILLION_CENTS === undefined
+      || value.AI_MAX_REQUEST_COST_CENTS === undefined
+    )) {
+      context.addIssue({
+        code: 'custom',
+        message: 'OPENAI_INPUT_COST, OPENAI_OUTPUT_COST and AI_MAX_REQUEST_COST are required when OpenAI is enabled',
+      });
+    }
     if (value.FEISHU_WEBHOOK_URL && !value.FEISHU_WEBHOOK_URL.startsWith('https://')) {
       context.addIssue({ code: 'custom', message: 'FEISHU_WEBHOOK_URL must use HTTPS' });
     }
@@ -108,6 +125,9 @@ export interface RuntimeConfig {
     model: 'gpt-5.6-terra';
     apiKey?: string;
     dailyBudgetCents: number;
+    inputCostPerMillionCents?: number;
+    outputCostPerMillionCents?: number;
+    maxRequestCostCents?: number;
     reasoningEffort: 'low' | 'medium' | 'high';
   };
   feishu: { enabled: false } | { enabled: true; webhookUrl: string; signingSecret: string };
@@ -150,6 +170,9 @@ export function parseRuntimeConfig(environment: Record<string, string | undefine
       model: value.OPENAI_MODEL,
       apiKey: value.OPENAI_API_KEY,
       dailyBudgetCents: value.AI_DAILY_BUDGET_CENTS,
+      inputCostPerMillionCents: value.OPENAI_INPUT_COST_PER_MILLION_CENTS,
+      outputCostPerMillionCents: value.OPENAI_OUTPUT_COST_PER_MILLION_CENTS,
+      maxRequestCostCents: value.AI_MAX_REQUEST_COST_CENTS,
       reasoningEffort: value.AI_REASONING_EFFORT,
     },
     feishu: value.FEISHU_ENABLED

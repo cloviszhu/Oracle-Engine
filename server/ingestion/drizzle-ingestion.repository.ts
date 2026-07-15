@@ -96,6 +96,22 @@ export class DrizzleIngestionRepository {
   }
 
   async persistPage(input: { runId: string; sourceId: string; page: XContentPage }): Promise<void> {
+    await this.persistObservedPage({
+      sourceId: input.sourceId,
+      page: input.page,
+      operation: 'get_user_posts',
+    });
+  }
+
+  async persistLookupPage(page: XContentPage): Promise<void> {
+    await this.persistObservedPage({ page, operation: 'lookup_posts' });
+  }
+
+  private async persistObservedPage(input: {
+    sourceId?: string;
+    page: XContentPage;
+    operation: 'get_user_posts' | 'lookup_posts';
+  }): Promise<void> {
     const fetchedAt = new Date();
     const primaryIds = new Set(input.page.items.map((item) => item.id));
     const allItems = new Map<string, XNormalizedContent>();
@@ -117,7 +133,7 @@ export class DrizzleIngestionRepository {
             id: internalContentId,
             provider: 'x',
             externalId: item.id,
-            sourceAccountId: primaryIds.has(item.id) ? input.sourceId : null,
+            sourceAccountId: primaryIds.has(item.id) ? input.sourceId ?? null : null,
             authorExternalId: item.authorId,
             sourceUrl,
             contentType: item.replyToId ? 'reply' : item.quoteIds.length > 0 ? 'quote' : 'post',
@@ -208,7 +224,7 @@ export class DrizzleIngestionRepository {
             });
         }
 
-        if (primaryIds.has(item.id)) {
+        if (input.sourceId && primaryIds.has(item.id)) {
           const idempotencyKey = `${internalContentId}--${payloadHash}`;
           await transaction
             .insert(processingIntents)
@@ -230,7 +246,7 @@ export class DrizzleIngestionRepository {
       await transaction.insert(externalUsage).values({
         id: randomUUID(),
         provider: 'x',
-        operation: 'get_user_posts',
+        operation: input.operation,
         apiVersion: '2',
         providerRequestId: input.page.providerRequestId,
         status: 'succeeded',

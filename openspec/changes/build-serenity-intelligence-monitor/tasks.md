@@ -654,7 +654,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 按顺序运行 `pnpm test -- server/ingestion server/infrastructure/x`、`pnpm check`、`pnpm lint`、`pnpm audit:secrets`；退出码均为 0，重复/并发游标不回退，暂态 lookup 不清理正文，Mock 不被标为真实 API
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认只使用官方服务端接口并覆盖帖子、回复、引用、补偿和生命周期
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 2`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 2`
 
 ## Group 3: 上下文图、结构化 AI 研究卡片与证据边界
 
@@ -662,27 +662,27 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 3.1: 实现回复、引用和冷启动历史观点上下文
 
-- [ ] [完成] Task 3.1
+- [x] [完成] Task 3.1
   - 实现细节: 优先使用 expansions，再 lookup 缺失引用；以有界图防循环/成本失控；只从已归档 Serenity 卡片中按 ticker/topic 找历史候选。冷启动默认从上线日起积累，未获授权不导入参考仓库；历史不足、缺失或不可访问时保留原因和完整性信号。
   - **覆盖测试用例**: TC-2.1, TC-2.2, TC-6.2
 ### Task 3.2: 定义研究输入与卡片结构化契约
 
-- [ ] [完成] Task 3.2
+- [x] [完成] Task 3.2
   - 实现细节: 以 Zod 区分原文、忠实翻译、Serenity statements、other-party statements、AI interpretations、unverified inferences、观点变化、entities、evidence、uncertainties、confidence 和 importance features；校验 source ID 与置信度。研究输入使用字段白名单，只含必要正文/来源/关系/时间/历史候选，明确排除家庭账号/会话/反馈/访问日志/通知配置/X raw payload/Secret。
   - **覆盖测试用例**: TC-5.1, TC-5.2, TC-6.1, TC-6.2
 ### Task 3.3: 实现无工具 OpenAI `gpt-5.6-terra` 生产适配器
 
-- [ ] [完成] Task 3.3
+- [x] [完成] Task 3.3
   - 实现细节: 业务层定义 provider-neutral `ResearchModelAdapter`，基础设施层以 OpenAI Responses API 调用 `gpt-5.6-terra` 严格结构化输出；外部文字进入带来源的 untrusted data envelope，请求不提供任何 tools，OpenAI SDK 类型不穿透适配器。实现启动能力检查、schema/来源/越权校验、分析幂等键、prompt/请求模型/响应实际模型版本、request ID、usage/cost 审计和原子预算 reservation；模型/provider 由配置注入以便以后替换。缺少/不可用 OpenAI 配置时原文归档和网页功能继续，分析显式阻断且不伪造或静默换模。
   - **覆盖测试用例**: TC-14.1, TC-14.2, TC-15.1, TC-15.2, TC-17.1, TC-17.2
 ### Task 3.4: 增加上下文、信息质量、非法输出和恶意输入测试
 
-- [ ] [完成] Task 3.4
+- [x] [完成] Task 3.4
   - 实现细节: 使用完整/缺失上下文、推测措辞、未读外链、无证据 A 股公司、伪造来源、高置信度越界和 Secret canary fixtures；真实质量抽查项保持待人工。
   - **覆盖测试用例**: TC-2.1, TC-2.2, TC-5.1, TC-5.2, TC-6.1, TC-6.2, TC-14.1, TC-14.2
 
-- [ ] [自测] 运行 `pnpm test -- server/context server/research server/infrastructure/ai`，确认模型 Mock 调用次数、输入 envelope 和卡片 schema 快照可判定
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认翻译、作者判断、AI 解释、未验证推断和历史变化严格分层
+- [x] [自测] 运行 `pnpm test -- server/context server/research server/infrastructure/ai`，确认模型 Mock 调用次数、输入 envelope 和卡片 schema 快照可判定
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认翻译、作者判断、AI 解释、未验证推断和历史变化严格分层
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 3`
 
 ## Group 4: 可解释重要性与提醒候选事实
