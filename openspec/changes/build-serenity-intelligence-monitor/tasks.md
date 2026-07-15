@@ -783,7 +783,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 按顺序运行 `pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；退出码均为 0，故障注入重复执行结果一致，Secret canary 零命中
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认所有失败可见可恢复、外部文本不可信、无交易/Hook/客户端抓取边界突破
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 7`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 7`
 
 ## Group 8: 真实联调边界、人工验收资料与交付收敛
 
@@ -791,43 +791,43 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 8.1: 编写外部配置、启动、政策复核和真实联调操作说明
 
-- [ ] [完成] Task 8.1
+- [x] [完成] Task 8.1
   - 实现细节: 固定说明文件路径；记录 migration、Serenity bootstrap、API/worker、两个家庭账号摘要生成/轮换、`APP_BASE_URL`、X Developer/credits/Token、OpenAI `gpt-5.6-terra`/Responses API/预算、`FEISHU_ENABLED` 与可选 Webhook/安全签名密钥的成对配置、生产同步开关，以及 X 政策确认人/时间/版本/允许字段；明确父亲只需网页、飞书第一版发送到提出需求用户控制的私有群；只写变量名与操作，不写实际 Secret。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2
 ### Task 8.2: 建立四类验收证据和结果记录模板
 
-- [ ] [完成] Task 8.2
+- [x] [完成] Task 8.2
   - 实现细节: 固定报告为 `docs/verification/build-serenity-intelligence-monitor.md`，脱敏附件放 `docs/verification/evidence/build-serenity-intelligence-monitor/`；为每条 TC 分开记录执行方式、唯一实际证明力类别、状态、证据位置、执行时间、provider/request ID、成本与环境；缺关键字段时机械禁止标为真实通过，Docker/HTTPS/部署/认证未验证时保持待测。
   - **覆盖测试用例**: TC-18.1, TC-18.2
 ### Task 8.3: 执行一致性、范围、路由与状态文档审计
 
-- [ ] [完成] Task 8.3
+- [x] [完成] Task 8.3
   - 实现细节: 用绝对脚本路径校验 AC↔TC↔Task；用注册路由、模块依赖、数据表和适配器 allowlist 证明无交易/Hook 能力；检查无多 X 信息源/新闻/A 股公司映射/多通知渠道/行情/持仓，并核对 `.env.example` 只保留一套 OpenAI/飞书/家庭账号变量命名；更新 README、STATUS、PROJECT_MAP 和 `.env.example` 为实际状态，不把缺失的 `docs/project-pitfalls.md` 变成产品需求。
   - **覆盖测试用例**: TC-16.1, TC-16.2, TC-18.1, TC-18.2
 ### Task 8.4: 实现可选通知 reservation、用户感知去重和结果未知处理
 
-- [ ] [完成] Task 8.4
+- [x] [完成] Task 8.4
   - 实现细节: 始终保存“符合提醒条件”评分事实；`FEISHU_ENABLED=false` 时不创建 delivery/intent、不入队、不重试、不计失败积压。启用时以内容事件维护用户感知去重/cooldown，以 channel/content/cardVersion/policyVersion 形成技术 delivery key；事务 reservation 后入队；记录 pending/sending/sent/retryable/outcome_unknown/blocked/dead-letter/suppressed 与 attempt，歧义超时不自动重发。
   - **覆盖测试用例**: TC-8.1, TC-8.2, TC-13.1, TC-13.2
 
 ### Task 8.5: 实现可选且强制安全签名的飞书适配器
 
-- [ ] [完成] Task 8.5
+- [x] [完成] Task 8.5
   - 实现细节: 飞书第一版只向提出需求用户控制的私有飞书群发送重要提醒，不实现个人私聊/任意定向。显式启用时要求 Webhook 与签名密钥成对存在，并按平台协议生成带时间戳安全签名；发送保留来源/不确定性标签的分层摘要、重要性理由和由 `APP_BASE_URL` 生成的绝对 HTTPS 私有详情链接；完全脱敏 Webhook/签名，区分明确失败与结果未知。默认禁用时不创建任务；QQ/邮件不实现。
   - **覆盖测试用例**: TC-9.1, TC-9.2, TC-15.1, TC-17.1
 
 ### Task 8.6: 增加禁用、误配置、签名、重复和结果未知测试
 
-- [ ] [完成] Task 8.6
+- [x] [完成] Task 8.6
   - 实现细节: 参数化渠道 disabled 零 delivery/零队列/零失败积压、显式启用但缺 Webhook/签名的 blocked/configuration、完整签名固定向量与时间戳窗口、签名拒绝 4xx、并发入队、发送超时和重试成功；断言任何通知状态不阻塞归档、OpenAI 分析、评分、搜索和查看，真实飞书发送保留人工证据位。
   - **覆盖测试用例**: TC-8.1, TC-8.2, TC-9.1, TC-9.2
 
 ### Task 8.7: 执行同一真实内容闭环和浏览器人工验收
 
-- [ ] [完成] Task 8.7
+- [x] [完成] Task 8.7
   - 实现细节: 若用户提供核心凭据与目标环境，以同一真实内容追踪 X→context→OpenAI `gpt-5.6-terra`→score→绝对 HTTPS 私有详情，另用真实普通内容校准低打扰；技术验收者核对来源、provider 审计和阶段 ID，父亲再用自己的账号且不打开 X/英文，仅凭中文卡片回答发生了什么、谁说的、证据与不确定性；同时验证两个家庭账号、搜索/筛选、actor 可追溯反馈、状态和固定 Prompt Injection 样本。若已配置带安全签名的飞书，再把 delivery 加入同一链路；默认禁用时记录渠道 disabled，不阻塞核心网页闭环。缺少核心依赖时明确保留未验收，不用 Mock/截图样例/本地非容器运行替代。
   - **覆盖测试用例**: TC-1.1, TC-1.2, TC-6.1, TC-6.2, TC-9.1, TC-9.2, TC-10.1, TC-11.1, TC-12.1, TC-14.2, TC-18.1, TC-18.2, TC-19.1, TC-19.2
 
-- [ ] [自测] 先运行 `pnpm test -- server/notifications server/infrastructure/notifications` 验证禁用/误配置/签名/超时，再按顺序运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、`python "C:\Users\zhuhongyu06\.codex\skills\spec-review-debate\scripts\check_traceability.py" "openspec/changes/build-serenity-intelligence-monitor"`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；全部退出码为 0，追溯报告 `passed=true`，未验证外部证据保持待测
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，逐项确认完成单账号可靠闭环且所有外部未验证项被如实保留
+- [x] [自测] 先运行 `pnpm test -- server/notifications server/infrastructure/notifications` 验证禁用/误配置/签名/超时，再按顺序运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、`python "C:\Users\zhuhongyu06\.codex\skills\spec-review-debate\scripts\check_traceability.py" "openspec/changes/build-serenity-intelligence-monitor"`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；全部退出码为 0，追溯报告 `passed=true`，未验证外部证据保持待测
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，逐项确认完成单账号可靠闭环且所有外部未验证项被如实保留
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 8`

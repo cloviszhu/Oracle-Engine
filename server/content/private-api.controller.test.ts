@@ -52,18 +52,18 @@ describe('private API negative boundaries', () => {
     await app.init();
     const http = app.getHttpServer();
 
-    await request(http).get('/api/content').expect(401);
-    await request(http).get('/api/content?sort=raw_payload').set('Cookie', 'serenity_session=valid').expect(400);
-    await request(http).post('/api/feedback').set('Cookie', 'serenity_session=valid').send({
-      cardId: 'card-1', cardVersion: 1, type: 'known',
+    await request(http).get('/api/intelligence').expect(401);
+    await request(http).get('/api/intelligence?sort=raw_payload').set('Cookie', 'serenity_session=valid').expect(400);
+    await request(http).post('/api/intelligence/card-1/feedback').set('Cookie', 'serenity_session=valid').send({
+      cardVersion: 1, type: 'known',
     }).expect(403);
-    await request(http).post('/api/feedback')
+    await request(http).post('/api/intelligence/card-1/feedback')
       .set('Cookie', 'serenity_session=valid')
       .set('Origin', 'https://serenity.example')
       .set('x-csrf-token', 'csrf')
-      .send({ cardId: 'card-1', cardVersion: 1, type: 'known', actorId: 'requester' })
+      .send({ cardVersion: 1, type: 'known', actorId: 'requester' })
       .expect(400);
-    const detail = await request(http).get('/api/content/content-1')
+    const detail = await request(http).get('/api/intelligence/content-1')
       .set('Cookie', 'serenity_session=valid').expect(200);
     expect(JSON.stringify(detail.body)).not.toContain('canary-secret');
 

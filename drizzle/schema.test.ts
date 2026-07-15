@@ -16,6 +16,7 @@ describe('business database schema', () => {
       'ingestionRuns',
       'notificationAttempts',
       'notificationDeliveries',
+      'notificationRecoveryRequests',
       'processingAttempts',
       'processingIntents',
       'researchCards',

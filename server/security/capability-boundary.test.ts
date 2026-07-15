@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildResearchEnvelope } from '../research/research-contract.js';
@@ -58,10 +58,40 @@ describe('read-only research and hostile-input boundaries', () => {
   });
 
   it('does not register holdings, brokerage, order, trade or generic hook APIs', () => {
-    const routeSources = [
-      'server/content/private-api.controller.ts',
-      'server/health/health.controller.ts',
-    ].map((file) => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n');
+    const routeSources = collectFiles(resolve(process.cwd(), 'server'))
+      .filter((file) => file.endsWith('.controller.ts'))
+      .map((file) => readFileSync(file, 'utf8'))
+      .join('\n');
     expect(routeSources).not.toMatch(/['"`]\/?(?:holdings?|broker(?:age)?|orders?|trades?|hooks?)(?:\/|['"`])/i);
   });
+
+  it('keeps tables and infrastructure adapters inside the approved single-source scope', () => {
+    const schema = readFileSync(resolve(process.cwd(), 'drizzle/schema.ts'), 'utf8');
+    const tableNames = [...schema.matchAll(/mysqlTable\(\s*['"]([^'"]+)['"]/g)]
+      .map((match) => match[1]);
+    expect(tableNames).not.toEqual(expect.arrayContaining([
+      'holdings', 'portfolios', 'orders', 'trades', 'market_prices', 'broker_accounts',
+    ]));
+
+    const infrastructureFiles = collectFiles(resolve(process.cwd(), 'server/infrastructure'))
+      .map((file) => file.replaceAll('\\', '/'));
+    expect(infrastructureFiles.some((file) => /\/(news|broker|trading|qq|email)\//i.test(file))).toBe(false);
+    expect(infrastructureFiles.some((file) => /\/x\/x-api\.client\.ts$/.test(file))).toBe(true);
+    expect(infrastructureFiles.some((file) => /\/ai\/openai-research\.adapter\.ts$/.test(file))).toBe(true);
+    expect(infrastructureFiles.some((file) => /\/notifications\/feishu\.adapter\.ts$/.test(file))).toBe(true);
+  });
+
+  it('keeps the production container ESM-aware and includes versioned migrations', () => {
+    const dockerfile = readFileSync(resolve(process.cwd(), 'Dockerfile'), 'utf8');
+    expect(dockerfile).toContain('COPY --from=build /app/package.json ./package.json');
+    expect(dockerfile).toContain('COPY --from=build /app/dist ./dist');
+    expect(dockerfile).toContain('COPY --from=build /app/drizzle/migrations ./drizzle/migrations');
+  });
 });
+
+function collectFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(directory, entry.name);
+    return entry.isDirectory() ? collectFiles(path) : [path];
+  });
+}

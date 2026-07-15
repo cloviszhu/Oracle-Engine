@@ -5,7 +5,16 @@ interface OperationsInput {
   ingestionRuns: Array<{ mode: 'poll' | 'compensation'; status: string }>;
   stages: Array<{ stage: 'ingest' | 'context' | 'analysis' | 'score' | 'notify'; status: StageStatus; errorCode?: string }>;
   worker?: { status: string; heartbeatAt: string };
-  notification: { enabled: boolean; configured: boolean; backlog: number };
+  notification: {
+    enabled: boolean;
+    configured: boolean;
+    backlog: number;
+    recoverable?: Array<{
+      id: string;
+      status: 'blocked' | 'dead_letter';
+      manualRetryAllowed: true;
+    }>;
+  };
   budget: { blocked: boolean; dailyBudgetCents: number; spentCents: number };
   visibility?: { firstObservedAt: string; visibleAt?: string; sloMinutes: number; blockedReason?: string };
 }
@@ -32,8 +41,9 @@ export function buildOperationsStatus(input: OperationsInput) {
           configured: input.notification.configured,
           status: input.notification.configured ? 'enabled' : 'configuration_required',
           backlog: input.notification.backlog,
+          recoverable: input.notification.recoverable ?? [],
         }
-      : { enabled: false, configured: false, status: 'disabled', backlog: 0 },
+      : { enabled: false, configured: false, status: 'disabled', backlog: 0, recoverable: [] },
     budget: { ...input.budget, status: input.budget.blocked ? 'blocked' : 'available' },
     visibility,
   };
@@ -41,11 +51,17 @@ export function buildOperationsStatus(input: OperationsInput) {
 
 interface RecoveryRepository {
   findRecoverable(id: string): Promise<{
+    kind: 'processing' | 'notification';
     id: string;
     status: string;
     manualRetryAllowed: boolean;
   } | undefined>;
-  createAttempt(id: string, actorId: string): Promise<unknown>;
+  createAttempt(work: {
+    kind: 'processing' | 'notification';
+    id: string;
+    status: string;
+    manualRetryAllowed: boolean;
+  }, actorId: string): Promise<unknown>;
 }
 
 export class RecoveryService {
@@ -60,7 +76,7 @@ export class RecoveryService {
     ) {
       throw new Error('not_recoverable');
     }
-    return this.repository.createAttempt(id, actorId);
+    return this.repository.createAttempt(work, actorId);
   }
 }
 

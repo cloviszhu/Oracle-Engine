@@ -24,6 +24,7 @@ function fixture(options: {
   missingContext?: boolean;
   analysisFailure?: Error;
   notificationsEnabled?: boolean;
+  notificationFailure?: Error;
   features?: typeof highFeatures;
 } = {}) {
   const calls: string[] = [];
@@ -56,7 +57,11 @@ function fixture(options: {
     publishToWeb: vi.fn(async () => calls.push('web')),
     saveImportanceFact: vi.fn(async () => calls.push('importance')),
     saveNotificationCandidate: vi.fn(async () => calls.push('candidate')),
-    enqueueNotification: vi.fn(async () => calls.push('delivery')),
+    enqueueNotification: vi.fn(async () => {
+      calls.push('delivery');
+      if (options.notificationFailure) throw options.notificationFailure;
+    }),
+    recordNotificationFailure: vi.fn(async () => calls.push('notification-failure')),
     recordFailure: vi.fn(async () => calls.push('failure')),
   };
   return {
@@ -164,5 +169,22 @@ describe('core acquisition-to-private-web pipeline', () => {
       eventKey: 'enabled', sourceId: 'enabled', contentType: 'post', text: 'important',
     });
     expect(calls.indexOf('candidate')).toBeLessThan(calls.indexOf('delivery'));
+  });
+
+  it('keeps web archive, analysis, score, search and view successful when notification fails', async () => {
+    const { service, ports } = fixture({
+      notificationsEnabled: true,
+      notificationFailure: new Error('feishu unavailable'),
+    });
+    await expect(service.process({
+      eventKey: 'notify-failed', sourceId: 'notify-failed', contentType: 'post', text: 'important',
+    })).resolves.toMatchObject({
+      status: 'published', searchable: true, notificationStatus: 'failed',
+    });
+    expect(ports.publishToWeb).toHaveBeenCalledOnce();
+    expect(ports.recordNotificationFailure).toHaveBeenCalledWith(expect.objectContaining({
+      cardId: 'card-1', errorCode: 'Error',
+    }));
+    expect(ports.recordFailure).not.toHaveBeenCalled();
   });
 });

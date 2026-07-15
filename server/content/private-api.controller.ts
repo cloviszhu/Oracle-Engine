@@ -131,7 +131,7 @@ export class PrivateApiController {
     return { actorId: request.actorId, csrfToken: request.csrfToken };
   }
 
-  @Get('content')
+  @Get('intelligence')
   async list(@Query() query: Record<string, unknown>) {
     try {
       return await this.content.list(parseContentQuery(query));
@@ -140,7 +140,7 @@ export class PrivateApiController {
     }
   }
 
-  @Get('content/:id')
+  @Get('intelligence/:id')
   async detail(@Param('id') id: string) {
     return sanitizeContentDetail(await this.content.detail(id));
   }
@@ -157,13 +157,20 @@ export class PrivateApiController {
     }
   }
 
-  @Post('feedback')
-  async submitFeedback(@Req() request: AuthenticatedRequest, @Body() body: unknown) {
-    if (body !== null && typeof body === 'object' && 'actorId' in body) {
+  @Post('intelligence/:id/feedback')
+  async submitFeedback(
+    @Param('id') id: string,
+    @Req() request: AuthenticatedRequest,
+    @Body() body: unknown,
+  ) {
+    if (body !== null && typeof body === 'object' && ('actorId' in body || 'cardId' in body)) {
       throw new BadRequestException('actor_is_server_bound');
     }
     try {
-      return await this.feedback.submit(request.actorId as string, body);
+      return await this.feedback.submit(request.actorId as string, {
+        ...(body as Record<string, unknown>),
+        cardId: id,
+      });
     } catch {
       throw new BadRequestException('invalid_feedback');
     }

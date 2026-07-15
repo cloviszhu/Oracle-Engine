@@ -47,6 +47,7 @@ export interface CorePipelinePorts {
   saveImportanceFact(fact: ImportanceScoreFact): Promise<unknown>;
   saveNotificationCandidate(fact: ImportanceScoreFact): Promise<unknown>;
   enqueueNotification(fact: ImportanceScoreFact): Promise<unknown>;
+  recordNotificationFailure(input: { cardId: string; errorCode: string }): Promise<unknown>;
   recordFailure(input: {
     contentId: string;
     contentVersionId: string;
@@ -74,6 +75,7 @@ export class CorePipelineService {
       searchable: true;
       contextCompleteness: CoreContextResult['completeness'];
       importanceDecision: ImportanceScoreFact['decision'];
+      notificationStatus: 'not_candidate' | 'disabled' | 'queued' | 'failed';
     }
   > {
     const archive = await this.ports.archive(event);
@@ -108,13 +110,27 @@ export class CorePipelineService {
       await this.ports.saveImportanceFact(importance);
       if (importance.decision === 'notify_candidate') {
         await this.ports.saveNotificationCandidate(importance);
-        if (this.options.notificationsEnabled) {
-          await this.ports.enqueueNotification(importance);
-        }
       }
     } catch (error) {
       await this.recordStageFailure(archive, 'publish', error);
       throw error;
+    }
+
+    let notificationStatus: 'not_candidate' | 'disabled' | 'queued' | 'failed' =
+      importance.decision === 'notify_candidate'
+      ? 'disabled' as const
+      : 'not_candidate' as const;
+    if (importance.decision === 'notify_candidate' && this.options.notificationsEnabled) {
+      try {
+        await this.ports.enqueueNotification(importance);
+        notificationStatus = 'queued';
+      } catch (error) {
+        notificationStatus = 'failed';
+        await this.ports.recordNotificationFailure({
+          cardId: analysis.cardId,
+          errorCode: error instanceof Error && error.name ? error.name : 'UnknownError',
+        }).catch(() => undefined);
+      }
     }
 
     return {
@@ -124,6 +140,7 @@ export class CorePipelineService {
       searchable: true,
       contextCompleteness: context.completeness,
       importanceDecision: importance.decision,
+      notificationStatus,
     };
   }
 

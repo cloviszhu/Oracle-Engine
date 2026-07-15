@@ -307,6 +307,7 @@ export const notificationDeliveries = mysqlTable(
       .references(() => importanceScores.id),
     channel: varchar('channel', { length: 32 }).notNull(),
     contentEventKey: varchar('content_event_key', { length: 255 }).notNull(),
+    cardVersion: int('card_version').notNull(),
     dedupeKey: varchar('dedupe_key', { length: 255 }).notNull(),
     policyVersion: varchar('policy_version', { length: 64 }).notNull(),
     status: mysqlEnum('status', deliveryStatuses).notNull(),
@@ -321,6 +322,7 @@ export const notificationDeliveries = mysqlTable(
     uniqueIndex('notification_deliveries_user_event_uidx').on(
       table.channel,
       table.contentEventKey,
+      table.cardVersion,
       table.policyVersion,
     ),
   ],
@@ -341,6 +343,20 @@ export const notificationAttempts = mysqlTable(
     finishedAt: datetime('finished_at', { mode: 'date', fsp: 3 }),
   },
   (table) => [uniqueIndex('notification_attempts_delivery_attempt_uidx').on(table.deliveryId, table.attempt)],
+);
+
+export const notificationRecoveryRequests = mysqlTable(
+  'notification_recovery_requests',
+  {
+    id: id('id').primaryKey(),
+    deliveryId: id('delivery_id')
+      .notNull()
+      .references(() => notificationDeliveries.id),
+    actorId: varchar('actor_id', { length: 64 }).notNull(),
+    previousStatus: mysqlEnum('previous_status', ['blocked', 'dead_letter']).notNull(),
+    requestedAt: datetime('requested_at', { mode: 'date', fsp: 3 }).notNull(),
+  },
+  (table) => [index('notification_recovery_delivery_time_idx').on(table.deliveryId, table.requestedAt)],
 );
 
 export const userFeedback = mysqlTable(
@@ -429,6 +445,7 @@ export const businessSchema = {
   importanceScores,
   notificationDeliveries,
   notificationAttempts,
+  notificationRecoveryRequests,
   userFeedback,
   externalUsage,
   budgetReservations,

@@ -30,7 +30,9 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=3000
 
 COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/drizzle/migrations ./drizzle/migrations
 
 EXPOSE 3000
 CMD ["node", "dist/server/main.js"]

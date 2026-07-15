@@ -22,7 +22,7 @@ describe('runtime configuration', () => {
     expect(config.ai.provider).toBe('openai');
     expect(config.ai.model).toBe('gpt-5.6-terra');
     expect(config.ai.apiKey).toBeUndefined();
-    expect(config.feishu).toEqual({ enabled: false });
+    expect(config.feishu).toEqual({ enabled: false, cooldownSeconds: 3_600 });
     expect(config.x.productionSyncEnabled).toBe(false);
     expect(config.coreVisibilitySloMinutes).toBe(30);
     expect(config.familyAccounts).toHaveLength(2);
@@ -53,6 +53,12 @@ describe('runtime configuration', () => {
       FEISHU_SIGNING_SECRET: 'signing-secret',
     });
     expect(config.feishu.enabled).toBe(true);
+    expect(() => parseRuntimeConfig({
+      ...validEnvironment,
+      FEISHU_ENABLED: 'true',
+      FEISHU_WEBHOOK_URL: 'https://attacker.example/open-apis/bot/v2/hook/redacted',
+      FEISHU_SIGNING_SECRET: 'signing-secret',
+    })).toThrow(/official Feishu/i);
   });
 
   it('requires X production prerequisites when production sync is enabled', () => {

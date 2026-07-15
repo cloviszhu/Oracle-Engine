@@ -22,6 +22,20 @@
       "when": 1784094629615,
       "tag": "0002_clumsy_invaders",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1784095953201,
+      "tag": "0003_adorable_ultimates",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1784098190303,
+      "tag": "0004_giant_patriot",
+      "breakpoints": true
     }
   ]
 }

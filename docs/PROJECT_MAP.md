@@ -4,13 +4,15 @@
 
 | 路径 | 职责 | 当前状态 |
 |---|---|---|
-| `client/` | React 私有网站 | 初始化页；当前 change 已设计登录、最新、时间线、详情、筛选、反馈和状态页，尚未实现 |
-| `server/` | NestJS API 和后台任务入口 | 健康检查；当前 change 已设计业务 API/worker，尚未实现 |
-| `server/infrastructure/` | 数据库、队列和外部系统边界 | 仅配置读取 |
-| `shared/` | 前后端共享类型和常量 | 系统名称 |
-| `drizzle/` | MySQL schema 与迁移 | 无业务表 |
-| `openspec/` | SDD 规格和 change | `build-serenity-intelligence-monitor` 实施前复审中 |
-| `docs/` | 状态、地图、设计和执行计划 | 已建立 |
+| `client/` | React 私有网站 | 登录、最新、时间线、筛选、分层详情、反馈、状态和响应式界面 |
+| `server/auth/`、`server/content/`、`server/feedback/`、`server/operations/` | 私有 API 能力 | 家庭会话、检索/详情、反馈和安全状态 DTO |
+| `server/ingestion/`、`server/context/`、`server/research/`、`server/importance/` | 核心研究流水线 | X 归档、上下文、结构化 AI、预算和评分边界 |
+| `server/notifications/` | 可选通知业务 | 评分候选扫描、reservation、冷却/去重、dispatch、attempt、恢复审计和结果未知状态 |
+| `server/infrastructure/` | 数据库、队列和外部适配器 | X、OpenAI、飞书签名、Redis/BullMQ、配置和日志脱敏 |
+| `shared/` | 前后端共享类型和常量 | 基础状态、错误和研究卡片契约 |
+| `drizzle/` | MySQL schema 与 migration | 19 张业务/审计表和版本化迁移 |
+| `openspec/` | SDD 规格和 change | `build-serenity-intelligence-monitor` 实施收敛中 |
+| `docs/` | 状态、运维和验收 | 状态、项目地图、运维说明和逐 TC 验收记录 |
 
 ## 变更指引
 
@@ -23,4 +25,4 @@
 
 ## 禁止扩展
 
-当前业务代码仍未创建。已评审设计限定为 Serenity 单账号、OpenAI `gpt-5.6-terra` 适配器、私有网页主入口和可选签名飞书提醒；多账号、多源、A 股公司级映射、新通知渠道和交易能力不进入本 change。只有 Harness 实施前确认完成后才能按 tasks 创建相关目录和接口。
+当前范围限定为 Serenity 单账号、OpenAI `gpt-5.6-terra` 适配器、私有网页主入口和可选签名飞书提醒。多 X 信息源、新闻、A 股公司级映射、行情、持仓、QQ/邮件、客户端抓取、Cookie 获取和交易能力均不在本 change。

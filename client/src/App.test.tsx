@@ -65,7 +65,7 @@ describe('private research workspace', () => {
       expect(await screen.findByRole('heading', { name: text })).toBeTruthy();
     }
     await userEvent.click(screen.getByRole('button', { name: '已知' }));
-    await waitFor(() => expect(fetch).toHaveBeenLastCalledWith('/api/feedback', expect.objectContaining({ method: 'POST' })));
+    await waitFor(() => expect(fetch).toHaveBeenLastCalledWith('/api/intelligence/card-1/feedback', expect.objectContaining({ method: 'POST' })));
     expect(await screen.findByText('反馈已记录')).toBeTruthy();
   });
 
@@ -85,5 +85,36 @@ describe('private research workspace', () => {
     await userEvent.click(await screen.findByRole('button', { name: '运行状态' }));
     expect(await screen.findByText('可选提醒未启用')).toBeTruthy();
     expect(screen.getByText('核心流水线正常')).toBeTruthy();
+  });
+
+  it('shows an auditable manual retry action for blocked notifications', async () => {
+    const fetch = vi.fn()
+      .mockImplementationOnce(() => response({ actorId: 'requester', csrfToken: 'csrf' }))
+      .mockImplementationOnce(() => response({ items: [] }))
+      .mockImplementationOnce(() => response({
+        core: { status: 'succeeded' },
+        stages: [],
+        notification: {
+          enabled: true,
+          status: 'enabled',
+          backlog: 1,
+          recoverable: [{ id: 'delivery-1', status: 'blocked', manualRetryAllowed: true }],
+        },
+      }))
+      .mockImplementationOnce(() => response({ id: 'recovery-1', status: 'pending' }))
+      .mockImplementationOnce(() => response({
+        core: { status: 'succeeded' }, stages: [],
+        notification: { enabled: true, status: 'enabled', backlog: 1, recoverable: [] },
+      }));
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+
+    await userEvent.click(await screen.findByRole('button', { name: '运行状态' }));
+    await userEvent.click(await screen.findByRole('button', { name: '重试提醒 delivery-1' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+      '/api/operations/retry/delivery-1',
+      expect.objectContaining({ method: 'POST' }),
+    ));
+    expect(await screen.findByText('已创建新的恢复尝试')).toBeTruthy();
   });
 });

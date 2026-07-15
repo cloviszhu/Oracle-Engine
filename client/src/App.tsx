@@ -41,7 +41,7 @@ export function App(): React.JSX.Element {
     setBusy(true);
     setError('');
     try {
-      const endpoint = target === 'timeline' ? '/api/timeline' : '/api/content';
+      const endpoint = target === 'timeline' ? '/api/timeline' : '/api/intelligence';
       const result = await request(`${endpoint}${search ? `?${search}` : ''}`);
       const incoming = Array.isArray(result.items) ? result.items as JsonRecord[] : [];
       setItems((current) => append ? [...current, ...incoming] : incoming);
@@ -68,7 +68,7 @@ export function App(): React.JSX.Element {
         const path = window.location.pathname;
         if (path === '/status') setView('status');
         else if (path === '/timeline') setView('timeline');
-        else if (path.startsWith('/content/')) setView('detail');
+        else if (path.startsWith('/intelligence/')) setView('detail');
       } catch {
         setPhase('login');
       }
@@ -135,10 +135,10 @@ export function App(): React.JSX.Element {
     setDetailRequested(true);
     setBusy(true);
     setError('');
-    window.history.pushState({}, '', `/content/${id}`);
+    window.history.pushState({}, '', `/intelligence/${id}`);
     setView('detail');
     try {
-      setDetail(await request(`/api/content/${encodeURIComponent(id)}`));
+      setDetail(await request(`/api/intelligence/${encodeURIComponent(id)}`));
     } catch {
       setError('详情加载失败，请返回后重试。');
     } finally {
@@ -159,10 +159,10 @@ export function App(): React.JSX.Element {
     if (!detail) return;
     setNotice('');
     try {
-      await request('/api/feedback', {
+      const cardId = String(detail.card_id ?? detail.cardId);
+      await request(`/api/intelligence/${encodeURIComponent(cardId)}/feedback`, {
         method: 'POST',
         body: JSON.stringify({
-          cardId: detail.card_id ?? detail.cardId,
           cardVersion: Number(detail.card_version ?? detail.cardVersion ?? 1),
           type,
         }),
@@ -354,6 +354,9 @@ function OperationsPanel({ status, notice, onRetry }: { status: JsonRecord; noti
   const core = status.core as JsonRecord | undefined;
   const notification = status.notification as JsonRecord | undefined;
   const stages = Array.isArray(status.stages) ? status.stages as JsonRecord[] : [];
+  const recoverableNotifications = Array.isArray(notification?.recoverable)
+    ? notification.recoverable as JsonRecord[]
+    : [];
   return (
     <section className="operations-page">
       <header className="page-header"><div><p className="kicker">System pulse</p><h2>运行状态</h2></div><p>这里显示能否正常归档和分析，不展示任何配置值。</p></header>
@@ -364,7 +367,17 @@ function OperationsPanel({ status, notice, onRetry }: { status: JsonRecord; noti
           return <article key={name}><span>{stageLabel(name)}</span><strong>{statusLabel(stage?.status)}</strong><small>{stage?.errorCode ? String(stage.errorCode) : '最近检查无异常'}</small>{stage?.manualRetryAllowed && stage.id ? <button onClick={() => onRetry(String(stage.id))}>创建恢复尝试</button> : null}</article>;
         })}
       </div>
-      <article className="notification-branch"><div><p className="kicker">Optional channel</p><h3>{notification?.enabled ? '可选提醒已启用' : '可选提醒未启用'}</h3></div><p>{notification?.enabled ? `待处理 ${String(notification.backlog ?? 0)} 条` : '网页归档、分析、搜索和查看照常运行。'}</p></article>
+      <article className="notification-branch">
+        <div><p className="kicker">Optional channel</p><h3>{notification?.enabled ? '可选提醒已启用' : '可选提醒未启用'}</h3></div>
+        <div>
+          <p>{notification?.enabled ? `待处理 ${String(notification.backlog ?? 0)} 条` : '网页归档、分析、搜索和查看照常运行。'}</p>
+          {recoverableNotifications.map((item) => (
+            <button key={String(item.id)} onClick={() => onRetry(String(item.id))}>
+              重试提醒 {String(item.id)}
+            </button>
+          ))}
+        </div>
+      </article>
       {notice && <p className="save-notice">{notice}</p>}
     </section>
   );

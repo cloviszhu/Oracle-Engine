@@ -56,6 +56,7 @@ const environmentSchema = z
     FEISHU_ENABLED: booleanString,
     FEISHU_WEBHOOK_URL: optionalString,
     FEISHU_SIGNING_SECRET: optionalString,
+    FEISHU_COOLDOWN_SECONDS: positiveInteger(3_600, 604_800),
     CORE_VISIBILITY_SLO_MINUTES: positiveInteger(30, 1_440),
     IMPORTANCE_THRESHOLD: z.coerce.number().min(0).max(100).default(70),
     MIN_ANALYSIS_CONFIDENCE: z.coerce.number().min(0).max(1).default(0.6),
@@ -103,6 +104,18 @@ const environmentSchema = z
     if (value.FEISHU_WEBHOOK_URL && !value.FEISHU_WEBHOOK_URL.startsWith('https://')) {
       context.addIssue({ code: 'custom', message: 'FEISHU_WEBHOOK_URL must use HTTPS' });
     }
+    if (value.FEISHU_WEBHOOK_URL) {
+      const webhook = new URL(value.FEISHU_WEBHOOK_URL);
+      if (
+        webhook.hostname !== 'open.feishu.cn'
+        || !webhook.pathname.startsWith('/open-apis/bot/v2/hook/')
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: 'FEISHU_WEBHOOK_URL must use the official Feishu custom-bot endpoint',
+        });
+      }
+    }
   });
 
 export interface RuntimeConfig {
@@ -130,7 +143,9 @@ export interface RuntimeConfig {
     maxRequestCostCents?: number;
     reasoningEffort: 'low' | 'medium' | 'high';
   };
-  feishu: { enabled: false } | { enabled: true; webhookUrl: string; signingSecret: string };
+  feishu:
+    | { enabled: false; cooldownSeconds: number }
+    | { enabled: true; webhookUrl: string; signingSecret: string; cooldownSeconds: number };
   coreVisibilitySloMinutes: number;
   importance: { threshold: number; minimumConfidence: number };
   work: {
@@ -180,8 +195,9 @@ export function parseRuntimeConfig(environment: Record<string, string | undefine
           enabled: true,
           webhookUrl: value.FEISHU_WEBHOOK_URL as string,
           signingSecret: value.FEISHU_SIGNING_SECRET as string,
+          cooldownSeconds: value.FEISHU_COOLDOWN_SECONDS,
         }
-      : { enabled: false },
+      : { enabled: false, cooldownSeconds: value.FEISHU_COOLDOWN_SECONDS },
     coreVisibilitySloMinutes: value.CORE_VISIBILITY_SLO_MINUTES,
     importance: {
       threshold: value.IMPORTANCE_THRESHOLD,
@@ -216,7 +232,11 @@ export function summarizeRuntimeConfig(config: RuntimeConfig): Record<string, un
       configured: Boolean(config.ai.apiKey),
       dailyBudgetCents: config.ai.dailyBudgetCents,
     },
-    feishu: { enabled: config.feishu.enabled, configured: config.feishu.enabled },
+    feishu: {
+      enabled: config.feishu.enabled,
+      configured: config.feishu.enabled,
+      cooldownSeconds: config.feishu.cooldownSeconds,
+    },
     coreVisibilitySloMinutes: config.coreVisibilitySloMinutes,
   };
 }
