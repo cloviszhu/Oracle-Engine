@@ -52,7 +52,7 @@ describe('family authentication', () => {
     const { service, store, limiter } = await fixture();
     const login = await service.login('requester', 'requester-pass', '127.0.0.1');
     const cookieValue = login.sessionCookie.split(';')[0]?.split('=')[1] ?? '';
-    await expect(service.authenticate(cookieValue)).resolves.toEqual({ actorId: 'requester' });
+    await expect(service.authenticate(cookieValue)).resolves.toMatchObject({ actorId: 'requester' });
 
     const rotated = new FamilyAuthService({
       accounts: [], sessionSecret: 'r'.repeat(32), sessionTtlSeconds: 3600,

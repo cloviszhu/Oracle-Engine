@@ -30,6 +30,8 @@ const REDIS = Symbol('REDIS');
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'dist', 'public'),
+      exclude: ['/api/{*path}'],
+      renderPath: '/{*path}',
     }),
   ],
   controllers: [HealthController, PrivateApiController],

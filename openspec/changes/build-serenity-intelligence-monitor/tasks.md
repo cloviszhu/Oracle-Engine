@@ -725,7 +725,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 运行 `pnpm test -- server/auth server/content server/feedback server/operations`，并对未认证、非法筛选、CSRF、越界动作和 Secret canary 执行负向 API 测试
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认私有访问、检索、反馈和状态闭环不引入多租户或交易能力
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 5`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 5`
 
 ## Group 6: 私有研究工作区前端
 
@@ -733,27 +733,27 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 6.1: 建立登录、会话恢复和受保护导航
 
-- [ ] [完成] Task 6.1
+- [x] [完成] Task 6.1
   - 实现细节: 替换初始化占位页，增加 `/login`、认证状态加载、401 回登录、注销和同源 CSRF 请求封装；Nest 对非 API 路由实现 SPA fallback，直接刷新详情/时间线/状态页仍返回应用，`/api/**` 404 不被吞掉；页面不读取或展示任何外部 Secret。
   - **覆盖测试用例**: TC-10.1, TC-10.2, TC-15.1
 ### Task 6.2: 实现最新情报、时间线和筛选界面
 
-- [ ] [完成] Task 6.2
+- [x] [完成] Task 6.2
   - 实现细节: 展示内容类型、时间、主题、分数、置信度和通知状态；支持 keyword/ticker/topic/importance/contentType/date range 与分页，明确 loading/empty/error 状态。
   - **覆盖测试用例**: TC-10.1, TC-10.2
 ### Task 6.3: 实现分层详情和上下文展示
 
-- [ ] [完成] Task 6.3
+- [x] [完成] Task 6.3
   - 实现细节: 独立展示原文/来源、忠实翻译、Serenity 判断、他人内容、AI 解释、未验证推断、证据、不确定性、观点变化、评分、通知和上下文；tombstone 不展示已清除正文。
   - **覆盖测试用例**: TC-5.1, TC-6.1, TC-6.2, TC-10.1
 ### Task 6.4: 实现反馈控件和运行状态页
 
-- [ ] [完成] Task 6.4
+- [x] [完成] Task 6.4
   - 实现细节: 六种反馈按钮与回显；状态页分开展示四个核心阶段与可选通知分支、最后成功、失败原因、待配置项、队列与可恢复入口，禁止显示配置值或内部栈。
   - **覆盖测试用例**: TC-11.1, TC-11.2, TC-12.1, TC-12.2
 
-- [ ] [自测] 运行 `pnpm test -- client` 与 `pnpm build`；检查静态渲染、交互、未认证导航、组合筛选、分层详情、反馈、状态页和前端 bundle Secret 零命中
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认页面覆盖最新、历史、详情、筛选、状态和反馈且保持家庭内部使用
+- [x] [自测] 运行 `pnpm test -- client` 与 `pnpm build`；检查静态渲染、交互、未认证导航、组合筛选、分层详情、反馈、状态页和前端 bundle Secret 零命中
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认页面覆盖最新、历史、详情、筛选、状态和反馈且保持家庭内部使用
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 6`
 
 ## Group 7: 故障恢复、安全边界与端到端 Mock 闭环

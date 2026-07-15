@@ -34,14 +34,14 @@ interface AuthApi {
   login(username: string, password: string, ipAddress: string): Promise<{
     actorId: string; csrfToken: string; expiresAt: string; sessionCookie: string;
   }>;
-  authenticate(cookieValue: string): Promise<{ actorId: string }>;
+  authenticate(cookieValue: string): Promise<{ actorId: string; csrfToken?: string }>;
   authorizeStateChange(input: {
     cookieValue: string; csrfToken: string; origin: string; expectedOrigin: string;
-  }): Promise<{ actorId: string }>;
+  }): Promise<{ actorId: string; csrfToken?: string }>;
   logout(cookieValue: string): Promise<void>;
 }
 
-type AuthenticatedRequest = Request & { actorId?: string };
+type AuthenticatedRequest = Request & { actorId?: string; csrfToken?: string };
 
 @Injectable()
 export class FamilyAuthGuard implements CanActivate {
@@ -69,6 +69,7 @@ export class FamilyAuthGuard implements CanActivate {
             expectedOrigin: this.appOrigin,
           });
       request.actorId = actor.actorId;
+      request.csrfToken = actor.csrfToken;
       return true;
     } catch (error) {
       if (error instanceof Error && error.message === 'csrf') {
@@ -123,6 +124,11 @@ export class PrivateApiController {
     await this.auth.logout(cookieValue);
     response.setHeader('Set-Cookie', clearSessionCookie(request.secure));
     return { status: 'logged_out' };
+  }
+
+  @Get('auth/session')
+  session(@Req() request: AuthenticatedRequest) {
+    return { actorId: request.actorId, csrfToken: request.csrfToken };
   }
 
   @Get('content')

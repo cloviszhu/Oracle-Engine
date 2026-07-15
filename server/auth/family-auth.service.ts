@@ -87,7 +87,7 @@ export class FamilyAuthService {
     };
   }
 
-  async authenticate(cookieValue: string): Promise<{ actorId: string }> {
+  async authenticate(cookieValue: string): Promise<{ actorId: string; csrfToken: string }> {
     const token = this.verifySignedCookie(cookieValue);
     const tokenHash = hashToken(token);
     const record = await this.options.store.get(tokenHash);
@@ -95,7 +95,7 @@ export class FamilyAuthService {
       if (record) await this.options.store.delete(tokenHash);
       throw new FamilyAuthError('invalid_session');
     }
-    return { actorId: record.actorId };
+    return { actorId: record.actorId, csrfToken: this.sign(`csrf:${token}`) };
   }
 
   async authorizeStateChange(input: {
