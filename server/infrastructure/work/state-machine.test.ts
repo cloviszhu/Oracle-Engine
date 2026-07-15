@@ -11,6 +11,7 @@ describe('processing state and fencing rules', () => {
 
   it('requires explicit eligibility for manual retry', () => {
     expect(canManualRetry({ status: 'dead_letter', manualRetryAllowed: true })).toBe(true);
+    expect(canManualRetry({ status: 'blocked', manualRetryAllowed: true })).toBe(true);
     expect(canManualRetry({ status: 'blocked', manualRetryAllowed: false })).toBe(false);
   });
 

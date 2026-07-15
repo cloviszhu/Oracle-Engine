@@ -754,7 +754,7 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 运行 `pnpm test -- client` 与 `pnpm build`；检查静态渲染、交互、未认证导航、组合筛选、分层详情、反馈、状态页和前端 bundle Secret 零命中
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，确认页面覆盖最新、历史、详情、筛选、状态和反馈且保持家庭内部使用
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 6`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 6`
 
 ## Group 7: 故障恢复、安全边界与端到端 Mock 闭环
 
@@ -762,27 +762,27 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 7.1: 强化 reconciliation、fencing、阻断与死信并发测试
 
-- [ ] [完成] Task 7.1
+- [x] [完成] Task 7.1
   - 实现细节: 在 Group 1 核心恢复上覆盖 pending、过期 processing、durable intent、retryable/blocked/dead-letter/outcome_unknown；验证旧 worker 迟到提交被拒绝、并发预算 reservation 不越线、人工重试资格一致，显式恢复不覆盖历史。
   - **覆盖测试用例**: TC-3.2, TC-8.2, TC-13.1, TC-13.2
 ### Task 7.2: 建立从获取到网页归档的核心端到端 fixture 测试
 
-- [ ] [完成] Task 7.2
+- [x] [完成] Task 7.2
   - 实现细节: 覆盖主帖/回复/引用、高低价值、重复输入、编辑、缺失上下文、模型失败、渠道 disabled 和进程重启；断言高低价值均可在网页归档/搜索，高价值保存提醒候选但在飞书禁用时零 delivery/零外发，且无静默丢失。
   - **覆盖测试用例**: TC-3.1, TC-7.1, TC-8.1, TC-13.1
 ### Task 7.3: 建立 Prompt Injection、Secret 和只读研究专项测试
 
-- [ ] [完成] Task 7.3
+- [x] [完成] Task 7.3
   - 实现细节: 扩展 `audit:secrets` 覆盖 bundle、API、日志、错误页和快照；参数化恶意指令、Secret canary、下单/持仓/Cookie/Hook 越界输入，检查路由/依赖和零副作用。
   - **覆盖测试用例**: TC-14.1, TC-14.2, TC-15.1, TC-15.2, TC-16.1, TC-16.2
 ### Task 7.4: 建立用量、原子预算和限流专项测试
 
-- [ ] [完成] Task 7.4
+- [x] [完成] Task 7.4
   - 实现细节: 校验 X/AI 版本、request ID、资源/token/cost 汇总、分析幂等；预算/速率耗尽后断言 provider 新调用为 0、状态阻断且不切换低质量模型。
   - **覆盖测试用例**: TC-17.1, TC-17.2
 
-- [ ] [自测] 按顺序运行 `pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；退出码均为 0，故障注入重复执行结果一致，Secret canary 零命中
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认所有失败可见可恢复、外部文本不可信、无交易/Hook/客户端抓取边界突破
+- [x] [自测] 按顺序运行 `pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；退出码均为 0，故障注入重复执行结果一致，Secret canary 零命中
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认所有失败可见可恢复、外部文本不可信、无交易/Hook/客户端抓取边界突破
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 7`
 
 ## Group 8: 真实联调边界、人工验收资料与交付收敛

@@ -17,7 +17,7 @@ export function canManualRetry(input: {
   status: ProcessingStatus;
   manualRetryAllowed: boolean;
 }): boolean {
-  return input.manualRetryAllowed && input.status === 'dead_letter';
+  return input.manualRetryAllowed && (input.status === 'dead_letter' || input.status === 'blocked');
 }
 
 export function isLeaseCommitCurrent(input: {

@@ -107,7 +107,8 @@ export class FamilyAuthService {
     if (input.origin !== input.expectedOrigin) throw new FamilyAuthError('csrf');
     const token = this.verifySignedCookie(input.cookieValue);
     if (!safeEqual(input.csrfToken, this.sign(`csrf:${token}`))) throw new FamilyAuthError('csrf');
-    return this.authenticate(input.cookieValue);
+    const session = await this.authenticate(input.cookieValue);
+    return { actorId: session.actorId };
   }
 
   async logout(cookieValue: string): Promise<void> {

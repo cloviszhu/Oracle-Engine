@@ -34,21 +34,25 @@ describe('research analysis idempotency and budget', () => {
     expect(adapter.analyze).not.toHaveBeenCalled();
   });
 
-  it('blocks before the provider call when the atomic reservation is denied', async () => {
-    const repository = { findSucceeded: vi.fn().mockResolvedValue(undefined), saveSucceeded: vi.fn() };
-    const budget = {
-      reserve: vi.fn().mockResolvedValue({ allowed: false, reason: 'budget' }),
-      settle: vi.fn(), release: vi.fn(),
-    };
-    const adapter = { analyze: vi.fn() };
+  it.each(['budget', 'rate_limit'] as const)(
+    'blocks for %s before the provider call and does not fall back to another model',
+    async (reason) => {
+      const repository = { findSucceeded: vi.fn().mockResolvedValue(undefined), saveSucceeded: vi.fn() };
+      const budget = {
+        reserve: vi.fn().mockResolvedValue({ allowed: false, reason }),
+        settle: vi.fn(), release: vi.fn(),
+      };
+      const adapter = { analyze: vi.fn() };
 
-    const result = await new ResearchAnalysisService(repository, budget, adapter).analyze({
-      ...target, envelope, estimatedCostCents: 5,
-    });
+      const result = await new ResearchAnalysisService(repository, budget, adapter).analyze({
+        ...target, envelope, estimatedCostCents: 5,
+      });
 
-    expect(result).toEqual({ status: 'blocked', reason: 'budget' });
-    expect(adapter.analyze).not.toHaveBeenCalled();
-  });
+      expect(result).toEqual({ status: 'blocked', reason });
+      expect(adapter.analyze).not.toHaveBeenCalled();
+      expect(repository.saveSucceeded).not.toHaveBeenCalled();
+    },
+  );
 
   it('records model, request, usage and cost then settles the reservation once', async () => {
     const modelResult = {

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
 const root = process.cwd();
-const ignoredDirectories = new Set(['.git', '.worktrees', 'dist', 'node_modules', 'coverage']);
+const ignoredDirectories = new Set(['.git', '.worktrees', 'node_modules', 'coverage']);
 const textExtensions = new Set([
   '',
   '.css',
