@@ -6,6 +6,6 @@ export default defineConfig({
   schema: './drizzle/schema.ts',
   out: './drizzle/migrations',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'mysql://serenity:serenity@localhost:3306/serenity',
+    url: process.env.DATABASE_URL ?? 'mysql://localhost/serenity',
   },
 });

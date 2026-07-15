@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1784091627184,
+      "tag": "0000_common_may_parker",
+      "breakpoints": true
+    }
+  ]
+}

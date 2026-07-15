@@ -10,10 +10,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "sourceMap": true,
-    "outDir": "dist/server",
-    "rootDir": "server",
+    "outDir": "dist",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["server/**/*.ts"],
+  "include": ["server/**/*.ts", "shared/**/*.ts", "drizzle/**/*.ts"],
   "exclude": ["**/*.test.ts", "node_modules", "dist"]
 }

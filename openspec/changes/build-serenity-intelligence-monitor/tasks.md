@@ -598,33 +598,33 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 ### Task 1.1: 建立业务配置、容量和运行时边界契约
 
-- [ ] [完成] Task 1.1
+- [x] [完成] Task 1.1
   - 实现细节: 以 Zod 定义数据库、Redis、两个同权限家庭账号（actor/用户名/`scrypt` 摘要）、会话、`APP_BASE_URL`、X、`AI_PROVIDER=openai`、`OPENAI_MODEL=gpt-5.6-terra`、`OPENAI_API_KEY`、OpenAI 预算、`CORE_VISIBILITY_SLO_MINUTES=30`、`FEISHU_ENABLED=false`、可选 `FEISHU_WEBHOOK_URL` 与必配配对的 `FEISHU_SIGNING_SECRET`、生产同步/政策确认、阈值、轮询/补偿/lease/最大 attempt、外部 deadline、worker 并发和上下文/输入输出/raw payload 上限；第一版生产配置只接受 `openai/gpt-5.6-terra`，错误 provider/model 直接阻断启动/分析，不静默替换；区分核心生产必填、可选通知配置与测试注入，不回显实际值，不保留旧 `AI_API_KEY` 同义入口。
   - **覆盖测试用例**: TC-15.1, TC-15.2, TC-17.2
 ### Task 1.2: 定义 Drizzle 业务 schema、版本历史、状态机和迁移
 
-- [ ] [完成] Task 1.2
+- [x] [完成] Task 1.2
   - 实现细节: 按 design 创建 source/sync、run、content identity、不可变 content version、lifecycle event、relation、processing intent/attempt、card/entity、score、notification、feedback、usage 与 budget reservation；定义完整状态/阻断原因/人工重试资格、fencing、UTC、字符串 ID 与 BigInt 比较、字段类型/size ceiling 和唯一键，生成可审查 additive migration。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-4.1, TC-4.2, TC-8.1, TC-11.1, TC-13.1, TC-17.1
 ### Task 1.3: 建立共享构建、迁移、数据库/队列和 worker 运行闭环
 
-- [ ] [完成] Task 1.3
+- [x] [完成] Task 1.3
   - 实现细节: 将服务端构建明确为 `rootDir: "."`、`outDir: "dist"`，include `server/shared/drizzle`，保持 `dist/server/main.js` 并生成 `dist/server/worker.js`，依靠现有 `deleteOutDir=false` 保留 Vite 产物；实现显式 `db:migrate`、Drizzle/Redis/BullMQ、durable pending intent、dispatcher、lease/fencing、reconciliation、worker heartbeat/优雅退出以及 `dev:worker`/`start:worker`/Compose 入口。生产不得用 `db:push` 代替 migration。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-8.2, TC-13.1, TC-13.2
 ### Task 1.4: 建立基础共享 DTO、错误分类、状态契约和集中日志脱敏
 
-- [ ] [完成] Task 1.4
+- [x] [完成] Task 1.4
   - 实现细节: Group 1 只在 `shared/contracts/` 定义 ID、分页、错误、pipeline/delivery 状态和 envelope；研究卡片契约由 Group 3 单点拥有。实现稳定错误码与 retryability、敏感字段过滤和 correlation ID，确保业务 DTO 不返回 raw payload、内部栈或凭据。
   - **覆盖测试用例**: TC-11.2, TC-15.1, TC-15.2, TC-17.1
 
 ### Task 1.5: 建立分层测试环境与可重复清理
 
-- [ ] [完成] Task 1.5
+- [x] [完成] Task 1.5
   - 实现细节: 明确 Node 单元/Mock、Vitest jsdom + Testing Library、Nest testing + Supertest、真实 MySQL/Redis 跨进程测试四层；增加测试专用 URL、migration/seed/队列清理命令。当前无 Docker 时真实存储层保持待 CI/Compose/目标环境验证，不以 repository Mock 冒充。
   - **覆盖测试用例**: TC-3.1, TC-3.2, TC-10.1, TC-10.2, TC-13.1, TC-13.2, TC-18.1
 
-- [ ] [自测] 按顺序运行 `pnpm db:generate`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`；每条命令退出码均为 0，migration 存在且不含默认 Secret，构建后 API/worker 入口可解析
-- [ ] [原声对账] 重新读 proposal.md 中的用户原声，确认本组只建立当前单源闭环所需数据与基础设施，无业务范围扩张
+- [x] [自测] 按顺序运行 `pnpm db:generate`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm audit:secrets`；每条命令退出码均为 0，migration 存在且不含默认 Secret，构建后 API/worker 入口可解析
+- [x] [原声对账] 重新读 proposal.md 中的用户原声，确认本组只建立当前单源闭环所需数据与基础设施，无业务范围扩张
 - [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 1`
 
 ## Group 2: Serenity 官方获取、归档与内容生命周期
