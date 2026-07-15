@@ -830,4 +830,4 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 
 - [x] [自测] 先运行 `pnpm test -- server/notifications server/infrastructure/notifications` 验证禁用/误配置/签名/超时，再按顺序运行 `openspec validate build-serenity-intelligence-monitor --strict --no-interactive`、`python "C:\Users\zhuhongyu06\.codex\skills\spec-review-debate\scripts\check_traceability.py" "openspec/changes/build-serenity-intelligence-monitor"`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`；全部退出码为 0，追溯报告 `passed=true`，未验证外部证据保持待测
 - [x] [原声对账] 重新读 proposal.md 中的用户原声，逐项确认完成单账号可靠闭环且所有外部未验证项被如实保留
-- [ ] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 8`
+- [x] [Git提交] 本组完成后提交 `harness(build-serenity-intelligence-monitor): implement group 8`
