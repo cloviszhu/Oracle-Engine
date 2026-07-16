@@ -1,6 +1,6 @@
 # 项目状态
 
-更新时间：2026-07-15
+更新时间：2026-07-16
 
 ## 当前阶段
 
@@ -25,10 +25,11 @@
 - `release/Serenity-0.1.0-x64.exe` 可生成并通过本机启动冒烟
 - OpenSpec strict validate 通过；追溯检查覆盖 26 个 AC、52 个 TC 和 50 个任务，结果 `passed=true`
 - 独立代码复核最终结论 `Ready: Yes`，未留 Critical 或 Important 问题
+- Docker Desktop 4.82.0、Docker CLI 29.6.1 与 Compose v5.3.0 已安装；真实端口探测在现有 `mysqld` 占用 `33060` 时自动选择 `33061`
 
 ## 待真实验证
 
-- 当前开发机没有 Docker CLI，未执行真实 MySQL/Redis、migration、API、worker heartbeat、停止/恢复闭环
+- Docker 引擎因 Windows `VirtualMachinePlatform` / WSL 2 尚未启用而保持停止；启用并重启前无法执行真实 MySQL/Redis、migration、API、worker heartbeat、停止/恢复闭环
 - 未使用真实 X、AI 或飞书凭据；Mock 证据不代表真实 API
 - DPAPI/ACL 已实现并由注入测试验证，仍需在目标 Windows 用户下执行真实保存与跨用户恢复测试
 - 备份恢复仍需在目标 Docker 环境完成数据库恢复演练

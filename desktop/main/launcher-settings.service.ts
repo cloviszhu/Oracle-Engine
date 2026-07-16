@@ -6,6 +6,7 @@ import { parseRuntimeConfigSnapshot, type RuntimeConfigSnapshot } from '../../se
 import { validateOptionalIntegrations } from './settings-policy.js';
 import { normalizeProviderBaseUrl } from '../../server/infrastructure/ai/provider-adapter.registry.js';
 import { aiAuthBinding, resolveBoundAIKey } from '../config/ai-auth-binding.js';
+import type { LocalServicePorts } from '../runtime/local-ports.js';
 
 interface VaultLike {
   save(value: Record<string, string>): Promise<void>;
@@ -120,7 +121,7 @@ export class LauncherSettingsService {
     try { return await this.dependencies.vault.load(); } catch { return {}; }
   }
 
-  async getRuntimeSnapshot(): Promise<RuntimeConfigSnapshot> {
+  async getRuntimeSnapshot(ports: LocalServicePorts = { api: 3000, mysql: 33060, redis: 36379 }): Promise<RuntimeConfigSnapshot> {
     const metadata = await this.dependencies.store.load();
     const secrets = await this.dependencies.vault.load();
     if (!metadata?.accountsConfigured) throw new Error('首次设置尚未完成');
@@ -130,10 +131,10 @@ export class LauncherSettingsService {
       throw new Error('AI 配置已变化，必须重新通过能力验证');
     }
     return parseRuntimeConfigSnapshot({
-      nodeEnv: 'development', port: 3000,
-      databaseUrl: 'mysql://root@127.0.0.1:33060/serenity', redisUrl: 'redis://127.0.0.1:36379/0',
+      nodeEnv: 'development', port: ports.api,
+      databaseUrl: `mysql://root@127.0.0.1:${ports.mysql}/serenity`, redisUrl: `redis://127.0.0.1:${ports.redis}/0`,
       familyAccounts: accounts, session: { secret: secrets.sessionSecret, ttlSeconds: 86_400 },
-      appBaseUrl: 'http://127.0.0.1:3000',
+      appBaseUrl: `http://127.0.0.1:${ports.api}`,
       x: { bearerToken: secrets.xBearerToken, productionSyncEnabled: Boolean(metadata.x?.enabled), policyConfirmed: Boolean(metadata.x?.policyConfirmed), pollIntervalSeconds: 300, compensationIntervalSeconds: 3_600 },
       ai: {
         providerPreset: ai?.providerPreset ?? 'openai', provider: ai?.provider ?? 'openai', protocol: ai?.protocol ?? 'responses',

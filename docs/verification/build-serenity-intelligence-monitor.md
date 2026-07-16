@@ -85,7 +85,7 @@
 
 - Group 9：Electron 窄 IPC、CSP、托盘、`build:desktop`、portable 打包和启动冒烟通过；证据位于 `desktop/main`、`desktop/preload`、`desktop/renderer`、`shared/desktop`。
 - Group 10：非敏感配置/DPAPI vault 分离、随机盐账号摘要、一次性运行快照和 Secret canary 测试通过；真实 Windows DPAPI 跨用户恢复仍待目标机。
-- Group 11：环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、阶段编排和非 Serenity 容器保护的自动化测试通过；当前机 `docker-cli-missing`，真实生命周期保持待验。
+- Group 11：环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、动态已验证端口、阶段编排和非 Serenity 容器保护的自动化测试通过；Docker Desktop 已安装，但 Windows 虚拟机平台启用与重启尚未完成，真实生命周期保持待验。
 - Group 12：Responses-compatible 与 Chat Completions-compatible 严格 schema、refusal/incomplete/error 分类、registry 无 fallback、capability probe 和 migration `0005_burly_slipstream.sql` 通过 Mock 验证；无真实 provider 调用。
 - Group 13：GUI-only 首启跳过路径、账号输入、AI probe 门禁、X/飞书默认关闭、日常管理入口和网页固定中文状态通过 jsdom/组件测试。
 - Group 14：一致性备份契约、Redis 排除、跨用户重输 Secret 清单、诊断脱敏和 canary 拒绝导出通过自动化测试。真实数据库恢复见 `windows-docker-target.md`，状态待验。

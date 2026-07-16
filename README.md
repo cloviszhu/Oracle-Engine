@@ -2,7 +2,7 @@
 
 仅供家庭内部使用的海外产业研究辅助系统。私有网页是主要入口：归档 Serenity 内容，通过统一 AI 适配器生成分层中文研究卡片，并提供搜索、详情、反馈和运行状态。OpenAI 官方 preset 推荐 `gpt-5.6-terra`；修订目标还支持通过 probe 的 Responses-compatible 与 Chat Completions-compatible 配置。飞书只承担可选的重要提醒。
 
-`build-serenity-intelligence-monitor` 的研究闭环与家庭本地版 Group 9～13 已实现；Group 14 的备份、诊断、文档和 Windows 可携带产物已完成本地自动化验证。当前开发机没有 Docker，因此真实 Docker 生命周期、真实外部 API、备份恢复和家庭人工验收仍保持待验，尚未完成最终 `user_accept`。
+`build-serenity-intelligence-monitor` 的研究闭环与家庭本地版 Group 9～13 已实现；Group 14 的备份、诊断、文档和 Windows 可携带产物已完成本地自动化验证。Docker Desktop 已安装，但 Windows 虚拟机平台启用与重启尚未完成，因此真实 Docker 生命周期、真实外部 API、备份恢复和家庭人工验收仍保持待验，尚未完成最终 `user_accept`。
 
 ## 技术基线
 

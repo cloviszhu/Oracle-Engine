@@ -40,6 +40,11 @@ describe('LauncherSettingsService', () => {
     });
     expect(metadata?.ai).toMatchObject({ baseUrl: 'https://models.example.test', probe: { actualModel: 'family-model', providerRequestId: 'req-1', probeVersion: '1' } });
     await expect(service.getRuntimeSnapshot()).resolves.toMatchObject({ ai: { model: 'family-model' } });
+    await expect(service.getRuntimeSnapshot({ api: 3000, mysql: 33061, redis: 36381 })).resolves.toMatchObject({
+      databaseUrl: 'mysql://root@127.0.0.1:33061/serenity',
+      redisUrl: 'redis://127.0.0.1:36381/0',
+      appBaseUrl: 'http://127.0.0.1:3000',
+    });
     probeAI.mockClear();
     await expect(service.save({
       familyAccounts: [{ actorId: 'father', username: 'father', password: '' }, { actorId: 'requester', username: 'requester', password: '' }],

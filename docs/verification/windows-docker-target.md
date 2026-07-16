@@ -1,6 +1,14 @@
 # Windows + Docker 目标环境验证清单
 
-状态：待执行（当前开发机无 Docker CLI，禁止用 fake controller 冒充）
+状态：部分执行（2026-07-16 已安装 Docker Desktop；Windows 虚拟机平台启用与重启待完成，禁止用 fake controller 冒充）
+
+## 2026-07-16 预检记录
+
+- Windows 11 企业版 64 位，硬件虚拟化已开启，可用磁盘约 60 GB。
+- Docker Desktop 4.82.0、Docker CLI 29.6.1、Compose v5.3.0 已安装。
+- Docker 后端明确报告 `Virtual Machine Platform not enabled`，因此引擎尚未启动；这不是容器验收通过证据。
+- 本机已有 `mysqld` 占用 `33060`。Serenity 端口选择器已通过真实探测选中 `33061`，不会停止或修改现有 MySQL。
+- 下一步：以管理员身份运行 `wsl --install --no-distribution`，完成后重启 Windows，再从本清单第 1 项继续。
 
 ## 前置条件
 

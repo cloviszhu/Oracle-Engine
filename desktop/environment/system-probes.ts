@@ -7,15 +7,15 @@ import type { EnvironmentProbes } from './environment-checker.js';
 
 const execFileAsync = promisify(execFile);
 
-export function createSystemEnvironmentProbes(directory: string, portsToCheck: number[]): EnvironmentProbes {
+export function createSystemEnvironmentProbes(directory: string, portsToCheck: number[], dockerExecutable = 'docker.exe'): EnvironmentProbes {
   return {
     windows: async () => {
       const [major] = process.getSystemVersion().split('.').map(Number);
       return { supported: process.platform === 'win32' && (major ?? 0) >= 10, detail: process.getSystemVersion() };
     },
     dockerDesktop: async () => commandExists(join(process.env.ProgramFiles ?? 'C:\\Program Files', 'Docker', 'Docker', 'Docker Desktop.exe')),
-    dockerEngine: async () => commandSucceeds('docker.exe', ['info', '--format', '{{.ServerVersion}}']),
-    compose: async () => commandSucceeds('docker.exe', ['compose', 'version', '--short']),
+    dockerEngine: async () => commandSucceeds(dockerExecutable, ['info', '--format', '{{.ServerVersion}}']),
+    compose: async () => commandSucceeds(dockerExecutable, ['compose', 'version', '--short']),
     virtualization: async () => commandOutputIncludes('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '(Get-CimInstance Win32_Processor).VirtualizationFirmwareEnabled -contains $true'], 'True'),
     ports: async () => {
       const unavailable: number[] = [];

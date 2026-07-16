@@ -840,9 +840,18 @@
 
 本记录覆盖 AC-20～AC-26 的可离线部分，尚未替代 Harness `test_verify`，也不提升真实 Docker、真实外部 API 或家庭人工证据类别。
 
-- `pnpm test`：67 个测试文件、249 个测试全部通过。
+- `pnpm test`：68 个测试文件、254 个测试全部通过。
 - `pnpm check`、`pnpm lint`、`pnpm build`、`pnpm audit:secrets`：通过。
 - OpenSpec strict validate：通过。
 - 追溯检查：26/26 AC、52/52 TC、50/50 tasks，`passed=true`。
 - 独立复核首轮及修复复核提出的启动链路、回环绑定、AI Key 换址绑定、不安全 URL、Chat schema、probe 门禁、会话撤销、X 账号、诊断 canary 与备份原子性问题均已关闭；最终结论 `Ready: Yes`。
 - TC-20.1、TC-20.2、TC-26.1 以及 TC-23 的真实 Docker 生命周期仍按 `docs/verification/windows-docker-target.md` 保持待验；Task 14.2、Group 14 自测和最终 Git checkpoint 不提前勾选。
+
+## 2026-07-16 目标环境 Repair Lane 记录
+
+- 分类：第 1 类（实现未满足既有“随机或已验证回环端口”规范）+ 第 4 类（Docker/Windows 功能环境问题）。
+- 复现：真实 `mysqld` 占用 `33060`；原启动器虽允许 Compose 环境变量覆盖端口，但运行快照和环境检查仍固定使用 `33060`。
+- 修复：新增有界端口选择器，保持 API `3000`，MySQL 从 `33060～33069`、Redis 从 `36379～36388` 选择首个空闲端口，并把同一结果同时下发给 Compose、运行快照、健康检查、备份和诊断。
+- 自动化证据：`desktop/runtime/local-ports.test.ts` 与 `desktop/main/launcher-settings.service.test.ts` 覆盖冲突、候选耗尽、Compose 映射和运行快照一致性。
+- 真实预检：当前机器选择 `{api:3000,mysql:33061,redis:36379}`，现有 MySQL 未被停止或修改。
+- 环境阻塞：Docker Desktop 已安装，但 `VirtualMachinePlatform` / WSL 2 尚未启用，真实容器生命周期继续保持待验。
