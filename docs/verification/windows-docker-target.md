@@ -1,6 +1,13 @@
 # Windows + Docker 目标环境验证清单
 
-状态：部分执行（2026-07-16 已安装 Docker Desktop；Windows 虚拟机平台启用与重启待完成，禁止用 fake controller 冒充）
+状态：换机后继续（2026-07-17 公司电脑因软件政策退出 Docker 验收；禁止用 fake controller 或历史预检冒充）
+
+## 2026-07-17 换机决定
+
+- 用户要求从公司电脑卸载 Docker Desktop；该电脑不再执行 WSL、Docker 引擎或容器生命周期验证。
+- 现有 Windows + Docker 软件设计保持不变，当前不迁移到 Podman、云端容器或其他运行架构。
+- 当前 feature branch 仅作为未完成验收的阶段性快照推送到远端；这不等于发布、合并、最终 `user_accept` 或归档。
+- 后续换到允许安装 Docker Desktop 的 Windows 机器后，从“前置条件”重新执行完整清单；真实 Docker、恢复演练、DPAPI 跨用户和家庭人工证据继续保持待验。
 
 ## 2026-07-16 预检记录
 
@@ -8,7 +15,7 @@
 - Docker Desktop 4.82.0、Docker CLI 29.6.1、Compose v5.3.0 已安装。
 - Docker 后端明确报告 `Virtual Machine Platform not enabled`，因此引擎尚未启动；这不是容器验收通过证据。
 - 本机已有 `mysqld` 占用 `33060`。Serenity 端口选择器已通过真实探测选中 `33061`，不会停止或修改现有 MySQL。
-- 下一步：以管理员身份运行 `wsl --install --no-distribution`，完成后重启 Windows，再从本清单第 1 项继续。
+- 该预检因公司软件政策终止，Docker 引擎从未成功启动；不得把版本探测或端口探测记为真实容器验收。后续在允许安装 Docker Desktop 的目标机重新开始。
 
 ## 前置条件
 

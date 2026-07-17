@@ -1,8 +1,8 @@
 # build-serenity-intelligence-monitor 验收记录
 
-更新时间：2026-07-15
+更新时间：2026-07-17
 执行环境：Windows 本地工作区；Node/pnpm 自动化环境
-真实环境状态：Docker/Compose、生产 HTTPS、真实 X、真实 OpenAI、真实飞书、两个家庭账号和爸爸人工理解均未执行
+真实环境状态：公司电脑已退出 Docker 验收；Docker/Compose、生产 HTTPS、真实 X、真实 OpenAI、真实飞书、两个家庭账号和爸爸人工理解均未执行
 
 ## 证据规则
 
@@ -85,12 +85,19 @@
 
 - Group 9：Electron 窄 IPC、CSP、托盘、`build:desktop`、portable 打包和启动冒烟通过；证据位于 `desktop/main`、`desktop/preload`、`desktop/renderer`、`shared/desktop`。
 - Group 10：非敏感配置/DPAPI vault 分离、随机盐账号摘要、一次性运行快照和 Secret canary 测试通过；真实 Windows DPAPI 跨用户恢复仍待目标机。
-- Group 11：环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、动态已验证端口、阶段编排和非 Serenity 容器保护的自动化测试通过；Docker Desktop 已安装，但 Windows 虚拟机平台启用与重启尚未完成，真实生命周期保持待验。
+- Group 11：环境检查、固定 `serenity-local` Compose、回环 MySQL/Redis、动态已验证端口、阶段编排和非 Serenity 容器保护的自动化测试通过；公司电脑因软件政策退出 Docker 验收，现有设计不迁移，真实生命周期换到允许安装 Docker 的 Windows 机器后继续。
 - Group 12：Responses-compatible 与 Chat Completions-compatible 严格 schema、refusal/incomplete/error 分类、registry 无 fallback、capability probe 和 migration `0005_burly_slipstream.sql` 通过 Mock 验证；无真实 provider 调用。
 - Group 13：GUI-only 首启跳过路径、账号输入、AI probe 门禁、X/飞书默认关闭、日常管理入口和网页固定中文状态通过 jsdom/组件测试。
 - Group 14：一致性备份契约、Redis 排除、跨用户重输 Secret 清单、诊断脱敏和 canary 拒绝导出通过自动化测试。真实数据库恢复见 `windows-docker-target.md`，状态待验。
 
 本补记只提升自动化/Mock/Windows 打包证据，不改变表中真实 X、AI、飞书、Docker 和家庭人工验收的“待验”分类。
+
+## 2026-07-17 公司电脑退出 Docker 验收记录
+
+- 用户原话：“公司电脑不让装这个，删了吧；不过我们的软件设计也不用直接迁移，先提交一版到云端，之后可以考虑换台机器”。
+- 决策：卸载公司电脑上的 Docker Desktop；不继续安装 WSL，不在当前 change 内迁移到 Podman 或云端运行架构。
+- 交付边界：允许将当前 feature branch 作为阶段性快照推送到远端；不合并、不发布、不归档，也不完成 Harness `user_accept`。
+- 待验边界：TC-20.1、TC-20.2、TC-23.1、TC-26.1 及所有真实外部 API、DPAPI 跨用户和家庭人工项目继续保持待验，后续在允许安装 Docker Desktop 的 Windows 机器补证。
 
 对每个待验收 TC 复制以下记录，完成后再更新上表：
 

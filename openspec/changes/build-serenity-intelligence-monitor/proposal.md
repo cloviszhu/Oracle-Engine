@@ -578,6 +578,12 @@ python "C:\Users\zhuhongyu06\.codex\skills\harness-spec\scripts\harness_spec_cli
 > X 默认关闭且允许无凭据完成向导；飞书默认跳过。未配置时不得发起真实请求或制造失败积压。
 >
 > 完成修订规格审查、独立代码复核、完整自动化测试和 `test_verify` 后重新回到 `user_accept` 等我验收。当前不得 complete `user_accept`，不得归档。
+
+### 2026-07-17 公司电脑退出 Docker 验收原话
+
+> 公司电脑不让装这个，删了吧；不过我们的软件设计也不用直接迁移，先提交一版到云端，之后可以考虑换台机器
+
+处理决定：公司电脑停止 WSL/Docker 验收并卸载 Docker Desktop；现有 Windows + Docker 设计暂不迁移。当前 feature branch 可作为未完成验收的阶段性快照推送到远端，但不合并、不发布、不归档，也不完成 `user_accept`。真实 Docker 生命周期、恢复演练、DPAPI 跨用户和家庭人工验证换到允许安装 Docker Desktop 的 Windows 机器后继续。
 <!-- HARNESS:USER_VOICE_END -->
 
 ## 需求分析

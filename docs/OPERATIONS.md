@@ -1,6 +1,6 @@
 # Serenity 配置、启动与真实联调
 
-> 状态说明（2026-07-16）：Electron 家庭本地路径已实现并生成 Windows portable 产物；Docker Desktop 已安装，Windows 虚拟机平台启用与重启尚未完成，真实服务生命周期仍待验证。下方开发者命令不是家庭用户操作步骤。
+> 状态说明（2026-07-17）：Electron 家庭本地路径已实现并生成 Windows portable 产物；公司电脑因软件政策不再作为 Docker 验收机，现有 Windows + Docker 设计暂不迁移，真实服务生命周期改在允许安装 Docker 的 Windows 机器验证。下方开发者命令不是家庭用户操作步骤。
 
 ## 0. 家庭本地版目标流程
 

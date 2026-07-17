@@ -855,3 +855,10 @@
 - 自动化证据：`desktop/runtime/local-ports.test.ts` 与 `desktop/main/launcher-settings.service.test.ts` 覆盖冲突、候选耗尽、Compose 映射和运行快照一致性。
 - 真实预检：当前机器选择 `{api:3000,mysql:33061,redis:36379}`，现有 MySQL 未被停止或修改。
 - 环境阻塞：Docker Desktop 已安装，但 `VirtualMachinePlatform` / WSL 2 尚未启用，真实容器生命周期继续保持待验。
+
+## 2026-07-17 公司电脑退出 Docker 验收决定
+
+- 用户原话：“公司电脑不让装这个，删了吧；不过我们的软件设计也不用直接迁移，先提交一版到云端，之后可以考虑换台机器”。
+- 该决定属于第 4 类环境/操作问题，不改变 AC、TC、实现范围或技术设计；当前不迁移到 Podman、云端容器或其他运行架构。
+- 公司电脑停止 WSL/Docker 验收并卸载 Docker Desktop；TC-20.1、TC-20.2、TC-23.1、TC-26.1 的真实环境证据转移到允许安装 Docker Desktop 的 Windows 机器。
+- 当前 feature branch 仅作为未完成验收的阶段性快照推送到远端；所有待验项保持原分类，Harness `user_accept` 不 complete，change 不归档。
